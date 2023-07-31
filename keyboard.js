@@ -58,11 +58,6 @@ const acceptCancelExchangeIK = bot.inlineKeyboard([
 
 const acceptCancelOrderIK = [
   'accept', 'cancel'
-]
-
-const sellExchangeIK = [
-  'del', 'pro',
-  'dar',
 ];
 
 module.exports = {
@@ -70,7 +65,6 @@ module.exports = {
   typeOrder,
   orderMenu,
   cabinetIK,
-  sellExchangeIK,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,

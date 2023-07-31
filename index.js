@@ -9,7 +9,6 @@ const {
   typeOrder,
   orderMenu,
   cabinetIK,
-  sellExchangeIK,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
@@ -47,7 +46,6 @@ const checkOrders = require('./cron/OrderCheck.js');
 mongoose.connect('mongodb://127.0.0.1/test');
 
 const bot = new TeleBot (config.token);
-const CoinGeckoClient = new CoinGecko();
 
 async function setState(id, status) { UserModel.findOneAndUpdate({ id: id }, { status: status }).then((e) => { }); };
 
@@ -355,6 +353,7 @@ bot.on('text', async (msg) => {
     console.error(error);
     }
   });
+
 //callbacks
 bot.on('callbackQuery', async (msg) => {
   try {
