@@ -40,7 +40,6 @@ const updateCoinBalance = require('./cron/UpdateCoinBalance.js');
 const ExchangeRateCoin = require('./exchanger/exchangeRate.js');
 const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
-const splitOrders = require('./cron/OrderCheck.js');
 const checkOrders = require('./cron/OrderCheck.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -210,7 +209,6 @@ bot.on('text', async (msg) => {
           setState(userId, 0);
           return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода с комиссией составляет ${sum[userId]} ${coin[userId].toUpperCase()}`, { replyMarkup: RM_Home});
         };
-
         bot.sendMessage(userId, 'Введите адресс кошелька на который хотите вывести деньги: ');
         break;
 
@@ -226,32 +224,32 @@ bot.on('text', async (msg) => {
 
         case 12:
           setState(userId, 0);
-          exchangeAmount[userId] = Number(text);
+          exchangeSellAmount[userId] = Number(text);
 
-          if (isNaN(exchangeAmount[userId])) {
+          if (isNaN(exchangeSellAmount[userId])) {
             setState(userId, 0)
             return bot.sendMessage(userId, 'Введено не коректное число!', { replyMarkup: RM_Home });
           }
 
-          if (balanceUserCoin[userId] < exchangeAmount[userId]) {
+          if (balanceUserCoin[userId] < exchangeSellAmount[userId]) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для обмена!', { replyMarkup: RM_Home });
           };
 
-          sumExchanger[userId] = (rateExchange[userId] * exchangeAmount[userId]) + 0.0001;
+          exchangeBuyAmount[userId] = (rateExchange[userId] * exchangeSellAmount[userId]) + 0.0001;
 
           const result = (await ExchangeCoinTransaction.exchangeComission(
             decimalMnemonics,
             sellCoin[userId],
             buyCoin[userId],
-            sumExchanger[userId],
-            exchangeAmount[userId]
+            exchangeBuyAmount[userId],
+            exchangeSellAmount[userId]
             )).data.result.result.amount/1e18;
             comissionExchanger[userId] = result;
           const textExchange = [
             `Курс: 1 ${sellCoin[userId].toUpperCase()} = ${(rateExchange[userId] + 0.0001).toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
-            `Количество продаваемой монеты: ${(exchangeAmount[userId]).toFixed(4)} ${sellCoin[userId].toUpperCase()}`,
-            `Количество покупаемой монеты: ${sumExchanger[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
+            `Количество продаваемой монеты: ${(exchangeSellAmount[userId]).toFixed(4)} ${sellCoin[userId].toUpperCase()}`,
+            `Количество покупаемой монеты: ${exchangeBuyAmount[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
             `Комиссия составляет ${comissionExchanger[userId]} DEL`
           ].join('\n');
           await bot.sendMessage(userId, textExchange, { replyMarkup: acceptCancelExchangeIK });
@@ -502,8 +500,8 @@ bot.on('callbackQuery', async (msg) => {
           decimalMnemonics,
           sellCoin[userId],
           buyCoin[userId],
-          sumExchanger[userId],
-          exchangeAmount[userId]
+          exchangeBuyAmount[userId],
+          exchangeSellAmount[userId]
           )).data.result.result;
 
           if (exchangeTransaction.tx_response.code != 0) return bot.sendMessage(userId, 'При обмене возникла ошибка!', { replyMarkup: RM_Home });
@@ -903,11 +901,11 @@ let userRate = []; // курс торговли пользователя
 let digitsBuy = []; // доступное количество покупки согласно заданому курсу и балансу пользователя
 let orderType = []; // тип ордера
 let orderNumber = [];
-let sumExchanger = [];  // количество получаемой монеты
+let exchangeBuyAmount = [];  // количество получаемой монеты
 let rateExchange = [];  // курс обмена
 let coinSellArray = []; // массив с кнопками без продаваемой монеты
 let selectedOrder = []; //выбранный ордер
-let exchangeAmount = [];  // количество продаваемых монет
+let exchangeSellAmount = [];  // количество продаваемых монет
 let balanceUserCoin = [];  // баланс пользователя
 let comissionExchanger = [];  // комиссия обмена
 let minimalWithdrawAmount = []; // минимальная сумма вывода
@@ -917,3 +915,4 @@ checkUserTransaction.start();
 checkUserExchangeTransaction.start();
 // updateCoinBalance.start();
 checkOrders.start();
+
