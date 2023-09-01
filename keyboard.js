@@ -6,21 +6,35 @@ const bot = new TeleBot (config.token);
 const RM_Home = bot.keyboard([
   ['Мой кабинет 📂', 'Ордера 📒'],
   ['Конвертация 🔄'],
-  ['Настройка торговли ⚙️','Рефералы 👥']
+  ['P2P','Рефералы 👥']
 ], { resize: true });
 
-const orderMenu = bot.inlineKeyboard([
-  [bot.inlineButton('Мои ордера ✔️', { callback: 'created_orders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_order' })],
-  [bot.inlineButton('Ордера на площадке', { callback: 'list_order' })]
+const spotOrderMenu = bot.inlineKeyboard([
+  [bot.inlineButton('Мои ордера ✔️', { callback: 'created_SpotOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_SpotOrders' })],
+  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' })]
 ]);
 
 const settingsOrderIK = bot.inlineKeyboard([
   [bot.inlineButton('Удалить ❌', { callback: 'delete_order' }), bot.inlineButton('В главное меню', { callback: 'main_menu' })]
 ]);
 
-const typeOrder = bot.inlineKeyboard([
+const p2pMenuIK = bot.inlineKeyboard([
+  [bot.inlineButton('Мои ордера ✔️', { callback: 'created_p2pOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_p2pOrders' })],
+  [bot.inlineButton('Купить', { callback: 'buyList_p2pOrders' }), bot.inlineButton('Продать', { callback: 'sellList_p2pOrders' })]
+]);
+
+const createdOrderMenu = bot.inlineKeyboard([
+  [bot.inlineButton('Удалить ордер', { callback: 'deleteP2P' }), bot.inlineButton('Назад 🔙', { callback: 'p2p_back' })]
+]);
+
+const typeSpotOrder = bot.inlineKeyboard([
   [bot.inlineButton('Купить', { callback: 'operation_buy' }), bot.inlineButton('Продать', { callback: 'operation_sell' })],
   [bot.inlineButton('Главное меню', { callback: 'main_menu' })],
+]);
+
+const typeP2POrder = bot.inlineKeyboard([
+  [bot.inlineButton('Купить', { callback: 'p2pBuy' }), bot.inlineButton('Продать', { callback: 'p2pSell' })],
+  [bot.inlineButton('Назад 🔙', { callback: 'p2p_back' })]
 ]);
 
 const cabinetIK = bot.inlineKeyboard([
@@ -59,16 +73,53 @@ const acceptCancelExchangeIK = bot.inlineKeyboard([
 const acceptCancelOrderIK = [
   'accept', 'cancel'
 ];
+const currency = [
+  'UAH', 'RUB'
+];
+
+const paymentSystemUA = [
+  'Monobank', 'Privatbank'
+];
+
+const paymentSystemRU = [
+  'Sberbank'
+];
+
+const backP2PmenuIK = bot.inlineKeyboard([
+  [bot.inlineButton('Назад 🔙', { callback: 'backP2Pmenu' })]
+]);
+
+const payOrder = bot.inlineKeyboard([
+  [bot.inlineButton('Готово ✅', { callback: 'payOrderAccept' }), bot.inlineButton('Отменить ❌', { callback: 'payOrderCancel' })]
+]);
+
+const payOrderCoin = [
+  'Перевести монеты'
+];
+
+const buyerPayOrder = [
+  'Done', 'Cancel'
+];
 
 module.exports = {
   RM_Home,
-  typeOrder,
-  orderMenu,
+  payOrder,
+  spotOrderMenu,
+  currency,
+  p2pMenuIK,
   cabinetIK,
+  payOrderCoin,
+  typeP2POrder,
+  buyerPayOrder,
+  backP2PmenuIK,
+  typeSpotOrder,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
   settingsOrderIK,
+  paymentSystemUA,
+  paymentSystemRU,
+  createdOrderMenu,
   balanceStartPageIK,
   acceptCancelOrderIK,
   acceptCancelExchangeIK,
