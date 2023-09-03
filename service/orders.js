@@ -46,9 +46,6 @@ class OrderCheck {
 
 
             if (conditionSellAmountBigger) {
-              console.log('sellAmount bigger');
-              console.log('buy order№', arrBuyOrder[i].orderNumber, '|||||||', 'sell order№', arrSellOrder[j].orderNumber);
-              console.log(arrBuyOrder[i].status, arrBuyOrder[i].processed,'|||||||', arrSellOrder[j].status, arrSellOrder[j].processed);
 
               const buySumm = arrBuyOrder[i].buyAmount;
               const sellSumm = arrBuyOrder[i].sellAmount;
@@ -84,9 +81,6 @@ class OrderCheck {
             }
 
             else if(conditionBuyAmountBigger) {
-              console.log('buy Amount bigger');
-              console.log('buy order№', arrBuyOrder[i].orderNumber, '|||||||', 'sell order№', arrSellOrder[j].orderNumber);
-              console.log(arrBuyOrder[i].status, arrBuyOrder[i].processed,'|||||||', arrSellOrder[j].status, arrSellOrder[j].processed);
 
               const buySumm = arrSellOrder[j].buyAmount;
               const sellSumm = arrSellOrder[j].sellAmount;

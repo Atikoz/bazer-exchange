@@ -4,7 +4,7 @@ class ExchangeRateCoin {
   async ExchangeRate(coinSell, coinBuy) {
     try {
       if (coinSell === 'del') {
-        return (await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin_history/${coinBuy}?interval=1d&limit=10`)).data.result.res[0].price;
+        return 1/(await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin_history/${coinBuy}?interval=1d&limit=10`)).data.result.res[0].price;
       };
 
       if (coinBuy === 'del') {

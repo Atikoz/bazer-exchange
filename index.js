@@ -706,7 +706,7 @@ bot.on('text', async (msg) => {
               {id: userId},
               JSON.parse(`{"$inc": { "main.${userP2POrder.coin}": ${userP2POrder.amount} } }`)
               );
-            await bot.sendMessage(userId, `Ордер №${userP2POrder.orderNumber} был успешно удалён, срредства возвращенны на ваш баланс`);
+            await bot.sendMessage(userId, `Ордер №${userP2POrder.orderNumber} был успешно удалён, средства возвращенны на ваш баланс`);
           }
 
           break;
