@@ -22,6 +22,7 @@ const {
   paymentSystemUA,
   paymentSystemRU,
   settingsOrderIK,
+  paymentSystemTUR,
   createdOrderMenu,
   balanceStartPageIK,
   acceptCancelOrderIK,
@@ -1533,6 +1534,11 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId,messageId);
       currencyP2P[userId] = data.split('_')[1];
       bot.sendMessage(userId, 'Выбирете способ облаты:', { replyMarkup: generateButton(paymentSystemRU, 'paymentSystem') });
+    }
+    else if(data === 'сurrencyP2P_TRY'){
+      bot.deleteMessage(userId,messageId);
+      currencyP2P[userId] = data.split('_')[1];
+      bot.sendMessage(userId, 'Выбирете способ облаты:', { replyMarkup: generateButton(paymentSystemTUR, 'paymentSystem') });
     }
     else if (data.split('_')[0] === 'paymentSystem') {
       paymentSystem[userId] = data.split('_')[1];

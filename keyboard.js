@@ -74,7 +74,8 @@ const acceptCancelOrderIK = [
   'accept', 'cancel'
 ];
 const currency = [
-  'UAH', 'RUB'
+  'UAH', 'RUB',
+  'TRY'
 ];
 
 const paymentSystemUA = [
@@ -83,6 +84,10 @@ const paymentSystemUA = [
 
 const paymentSystemRU = [
   'Sberbank'
+];
+
+const paymentSystemTUR = [
+  'Isbank', 'GarantiBBVA'
 ];
 
 const backP2PmenuIK = bot.inlineKeyboard([
@@ -119,6 +124,7 @@ module.exports = {
   settingsOrderIK,
   paymentSystemUA,
   paymentSystemRU,
+  paymentSystemTUR,
   createdOrderMenu,
   balanceStartPageIK,
   acceptCancelOrderIK,
