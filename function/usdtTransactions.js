@@ -102,6 +102,8 @@ const getTransaction = async (address) => {
     headers: { }
   });
   const transactions = response.data.data.token_transfers;
+  console.log( `response: ${response.data}`);
+  console.log( `количество транзакций: ${transactions.length}`);
   if (transactions.length === 0) return getTransactionsData;
 
   await Promise.all(transactions.map(transaction => {

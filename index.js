@@ -209,33 +209,33 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          const createUsdt = await CreateUsdtWallet();
-          const users = await WalletUserModel.find({});
-          users.map(async (u) => {
-            console.log(u.del.mnemonics);
-            await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
+        // async function startTe() {
+        //   const createUsdt = await CreateUsdtWallet();
+        //   const users = await WalletUserModel.find({});
+        //   users.map(async (u) => {
+        //     console.log(u.mnemonics);
+        //     await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
 
-            await WalletUserModel.updateOne(
-              {id: u.id},
-              { $unset: {  "del.mnemonics": ""  }},
-            );
-            const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
+        //     await WalletUserModel.updateOne(
+        //       {id: u.id},
+        //       { $unset: {  "del.mnemonics": ""  }},
+        //     );
+        //     const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
 
-            await WalletUserModel.updateMany(
-              { id: u.id }, 
-              JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
-            );
+        //     await WalletUserModel.updateMany(
+        //       { id: u.id }, 
+        //       JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
+        //     );
 
-            await BalanceUserModel.updateOne(
-              { id: u.id}, 
-              JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
-            );
-          });
-          console.log(await WalletUserModel.find({}));
-        };
+        //     await BalanceUserModel.updateOne(
+        //       { id: u.id}, 
+        //       JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
+        //     );
+        //   });
+        //   console.log(await WalletUserModel.find({}));
+        // };
 
-        startTe();
+        // startTe();
         break;
       
       case 'Конвертация 🔄':
