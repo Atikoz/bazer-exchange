@@ -1,30 +1,50 @@
 const UserModel = require('../model/modelUser.js');
 const WalletUserModel = require('../model/modelWallet.js');
 const BalanceUserModel = require('../model/modelBalance.js');
-const CreateWallet = require('../function/createWallet.js')
+const CreateUsdtWallet = require('../function/createUsdtWallet.js');
+const createDecimalWallet = require('../function/createDecimalWallet.js');
+const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
+
 
 class AuthenticationService {
   async Authentication(userId) { 
     try {
       if (!await UserModel.findOne({id: userId})) {
-        const createWallet = await CreateWallet();
-        if (createWallet.status != 'ok') return this.Authentication(userId);
+        const createDelWallet = await createDecimalWallet();
+        const createUsdt = await CreateUsdtWallet();
+        const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
+        if (createDelWallet.status != 'ok') return this.Authentication(userId);
   
         await UserModel.create({
           id: userId,
           status: 0
         });
+
         await WalletUserModel.create({
           id: userId,
+          mnemonics: createDelWallet.del.mnemonics,
           del: {
-            address: createWallet.del.address,
-            mnemonics: createWallet.del.mnemonics,
+            address: createDelWallet.del.address,
           },
+          usdt: {
+            address: createUsdt.address,
+            privateKey: createUsdt.privateKey
+          },
+          minePlex: {
+            address: createMinePlex.data.keys.pkh,
+            sk: createMinePlex.data.keys.sk,
+            pk: createMinePlex.data.keys.pk
+          }
         });
+
         await BalanceUserModel.create({
           id: userId, 
-          main: { 
+          main: {
+            usdt: 0,
+            mine: 0,
+            plex: 0,
             del: 0,
+            ddao: 0,
             pro: 0,
             dar:0,
             sbt: 0,
@@ -85,8 +105,12 @@ class AuthenticationService {
             bazercoin: 0,
             bazerusd: 0
           },
-          hold: { 
+          hold: {
+            usdt: 0,
+            mine: 0,
+            plex: 0,
             del: 0,
+            ddao: 0,
             pro: 0,
             dar:0,
             sbt: 0,

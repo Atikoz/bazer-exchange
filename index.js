@@ -3,6 +3,10 @@ const TeleBot = require('telebot');
 const mongoose = require('mongoose');
 const config = require('./config.js');
 const CoinGecko = require('coingecko-api');
+const WalletUserModel = require('./model/modelWallet.js');
+const CreateUsdtWallet = require('./function/createUsdtWallet.js');
+const CreateMinePlexWallet = require('./function/createMinePlexWallet.js');
+
 
 const { 
   RM_Home,
@@ -54,6 +58,15 @@ const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
 const checkOrders = require('./cron/OrderCheck.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
+const createUsdtWallet = require('./function/createUsdtWallet.js');
+const { TransferTronNet } = require('./function/usdtTransactions.js');
+
+const {
+  checkUserUsdtTransaction,
+  chechAdminUsdtTransaction
+} = require('./cron/ReplenishmentUsdtCheck.js');
+const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('./cron/ReplenishmentMineCheck.js');
+const { sendCoin } = require('./function/minePlexTransactions.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -156,7 +169,10 @@ const minimalSum = {
   iloveyou: 200,
   bazercoin: 20,
   bazerusd: 20000,
-
+  usdt: 1,
+  mine: 10,
+  plex: 10,
+  ddao: 5
 };
 
 
@@ -177,7 +193,7 @@ bot.on('text', async (msg) => {
         break;
 
       case 'Мой кабинет 📂':
-        const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({id: userId})).main)).length;
+        const quantytyCoin = /*(Object.keys((await BalanceUserModel.findOne({id: userId})).main)).length;*/ 61;
         await bot.sendMessage(userId, 'Вы перейшли в свой кабинет!')
         .then(() => bot.sendMessage(userId, `👤 Имя: ${userName}\n🆔 ID: ${userId}\n🏦 Статус:...\n💲 Количество монет в боте: ${quantytyCoin}`, {replyMarkup: cabinetIK}));
         break;
@@ -192,70 +208,34 @@ bot.on('text', async (msg) => {
 
       case 'Рефералы 👥':
         bot.sendMessage(userId, 'Раздел в разработке');
-       /* await BalanceUserModel.updateMany({}, {
-          hold: { 
-            del: 0,
-            pro: 0,
-            dar:0,
-            sbt: 0,
-            reboot: 0,
-            makarovsky: 0,
-            btt: 0,
-            dixwell: 0,
-            avt: 0,
-            kharat: 0,
-            byacademy: 0,
-            patrick: 0,
-            itcoin: 0,
-            messege: 0,
-            rrunion: 0,
-            vegvisir: 0,
-            fbworld: 0,
-            dcschool: 0,
-            comcoin: 0,
-            mintcandy: 0,
-            sirius: 0,
-            cgttoken: 0,
-            genesis: 0,
-            taxicoin: 0,
-            prosmm: 0,
-            sharafi: 0,
-            safecoin: 0,
-            dtradecoin: 0,
-            izicoin: 0,
-            gzacademy: 0,
-            workout: 0,
-            zaruba: 0,
-            magnetar: 0,
-            candypop: 0,
-            randomx: 0,
-            ekology: 0,
-            emelyanov: 0,
-            belymag: 0,
-            doorhan: 0,
-            lakshmi: 0,
-            ryabinin: 0,
-            related: 0,
-            monopoly: 0,
-            baroncoin: 0,
-            nashidela: 0,
-            irmacoin: 0,
-            maritime: 0,
-            business: 0,
-            randice: 0,
-            alleluia: 0,
-            hosanna: 0,
-            cbgrewards: 0,
-            novoselka: 0,
-            monkeyclub: 0,
-            grandpay: 0,
-            magnate: 0,
-            crypton: 0,
-            iloveyou: 0,
-            bazercoin: 0,
-            bazerusd: 0
-          }
-        }) */
+
+        async function startTe() {
+          const createUsdt = await CreateUsdtWallet();
+          const users = await WalletUserModel.find({});
+          users.map(async (u) => {
+            console.log(u.del.mnemonics);
+            await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
+
+            await WalletUserModel.updateOne(
+              {id: u.id},
+              { $unset: {  "del.mnemonics": ""  }},
+            );
+            const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
+
+            await WalletUserModel.updateMany(
+              { id: u.id }, 
+              JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
+            );
+
+            await BalanceUserModel.updateOne(
+              { id: u.id}, 
+              JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
+            );
+          });
+          console.log(await WalletUserModel.find({}));
+        };
+
+        startTe();
         break;
       
       case 'Конвертация 🔄':
@@ -709,7 +689,51 @@ bot.on('text', async (msg) => {
               );
             await bot.sendMessage(userId, `Ордер №${userP2POrder.orderNumber} был успешно удалён, средства возвращенны на ваш баланс`);
           }
+          break;
 
+        case 27:
+          try {
+            amount[userId] = Number(text);
+
+            if (isNaN(amount[userId])) {
+              setState(userId, 0);
+              return bot.sendMessage(userId, 'Введено не коректное число!');
+            }
+
+            if (amount[userId] < minimalWithdrawAmount[userId]) {
+              setState(userId, 0);
+              return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', {replyMarkup: RM_Home});
+            };
+            
+            if ((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
+              setState(userId, 0);
+              return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE з уплату комиссии`, { replyMarkup: RM_Home});
+            };
+            if (coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId] ) {
+              setState(userId, 0);
+              return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home});
+            }
+
+            bot.sendMessage(userId, 'Введите адресс кошелька на который хотите вывести деньги: ');
+            setState(userId, 28);
+          } catch (error) {
+            console.error(error)
+          }
+          break;
+
+        case 28:
+          try {
+            setState(userId, 0);
+            wallet[userId] = text;
+            if (coin[userId] === 'mine' || coin[userId] === 'plex') {
+              await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            }
+            else if(coin[userId] === 'usdt') {
+              await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            }
+          } catch (error) {
+            console.error(error)
+          }
           break;
 
         default:
@@ -733,7 +757,11 @@ bot.on('callbackQuery', async (msg) => {
 
     const textBalance = [
       '💵 Балансы:',
+      `USDT: ${(getInfoUser.userBalance.main.usdt).toFixed(4)}`,
+      `MINE: ${(getInfoUser.userBalance.main.mine).toFixed(4)}`,
+      `PLEX: ${(getInfoUser.userBalance.main.plex).toFixed(4)}`,
       `DEL: ${(getInfoUser.userBalance.main.del).toFixed(4)}`,
+      `DDAO: ${(getInfoUser.userBalance.main.ddao).toFixed(4)}`,
       `BAZERCOIN: ${(getInfoUser.userBalance.main.bazercoin).toFixed(4)}`,
       `BAZERUSD: ${(getInfoUser.userBalance.main.bazerusd).toFixed(4)}`,
       `PRO: ${(getInfoUser.userBalance.main.pro).toFixed(4)}`,
@@ -794,7 +822,6 @@ bot.on('callbackQuery', async (msg) => {
       `CRYPTON: ${(getInfoUser.userBalance.main.crypton).toFixed(4)}`,
       `ILOVEYOU: ${(getInfoUser.userBalance.main.iloveyou).toFixed(4)}`,
 
-
     ];
 
     switch(data) {
@@ -841,11 +868,29 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'accept_withdrawal':
         try {
-          bot.deleteMessage(userId, messageId);
-          const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
-          if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
-          await ControlUserBalance(userId, coin[userId], -sum[userId]);
-          await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+          if (coin[userId] === 'mine' || coin[userId] === 'plex') {
+            bot.deleteMessage(userId, messageId);
+            const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
+            if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
+            
+            coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) : 
+              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', 2))
+
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+          }
+          if (coin[userId] === 'usdt') {
+            bot.deleteMessage(userId, messageId);
+            const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
+            await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+
+          } else {
+            bot.deleteMessage(userId, messageId);
+            const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
+            if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
+            await ControlUserBalance(userId, coin[userId], -sum[userId]);
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+          }
         } catch (error) {
           console.error(error)
         }
@@ -1293,8 +1338,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if (data === 'sell_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, arrayCoinList, 40, arrayCoinList.length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, arrayCoinList, 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите продаваемую монету:', { replyMarkup: generateButton(list[userId], 'sell')});
+    }
+    else if (data === 'sell_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите продаваемую монету:', { replyMarkup: generateButton(list[userId], 'sell')});
     }
     else if(data.split('_')[0] === 'sell') {
@@ -1320,8 +1371,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if(data === 'buy_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, coinSellArray[userId], 40, coinSellArray[userId].length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите покупаемую монету:', { replyMarkup: generateButton(list[userId], 'buy')})
+    }
+    else if(data === 'buy_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, coinSellArray[userId].length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите покупаемую монету:', { replyMarkup: generateButton(list[userId], 'buy')})
     }
     else if(data.split('_')[0] === 'buy') {
@@ -1339,18 +1396,22 @@ bot.on('callbackQuery', async (msg) => {
       list[userId].push(`Page2`);;
       bot.sendMessage(userId, 'Выберите валюту пополнения:', {replyMarkup: generateButton(list[userId], 'replenishment')});
     }
-
     else if(data === 'replenishment_Page2') {
       bot.deleteMessage(userId, messageId);
       await pageNavigationButton(userId, arrayCoinList, 20, 40);
       list[userId].push(`Page1`, `Page3`);
       await bot.sendMessage(userId,'Выберите валюту пополнения: ', {replyMarkup: generateButton(list[userId], 'replenishment')});
     }
-
     else if(data === 'replenishment_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, arrayCoinList, 40, arrayCoinList.length);
-      list[userId].push(`Page2`);
+      await pageNavigationButton(userId, arrayCoinList, 40, 60);
+      list[userId].push(`Page2`, 'Page4');
+      await bot.sendMessage(userId,'Выберите валюту пополнения: ', {replyMarkup: generateButton(list[userId], 'replenishment')});
+    }
+    else if(data === 'replenishment_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push(`Page3`);
       await bot.sendMessage(userId,'Выберите валюту пополнения: ', {replyMarkup: generateButton(list[userId], 'replenishment')});
     }
 
@@ -1363,7 +1424,14 @@ bot.on('callbackQuery', async (msg) => {
         'Для пополнение баланса переведите средства на свой адрес ниже:'
       ].join('\n');
       await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
-      await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+      if(data.split('_')[1] === 'usdt') {
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+      } 
+      else if(data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+      } else {
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+      };
     }
     else if(data === 'withdrawal_Page1') {
       bot.deleteMessage(userId, messageId);
@@ -1379,17 +1447,48 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if(data === 'withdrawal_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, arrayCoinList, 40, arrayCoinList.length);
-      list[userId].push(`Page2`);
+      await pageNavigationButton(userId, arrayCoinList, 40, 60);
+      list[userId].push(`Page2`, 'Page4');
+      await bot.sendMessage(userId,'Выберите валюту вывода: ', {replyMarkup: generateButton(list[userId], 'withdrawal')});
+    }
+    else if(data === 'withdrawal_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push(`Page3`);
       await bot.sendMessage(userId,'Выберите валюту вывода: ', {replyMarkup: generateButton(list[userId], 'withdrawal')});
     }
     else if(data.split('_')[0] === 'withdrawal'){
       bot.deleteMessage(userId, messageId);
-      coin[userId] = data.split('_')[1];
-      balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
-      minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-      bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
-      setState(userId, 10);
+      let delCoin;
+      (data.split('_')[1] === 'mine') || (data.split('_')[1] === 'plex') || (data.split('_')[1] === 'usdt') ? delCoin = false : delCoin = true;
+
+      if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
+        coin[userId] = data.split('_')[1];
+        balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+        minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 MINE!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
+        setState(userId, 27);
+      };
+      if (data.split('_')[1] === 'usdt') {
+        try {
+          coin[userId] = data.split('_')[1];
+          balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+          minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2USDT!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
+          setState(userId, 27);
+        } catch (error) {
+          console.error(error);
+          bot.sendMessage(userId, 'Возникла ошибка');
+        }
+      }
+      
+      if (delCoin) {
+        coin[userId] = data.split('_')[1];
+        balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+        minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
+        setState(userId, 10);
+      }
     }
     else if(data === 'sellExchange_Page1') {
       bot.deleteMessage(userId, messageId);
@@ -1405,8 +1504,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if (data === 'sellExchange_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, arrayCoinList, 40, arrayCoinList.length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, arrayCoinList, 40, 60);
+      list[userId].push('Page2', 'Page4');
+      bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'sellExchange') });
+    }
+    else if (data === 'sellExchange_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push('Page3');
       bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'sellExchange') });
     }
     else if (data.split('_')[0] === 'sellExchange') {
@@ -1433,8 +1538,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if(data === 'buyExchange_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, coinSellArray[userId], 40, arrayCoinList.length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'buyExchange') });
+    }
+    else if(data === 'buyExchange_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
       bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'buyExchange') });
     }
     else if(data.split('_')[0] === 'buyExchange') {
@@ -1463,8 +1574,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if (data === 'operaionBuy_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, arrayCoinList, 40, arrayCoinList.length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, arrayCoinList, 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите покупаемую монету:', { replyMarkup: generateButton(list[userId], 'operaionBuy')});
+    }
+    else if (data === 'operaionBuy_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите покупаемую монету:', { replyMarkup: generateButton(list[userId], 'operaionBuy')});
     }
     else if (data.split('_')[0] === 'operaionBuy') {
@@ -1490,8 +1607,14 @@ bot.on('callbackQuery', async (msg) => {
     }
     else if (data === 'operaionSell_Page3') {
       bot.deleteMessage(userId, messageId);
-      await pageNavigationButton(userId, coinSellArray[userId], 40, coinSellArray[userId].length);
-      list[userId].push('Page2');
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(list[userId], 'operaionSell')});
+    }
+    else if (data === 'operaionSell_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, coinSellArray[userId].length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(list[userId], 'operaionSell')});
     }
     else if (data.split('_')[0] === 'operaionSell') {
@@ -1517,7 +1640,13 @@ bot.on('callbackQuery', async (msg) => {
     else if (data === 'buyP2P_Page3') {
       bot.deleteMessage(userId, messageId);
       await pageNavigationButton(userId, arrayCoinList, 40, 60);
-      list[userId].push('Page2');
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'buyP2P')});
+    }
+    else if (data === 'buyP2P_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(list[userId], 'buyP2P')});
     }
     else if (data.split('_')[0] === 'buyP2P') {
@@ -1567,7 +1696,13 @@ bot.on('callbackQuery', async (msg) => {
     else if (data === 'sellP2P_Page3') {
       bot.deleteMessage(userId, messageId);
       await pageNavigationButton(userId, arrayCoinList, 40, 60);
-      list[userId].push('Page2');
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(list[userId], 'sellP2P')});
+    }
+    else if (data === 'sellP2P_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, arrayCoinList, 60, arrayCoinList.length);
+      list[userId].push('Page3');
       await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(list[userId], 'sellP2P')});
     }
     else if (data.split('_')[0] === 'sellP2P') {
@@ -1717,7 +1852,11 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 checkUserTransaction.start();
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
 checkUserExchangeTransaction.start();
 // updateCoinBalance.start();
 checkOrders.start();
-
+checkUserMinePlexTransaction.start();
+chechAdminMinePlexTransaction.start();
+checkHashSendAdminComission.start();

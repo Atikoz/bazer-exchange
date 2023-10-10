@@ -77,7 +77,7 @@ const bot = new TeleBot(token);
   iloveyou: 200,
   bazercoin: 20,
   bazerusd: 20000,
-
+  ddao: 5
 };
 
 class Replenishment {
@@ -102,7 +102,7 @@ class Replenishment {
           console.log('model user send created');
 
           const amount = ((await TransferCommission(
-            getInfoUser.userWallet.del.mnemonics, 
+            getInfoUser.userWallet.mnemonics, 
             decimalWallet, 
             getUserTransaction.data.result.txs[i].data.coin, 
             getUserTransaction.data.result.txs[i].data.amount/1e18
@@ -112,7 +112,7 @@ class Replenishment {
           console.log('commissiuion calculated');
 
           const moneyTransfer = await SendCoin(
-            getInfoUser.userWallet.del.mnemonics, 
+            getInfoUser.userWallet.mnemonics, 
             decimalWallet,
             getUserTransaction.data.result.txs[i].data.coin,
             getUserTransaction.data.result.txs[i].data.amount/1e18-amount

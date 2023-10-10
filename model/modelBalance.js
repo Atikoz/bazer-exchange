@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 const BalanceUserModel = mongoose.model('BalanceUsers', {
   id: Number,
   main: {
+    usdt: Number,
+    mine: Number,
+    plex: Number,
     del: Number,
+    ddao: Number,
     pro: Number,
     dar: Number,
     sbt: Number,
@@ -65,7 +69,11 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     bazerusd: Number
   },
   hold:{
+    usdt: Number,
+    mine: Number,
+    plex: Number,
     del: Number,
+    ddao: Number,
     pro: Number,
     dar: Number,
     sbt: Number,
