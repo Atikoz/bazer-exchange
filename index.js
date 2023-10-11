@@ -1417,22 +1417,27 @@ bot.on('callbackQuery', async (msg) => {
 
     else if(data.split('_')[0] === 'replenishment') {
       bot.deleteMessage(userId, messageId);
-      if (data.split('_')[1] === 'usdt') return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!')
-      const textReplenishment = [
-        `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
-        'Деньги прийдут в течении 10 минут.',
-        `Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}.`,
-        'Для пополнение баланса переведите средства на свой адрес ниже:'
-      ].join('\n');
-      await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
+      console.log(`coin: ${data.split('_')[1]}`);
+      console.log(data.split('_')[1] === 'usdt');
       if (data.split('_')[1] === 'usdt') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
-      } 
-      else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!')
       } else {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
-      };
+        const textReplenishment = [
+          `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
+          'Деньги прийдут в течении 10 минут.',
+          `Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}.`,
+          'Для пополнение баланса переведите средства на свой адрес ниже:'
+        ].join('\n');
+        await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
+        if (data.split('_')[1] === 'usdt') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        } 
+        else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        } else {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        };
+      }
     }
     else if(data === 'withdrawal_Page1') {
       bot.deleteMessage(userId, messageId);
