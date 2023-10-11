@@ -209,33 +209,33 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        // async function startTe() {
-        //   const createUsdt = await CreateUsdtWallet();
-        //   const users = await WalletUserModel.find({});
-        //   users.map(async (u) => {
-        //     console.log(u.mnemonics);
-        //     await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
+        async function startTe() {
+          const createUsdt = await CreateUsdtWallet();
+          const users = await WalletUserModel.find({});
+          users.map(async (u) => {
+            console.log(u.del.mnemonics);
+            await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
 
-        //     await WalletUserModel.updateOne(
-        //       {id: u.id},
-        //       { $unset: {  "del.mnemonics": ""  }},
-        //     );
-        //     const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
+            await WalletUserModel.updateOne(
+              {id: u.id},
+              { $unset: {  "del.mnemonics": ""  }},
+            );
+            const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
 
-        //     await WalletUserModel.updateMany(
-        //       { id: u.id }, 
-        //       JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
-        //     );
+            await WalletUserModel.updateMany(
+              { id: u.id }, 
+              JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
+            );
 
-        //     await BalanceUserModel.updateOne(
-        //       { id: u.id}, 
-        //       JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
-        //     );
-        //   });
-        //   console.log(await WalletUserModel.find({}));
-        // };
+            await BalanceUserModel.updateOne(
+              { id: u.id}, 
+              JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
+            );
+          });
+          console.log(await WalletUserModel.find({}));
+        };
 
-        // startTe();
+        startTe();
         break;
       
       case 'Конвертация 🔄':
@@ -1417,6 +1417,7 @@ bot.on('callbackQuery', async (msg) => {
 
     else if(data.split('_')[0] === 'replenishment') {
       bot.deleteMessage(userId, messageId);
+      if (data.split('_')[1] === 'usdt') return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!')
       const textReplenishment = [
         `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
         'Деньги прийдут в течении 10 минут.',
@@ -1424,10 +1425,10 @@ bot.on('callbackQuery', async (msg) => {
         'Для пополнение баланса переведите средства на свой адрес ниже:'
       ].join('\n');
       await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
-      if(data.split('_')[1] === 'usdt') {
+      if (data.split('_')[1] === 'usdt') {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
       } 
-      else if(data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
+      else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
       } else {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
@@ -1852,8 +1853,8 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 checkUserTransaction.start();
-checkUserUsdtTransaction.start();
-chechAdminUsdtTransaction.start();
+// checkUserUsdtTransaction.start();
+// chechAdminUsdtTransaction.start();
 checkUserExchangeTransaction.start();
 // updateCoinBalance.start();
 checkOrders.start();
