@@ -10,10 +10,9 @@ function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms)); }
 const checkUserUsdtTransaction = new CronJob('0 */1 * * * *', async () => {
   try {
     const wallets = await WalletUserModel.find({});
-    console.log(wallets);
+    
       for (let i = 0; i < wallets.length; i++) {
         await ReplenishmentUserWalletUSDT(wallets[i].id);
-        console.log('check wallet user id', wallets[i].id);
       }
   } catch (error) {
     console.error(error)
