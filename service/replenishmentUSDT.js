@@ -17,11 +17,13 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      const userTransaction = await sleep(3000).then( async () => await getTransaction(userUsdtAdress));
+      const userTransaction = await sleep(2000).then( async () => await getTransaction(userUsdtAdress));
+      console.log(userTransaction);
 
       if (userTransaction.length === 0) return;
 
       for (let i = 0; i < userTransaction.length; i++) {
+        console.log('cool');
         const examinationIf = !await UsdtReplenishment.findOne({hash: userTransaction[i].hash}) && userTransaction[i].coin === 'usdt' && userTransaction[i].amount >= 1 && userTransaction[i].status === 'SUCCESS' && userTransaction[i].sender !== userUsdtAdress;
         if (examinationIf) {
           console.log('transaction processed');
