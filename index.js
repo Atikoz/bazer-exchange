@@ -1419,9 +1419,9 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId, messageId);
       console.log(`coin: ${data.split('_')[1]}`);
       console.log(data.split('_')[1] === 'usdt');
-      if (data.split('_')[1] === 'usdt') {
-        return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!')
-      } else {
+      // if (data.split('_')[1] === 'usdt') {
+      //   return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!')
+      // } else {
         const textReplenishment = [
           `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
           'Деньги прийдут в течении 10 минут.',
@@ -1438,7 +1438,7 @@ bot.on('callbackQuery', async (msg) => {
           await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
         };
       }
-    }
+    
     else if(data === 'withdrawal_Page1') {
       bot.deleteMessage(userId, messageId);
       await pageNavigationButton(userId, arrayCoinList, 0, 20);
@@ -1858,8 +1858,8 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 checkUserTransaction.start();
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
 checkUserExchangeTransaction.start();
 // updateCoinBalance.start();
 checkOrders.start();
