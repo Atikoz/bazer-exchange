@@ -9,7 +9,6 @@ const getBalanceAddressTronNet = async (address) => {
   try {
     const options = {
       method: 'get',
-      maxBodyLength: Infinity,
       url: `https://tron.p2p.bazerwallet.com/tron-client/api/v1/getBalance?address=${address}`,
       headers: { }
     };
@@ -112,7 +111,6 @@ const getTransaction = async (address) => {
     });
 
     const transactions = response.data.data.token_transfers;
-    console.log(response);
     console.log( `response: `, response.data);
     console.log( `количество транзакций: ${transactions.length}`);
     if (transactions.length === 0) return getTransactionsData;
