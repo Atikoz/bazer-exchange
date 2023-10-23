@@ -65,6 +65,7 @@ const {
 } = require('./cron/ReplenishmentUsdtCheck.js');
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('./cron/ReplenishmentMineCheck.js');
 const { sendCoin } = require('./function/minePlexTransactions.js');
+const MinePlexReplenishment = require('./model/modelMinePlexReplenishment.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -212,26 +213,28 @@ bot.on('text', async (msg) => {
         async function startTe() {
           try {
             const users = await WalletUserModel.find({});
-            users.map(async (u) => {
+            // users.map(async (u) => {
             // await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
 
             // await WalletUserModel.updateOne(
             //   {id: u.id},
             //   { $unset: {  "del.mnemonics": ""  }},
             // );
-            const createMpxXfi = await CreateMpxXfiWallet(u.mnemonics);
+            // const createMpxXfi = await CreateMpxXfiWallet(u.mnemonics);
 
-            await WalletUserModel.updateMany(
-              { id: u.id }, 
-              JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
-            );
+            // await WalletUserModel.updateMany(
+            //   { id: u.id }, 
+            //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
+            // );
 
-            await BalanceUserModel.updateOne(
-              { id: u.id}, 
-              JSON.parse(`{ "$inc" : { "main.mpx": "0", "main.xfi": "0", "hold.mpx": "0", "hold.xfi": "0"} }`)
-            );
-            });
-            console.log(await WalletUserModel.find({}));
+            // await BalanceUserModel.updateOne(
+            //   { id: u.id}, 
+            //   JSON.parse(`{ "$inc" : { "main.mpx": "0", "main.xfi": "0", "hold.mpx": "0", "hold.xfi": "0"} }`)
+            // );
+            // });
+            // console.log(await WalletUserModel.find({}));
+
+            await MinePlexReplenishment.deleteOne({hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq'})
           } catch (error) {
             console.error(error)
           }
