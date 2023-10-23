@@ -15,6 +15,9 @@ const WalletUserModel = mongoose.model('WalletUsers', {
     address: String,
     sk: String,
     pk: String
+  },
+  mpxXfi: {
+    address: String
   }
 
 

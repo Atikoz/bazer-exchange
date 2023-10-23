@@ -2,9 +2,9 @@ const axios = require ('axios');
 
 async function CreateMinePlexWallet(mnemonic) {
   try {
+    console.log(mnemonic);
     const createWallet = await axios({
       method: 'post',
-      maxBodyLength: Infinity,
       url: 'https://mineplexapi.bazerwallet.com/mineplex/api/v1/generateKeys',
       headers: { 
         'Content-Type': 'application/x-www-form-urlencoded'

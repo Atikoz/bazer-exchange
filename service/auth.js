@@ -4,6 +4,8 @@ const BalanceUserModel = require('../model/modelBalance.js');
 const CreateUsdtWallet = require('../function/createUsdtWallet.js');
 const createDecimalWallet = require('../function/createDecimalWallet.js');
 const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
+const createMpxXfiWallet = require('../function/createMpxXfiWallet.js');
+
 
 
 class AuthenticationService {
@@ -13,6 +15,7 @@ class AuthenticationService {
         const createDelWallet = await createDecimalWallet();
         const createUsdt = await CreateUsdtWallet();
         const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
+        const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
         if (createDelWallet.status != 'ok') return this.Authentication(userId);
   
         await UserModel.create({
@@ -34,7 +37,11 @@ class AuthenticationService {
             address: createMinePlex.data.keys.pkh,
             sk: createMinePlex.data.keys.sk,
             pk: createMinePlex.data.keys.pk
+          },
+          mpxXfi: {
+            address: createMpxXfi.data.account.address
           }
+
         });
 
         await BalanceUserModel.create({
@@ -43,6 +50,8 @@ class AuthenticationService {
             usdt: 0,
             mine: 0,
             plex: 0,
+            mpx: 0,
+            xfi: 0,
             del: 0,
             ddao: 0,
             pro: 0,
@@ -109,6 +118,8 @@ class AuthenticationService {
             usdt: 0,
             mine: 0,
             plex: 0,
+            mpx: 0,
+            xfi: 0,
             del: 0,
             ddao: 0,
             pro: 0,

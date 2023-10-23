@@ -4,8 +4,7 @@ const mongoose = require('mongoose');
 const config = require('./config.js');
 const CoinGecko = require('coingecko-api');
 const WalletUserModel = require('./model/modelWallet.js');
-const CreateUsdtWallet = require('./function/createUsdtWallet.js');
-const CreateMinePlexWallet = require('./function/createMinePlexWallet.js');
+const CreateMpxXfiWallet = require('./function/createMpxXfiWallet.js');
 
 
 const { 
@@ -58,7 +57,6 @@ const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
 const checkOrders = require('./cron/OrderCheck.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
-const createUsdtWallet = require('./function/createUsdtWallet.js');
 const { TransferTronNet } = require('./function/usdtTransactions.js');
 
 const {
@@ -172,7 +170,9 @@ const minimalSum = {
   usdt: 1,
   mine: 10,
   plex: 10,
-  ddao: 5
+  ddao: 5,
+  mpx: 1,
+  xfi: 1
 };
 
 
@@ -209,33 +209,35 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        // async function startTe() {
-        //   const createUsdt = await CreateUsdtWallet();
-        //   const users = await WalletUserModel.find({});
-        //   users.map(async (u) => {
-        //     console.log(u.del.mnemonics);
-        //     await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
+        async function startTe() {
+          try {
+            const users = await WalletUserModel.find({});
+            users.map(async (u) => {
+            // await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
 
-        //     await WalletUserModel.updateOne(
-        //       {id: u.id},
-        //       { $unset: {  "del.mnemonics": ""  }},
-        //     );
-        //     const createMinePlex = await CreateMinePlexWallet(u.mnemonics);
+            // await WalletUserModel.updateOne(
+            //   {id: u.id},
+            //   { $unset: {  "del.mnemonics": ""  }},
+            // );
+            const createMpxXfi = await CreateMpxXfiWallet(u.mnemonics);
 
-        //     await WalletUserModel.updateMany(
-        //       { id: u.id }, 
-        //       JSON.parse(`{ "$set" : { "minePlex.address": "${createMinePlex.data.keys.pkh}", "minePlex.sk": "${createMinePlex.data.keys.sk}", "minePlex.pk": "${createMinePlex.data.keys.pk}", "usdt.address": "${createUsdt.address}", "usdt.privateKey": "${createUsdt.privateKey}" } }`)
-        //     );
+            await WalletUserModel.updateMany(
+              { id: u.id }, 
+              JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
+            );
 
-        //     await BalanceUserModel.updateOne(
-        //       { id: u.id}, 
-        //       JSON.parse(`{ "$inc" : { "main.usdt": "0", "main.mine": "0", "main.plex": "0", "main.ddao": "0", "hold.usdt": "0", "hold.mine": "0", "hold.plex": "0", "hold.ddao": "0"} }`)
-        //     );
-        //   });
-        //   console.log(await WalletUserModel.find({}));
-        // };
+            await BalanceUserModel.updateOne(
+              { id: u.id}, 
+              JSON.parse(`{ "$inc" : { "main.mpx": "0", "main.xfi": "0", "hold.mpx": "0", "hold.xfi": "0"} }`)
+            );
+            });
+            console.log(await WalletUserModel.find({}));
+          } catch (error) {
+            console.error(error)
+          }
+        };
 
-        // startTe();
+        startTe();
         break;
       
       case 'Конвертация 🔄':
@@ -760,6 +762,8 @@ bot.on('callbackQuery', async (msg) => {
       `USDT: ${(getInfoUser.userBalance.main.usdt).toFixed(4)}`,
       `MINE: ${(getInfoUser.userBalance.main.mine).toFixed(4)}`,
       `PLEX: ${(getInfoUser.userBalance.main.plex).toFixed(4)}`,
+      `MPX: ${(getInfoUser.userBalance.main.mpx).toFixed(4)}`,
+      `XFI: ${(getInfoUser.userBalance.main.xfi).toFixed(4)}`,
       `DEL: ${(getInfoUser.userBalance.main.del).toFixed(4)}`,
       `DDAO: ${(getInfoUser.userBalance.main.ddao).toFixed(4)}`,
       `BAZERCOIN: ${(getInfoUser.userBalance.main.bazercoin).toFixed(4)}`,

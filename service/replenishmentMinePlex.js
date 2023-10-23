@@ -25,6 +25,12 @@ class ReplenishmentMinePlex {
     try {
       if (userTransaction.data.length === 0) return
 
+      console.log(await MinePlexReplenishment.find({}));
+      console.log('----0------0-------0------0------');
+      console.log(await HashSendAdminComission.find({}));
+      
+
+
       for(let i = 0; i < userTransaction.data.length; i++) {
 
         const examinationIf = 
@@ -47,10 +53,10 @@ class ReplenishmentMinePlex {
           console.log(balanceMine);
           
           if (userTransaction.data[i].type === 'plex' && balanceMine < 1) {
-            const hashTransfferComission = (await sendCoin(config.adminMinePlexSk, userWallet, 1, 'mine')).data.transaction.hash;
+            const hashTransferComission = (await sendCoin(config.adminMinePlexSk, userWallet, 1, 'mine')).data.transaction.hash;
             await HashSendAdminComission.create({
               id: userId,
-              hash: hashTransfferComission,
+              hash: hashTransferComission,
               status: 'comission-send-user-wallet',
               amount: userTransaction.data[i].amount,
               coin: userTransaction.data[i].type
@@ -63,7 +69,7 @@ class ReplenishmentMinePlex {
           
           let hashTransactionAdminWallet;
 
-          if(userTransaction.data[i].type === 'mine') {
+          if (userTransaction.data[i].type === 'mine') {
             hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, userTransaction.data[i].amount - 1, userTransaction.data[i].type)).data.transaction.hash;
             console.log('mine send admin wallet');
           } else {
