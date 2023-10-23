@@ -66,6 +66,7 @@ const {
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('./cron/ReplenishmentMineCheck.js');
 const { sendCoin } = require('./function/minePlexTransactions.js');
 const MinePlexReplenishment = require('./model/modelMinePlexReplenishment.js');
+const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('./cron/ReplenishmentMpxXfiCheck.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -1873,3 +1874,5 @@ checkOrders.start();
 checkUserMinePlexTransaction.start();
 chechAdminMinePlexTransaction.start();
 checkHashSendAdminComission.start();
+checkUserMpxXfiTransaction.start();
+checkAdminMpxXfiTransaction.start();

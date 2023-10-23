@@ -31,7 +31,7 @@ const CheckTransactionHash = async (hash) => {
     return axios.request(config)
     .then((response) => {
       console.log(JSON.stringify(response.data));
-      return response.data
+      return response.data.data.txhash
     })
   } catch (error) {
     console.error(error)

@@ -6,6 +6,8 @@ const config = require('../config.js');
 const TransactionMinePlextStatus = require('../model/modelMinePlexStatusTransactions.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
+const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
+const { SendCoin, CheckTransactionHash } = require('../function/MpxXfiTransactions.js');
 
 
 const bot = new TeleBot(config.token);
@@ -121,29 +123,54 @@ class ReplenishmentMinePlex {
       if (transaction.status === 'Done') return
 
       console.log(transaction);
-
       const getInfoUser = await UserManagement.getInfoUser(transaction.id);
-      const userKey = getInfoUser.userWallet.minePlex.sk;
 
-      const checkTransaction = await checkHashSendAdminComission(transaction.hash);
-      if(checkTransaction) {
 
-        await HashSendAdminComission.updateOne(
-          {hash: transaction.hash},
-          {status: 'Done'}
-        );
+      if (transaction.coin === 'mine' || transaction.coin === 'plex') {
+        const userKey = getInfoUser.userWallet.minePlex.sk;
 
-        const hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, transaction.amount, transaction.coin)).data.transaction.hash;
+        const checkTransaction = await checkHashSendAdminComission(transaction.hash);
+        if(checkTransaction) {
 
-        await TransactionMinePlextStatus.create({
-          id: transaction.id,
-          coin: transaction.coin,
-          hash: hashTransactionAdminWallet,
-          status: 'SendAdminWallet',
-          amount: transaction.amount,
-          processed: false
-        });
-        console.log('model send admin wallet created');
+          await HashSendAdminComission.updateOne(
+            {hash: transaction.hash},
+            {status: 'Done'}
+          );
+
+          const hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, transaction.amount, transaction.coin)).data.transaction.hash;
+
+          await TransactionMinePlextStatus.create({
+            id: transaction.id,
+            coin: transaction.coin,
+            hash: hashTransactionAdminWallet,
+            status: 'SendAdminWallet',
+            amount: transaction.amount,
+            processed: false
+          });
+          console.log('model send admin wallet created');
+        }
+      } else {
+        const userMnemonic = getInfoUser.userWallet.mnemonics;
+
+        const chechTransaction = await CheckTransactionHash(hash);
+
+        if (chechTransaction) {
+          await HashSendAdminComission.updateOne(
+            {hash: transaction.hash},
+            {status: 'Done'}
+          );
+
+          const hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
+
+          await TransactionMpxXfiStatus.create({
+            id: transaction.id,
+            coin: transaction.coin,
+            hash: hashTransactionAdminWallet,
+            status: 'Send-Admin-Wallet',
+            amount: transaction.hash,
+            processed: false,
+          });
+        };
       }
     } catch (error) {
       console.error(error)

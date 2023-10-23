@@ -2,12 +2,10 @@ const TeleBot = require('telebot');
 const config = require('../config.js');
 const UserManagement = require('./userManagement.js');
 const BalanceUserModel = require('../model/modelBalance.js');
-const { getMpxXfiTransactions, CheckBalance, SendCoin } = require('../function/MpxXfiTransactions.js');
+const { getMpxXfiTransactions, CheckBalance, SendCoin, CheckTransactionHash } = require('../function/MpxXfiTransactions.js');
 const MpxXfiReplenishment = require('../model/modelMpxXfiReplenishment.js');
 const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
-
-
 
 const bot = new TeleBot(config.token);
 
@@ -33,6 +31,7 @@ class ReplenishmentMpxXfi {
         const examinationIf = 
           (!await MpxXfiReplenishment.findOne({hash: userTransaction[i].txhash})) &&
           !(userTransaction[i].tx.body.messages[0].from_address === userWallet) &&
+          ((userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18) > minimalReplenishment[coin]) &&
           (coin === 'mpx' || coin === 'xfi');
 
         if (examinationIf) {
@@ -93,7 +92,68 @@ class ReplenishmentMpxXfi {
     }
   };
 
-  
+  // async CheckCommissionTransactionAmin(transaction) {
+  //   try {
+  //     if (transaction.status === 'Done') return
 
+  //     console.log(transaction);
 
-}
+  //     const getInfoUser = await UserManagement.getInfoUser(transaction.id);
+  //     const userMnemonic = getInfoUser.userWallet.mnemonics;
+
+  //     const chechTransaction = await CheckTransactionHash(hash);
+
+  //     if (chechTransaction) {
+  //       await HashSendAdminComission.updateOne(
+  //         {hash: transaction.hash},
+  //         {status: 'Done'}
+  //       );
+
+  //       const hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
+
+  //       await TransactionMpxXfiStatus.create({
+  //         id: transaction.id,
+  //         coin: transaction.coin,
+  //         hash: hashTransactionAdminWallet,
+  //         status: 'Send-Admin-Wallet',
+  //         amount: transaction.hash,
+  //         processed: false,
+  //       });
+  //     };
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  async CheckMinePlexTransactionAmin(replenishment) {
+    try {
+      if (replenishment.status === 'Done' && replenishment.processed) return
+
+      const adminTransaction = await getMpxXfiTransactions(config.adminWalletMpxXfi);
+
+      if (adminTransaction.length === 0) return
+
+      for (let i = 0; i < adminTransaction.length; i++) {
+
+        if (adminTransaction.data[i].operationHash === replenishment.hash) {
+
+          await TransactionMpxXfiStatus.updateOne(
+            {hash: replenishment.hash},
+            {status: 'Done', processed: true}
+          );
+
+          await BalanceUserModel.updateOne(
+            {id: replenishment.id},
+            JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
+          );
+
+          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`)
+        }
+      };
+    } catch (error) {
+      console.error(error)
+    }
+  }
+};
+
+module.exports = new ReplenishmentMpxXfi;
