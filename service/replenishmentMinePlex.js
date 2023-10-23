@@ -7,7 +7,7 @@ const TransactionMinePlextStatus = require('../model/modelMinePlexStatusTransact
 const BalanceUserModel = require('../model/modelBalance.js');
 const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
-const { SendCoin, CheckTransactionHash } = require('../function/MpxXfiTransactions.js');
+const { SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactions.js');
 
 const bot = new TeleBot(config.token);
 
