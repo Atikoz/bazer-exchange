@@ -9,7 +9,6 @@ const HashSendAdminComission = require('../model/modelHashSendAdminComission.js'
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
 const { SendCoin, CheckTransactionHash } = require('../function/MpxXfiTransactions.js');
 
-
 const bot = new TeleBot(config.token);
 
 const minimalReplenishment = {
