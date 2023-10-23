@@ -122,7 +122,6 @@ class ReplenishmentMinePlex {
     try {
       if (transaction.status === 'Done') return
 
-      console.log(transaction);
       const getInfoUser = await UserManagement.getInfoUser(transaction.id);
 
 
@@ -152,7 +151,7 @@ class ReplenishmentMinePlex {
       } else {
         const userMnemonic = getInfoUser.userWallet.mnemonics;
 
-        const chechTransaction = await CheckTransactionHash(hash);
+        const chechTransaction = await CheckTransactionHash(transaction.hash);
 
         if (chechTransaction) {
           await HashSendAdminComission.updateOne(
@@ -167,7 +166,7 @@ class ReplenishmentMinePlex {
             coin: transaction.coin,
             hash: hashTransactionAdminWallet,
             status: 'Send-Admin-Wallet',
-            amount: transaction.hash,
+            amount: transaction.amount,
             processed: false,
           });
         };

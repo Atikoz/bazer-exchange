@@ -1442,6 +1442,9 @@ bot.on('callbackQuery', async (msg) => {
         } 
         else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
           await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        }
+        else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.mpxXfi.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
         } else {
           await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
         };

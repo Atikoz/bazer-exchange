@@ -27,11 +27,12 @@ class ReplenishmentMpxXfi {
       for (let i = 0; i < userTransaction.length; i++) {
 
         const coin = userTransaction[i].tx.body.messages[0].amount[0].denom;
-        console.log('coin:', coin);
+
         const examinationIf = 
           (!await MpxXfiReplenishment.findOne({hash: userTransaction[i].txhash})) &&
           !(userTransaction[i].tx.body.messages[0].from_address === userWallet) &&
-          ((userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18) > minimalReplenishment[coin]) &&
+          !(userTransaction[i].tx.body.messages[0].to_address === config.adminWalletMpxXfi) &&
+          ((userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18) >= minimalReplenishment[coin]) &&
           (coin === 'mpx' || coin === 'xfi');
 
         if (examinationIf) {
@@ -44,12 +45,12 @@ class ReplenishmentMpxXfi {
           });
           console.log('model user send created');
 
-          const balanceMpx = (await CheckBalance(userWallet))[0].amount;
+          const balanceMpx = await CheckBalance(userWallet);
           const amount = userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18;
           console.log('BLANCE MPX:', balanceMpx);
 
           if (coin === 'xfi' && balanceMpx < 1) {
-            const hashTransferComission = await SendCoin(config.adminMnemonicMinePlex, userWallet, coin, amount);
+            const hashTransferComission = await SendCoin(config.adminMnemonicMinePlex, userWallet, 'mpx', 1);
 
             await HashSendAdminComission.create({
             id: userId,
@@ -127,6 +128,7 @@ class ReplenishmentMpxXfi {
 
   async CheckMinePlexTransactionAmin(replenishment) {
     try {
+
       if (replenishment.status === 'Done' && replenishment.processed) return
 
       const adminTransaction = await getMpxXfiTransactions(config.adminWalletMpxXfi);
@@ -135,7 +137,7 @@ class ReplenishmentMpxXfi {
 
       for (let i = 0; i < adminTransaction.length; i++) {
 
-        if (adminTransaction.data[i].operationHash === replenishment.hash) {
+        if (adminTransaction[i].txhash === replenishment.hash) {
 
           await TransactionMpxXfiStatus.updateOne(
             {hash: replenishment.hash},

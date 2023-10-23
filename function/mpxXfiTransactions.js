@@ -12,7 +12,6 @@ const getMpxXfiTransactions = async (wallet) => {
     
     return axios.request(config)
     .then((response) => {
-      console.log(JSON.stringify(response.data));
       return response.data.data.txs
     })
   } catch (error) {
@@ -30,7 +29,7 @@ const CheckTransactionHash = async (hash) => {
     
     return axios.request(config)
     .then((response) => {
-      console.log(JSON.stringify(response.data));
+      console.log(response.data);
       return response.data.data.txhash
     })
   } catch (error) {
@@ -48,20 +47,17 @@ const CheckBalance = async (wallet) => {
     
     return axios.request(config)
     .then((response) => {
-      console.log(JSON.stringify(response.data));
+      console.log(response.data);
 
-      if ('error' in response.data.ERROR) {
-        return [{
-          denom: "mpx",
-          amount: 0
-      },
-      {
-          denom: "xfi",
-          amount: 0
-      }]
+      if (response.status === "ok" && response.data && response.data.ERROR) return 0
+      
+      if (response.status === "ok" && response.data && response.data.data.coins.denom[0].mpx) {
+        console.log('mpx est')
+        return response.data.data.coins.denom[0].mpx
+      } else {
+        console.log('balans ne pustoy, no mpx net');
+        return 0
       }
-
-      return response.data.data.coins
     })
   } catch (error) {
     console.error(error)
@@ -90,7 +86,7 @@ const SendCoin = async (senderMnemonic, resiverWallet, coin, amount) => {
     
     return axios.request(config)
     .then((response) => {
-      console.log(JSON.stringify(response.data));
+      console.log(response.data.data.txhash);
       return response.data.data.transactionHash;
     })
   } catch (error) {
