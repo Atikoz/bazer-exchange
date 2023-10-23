@@ -111,8 +111,8 @@ const getTransaction = async (address) => {
     });
 
     const transactions = response.data.data.token_transfers;
-    console.log( `кошелек: `, address);
-    console.log( `количество транзакций: ${transactions.length}`);
+    // console.log( `кошелек: `, address);
+    // console.log( `количество транзакций: ${transactions.length}`);
     if (transactions.length === 0) return getTransactionsData;
   
     await Promise.all(transactions.map(transaction => {

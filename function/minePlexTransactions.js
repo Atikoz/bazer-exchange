@@ -26,6 +26,8 @@ const checkHashSendAdminComission = async (hash) => {
       headers: { }
     })
 
+    console.log(chekHash.data);
+
     return chekHash.data.data[0].operationHash
 
   } catch (error) {

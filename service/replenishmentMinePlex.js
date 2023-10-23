@@ -25,12 +25,6 @@ class ReplenishmentMinePlex {
     try {
       if (userTransaction.data.length === 0) return
 
-      console.log(await MinePlexReplenishment.find({}));
-      console.log('----0------0-------0------0------');
-      console.log(await HashSendAdminComission.find({}));
-      
-
-
       for(let i = 0; i < userTransaction.data.length; i++) {
 
         const examinationIf = 
