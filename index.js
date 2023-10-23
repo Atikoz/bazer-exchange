@@ -210,9 +210,9 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          try {
-            const users = await WalletUserModel.find({});
+        // async function startTe() {
+        //   try {
+        //     const users = await WalletUserModel.find({});
             // users.map(async (u) => {
             // await WalletUserModel.updateOne({ id: u.id}, { $set: { mnemonics: u.del.mnemonics } });
 
@@ -234,13 +234,13 @@ bot.on('text', async (msg) => {
             // });
             // console.log(await WalletUserModel.find({}));
 
-            await MinePlexReplenishment.deleteOne({hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq'})
-          } catch (error) {
-            console.error(error)
-          }
-        };
+            // await MinePlexReplenishment.deleteOne({hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq'})
+        //   } catch (error) {
+        //     console.error(error)
+        //   }
+        // };
 
-        startTe();
+        // startTe();
         break;
       
       case 'Конвертация 🔄':
