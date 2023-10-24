@@ -65,7 +65,9 @@ const {
 } = require('./cron/ReplenishmentUsdtCheck.js');
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('./cron/ReplenishmentMineCheck.js');
 const { sendCoin } = require('./function/minePlexTransactions.js');
-const MinePlexReplenishment = require('./model/modelMinePlexReplenishment.js');
+const ReplenishmentMpxXfi = require('./function/mpxXfiTransactions.js');
+const SendMpxXfi = ReplenishmentMpxXfi.SendCoin;
+
 const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('./cron/ReplenishmentMpxXfiCheck.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -169,11 +171,11 @@ const minimalSum = {
   iloveyou: 200,
   bazercoin: 20,
   bazerusd: 20000,
-  usdt: 1,
+  usdt: 5,
   mine: 10,
   plex: 10,
   ddao: 5,
-  mpx: 1,
+  mpx: 10,
   xfi: 1
 };
 
@@ -718,7 +720,11 @@ bot.on('text', async (msg) => {
             if (coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId] ) {
               setState(userId, 0);
               return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home});
-            }
+            };
+            if ((coin[userId] === 'xfi' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mpx < 2) || (coin[userId] === 'mpx' && (amount[userId] + 2) > balanceUserCoin[userId])) {
+              setState(userId, 0);
+              return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX з уплату комиссии`, { replyMarkup: RM_Home});
+            };
 
             bot.sendMessage(userId, 'Введите адресс кошелька на который хотите вывести деньги: ');
             setState(userId, 28);
@@ -731,11 +737,20 @@ bot.on('text', async (msg) => {
           try {
             setState(userId, 0);
             wallet[userId] = text;
-            if (coin[userId] === 'mine' || coin[userId] === 'plex') {
+            if (coin[userId] === 'mine') {
               await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            }
+            else if (coin[userId] === 'plex') {
+              await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
             }
             else if(coin[userId] === 'usdt') {
               await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            }
+            else if (coin[userId] === 'mpx') {
+              await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            }
+            else if (coin[userId] === 'xfi') {
+              await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
             }
           } catch (error) {
             console.error(error)
@@ -877,27 +892,44 @@ bot.on('callbackQuery', async (msg) => {
       case 'accept_withdrawal':
         try {
           if (coin[userId] === 'mine' || coin[userId] === 'plex') {
-            bot.deleteMessage(userId, messageId);
-            const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
-            if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
-            
-            coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) : 
-              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', 2))
-
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+            try {
+              bot.deleteMessage(userId, messageId);
+              const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
+              if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
+              coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) : 
+                (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', -2))
+              return await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+            } catch (error) {
+              console.error(error)
+            };
+          }
+          if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
+            try {
+              bot.deleteMessage(userId, messageId);
+              const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
+              coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) : 
+                (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
+              return await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMpxXfi}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});              
+            } catch (error) {
+              console.error(error);
+              bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
+            }
           }
           if (coin[userId] === 'usdt') {
-            bot.deleteMessage(userId, messageId);
-            const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
-            await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
-
+            try {
+              bot.deleteMessage(userId, messageId);
+              const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
+              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
+              return await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+            } catch (error) {
+              console.error(error)
+            };
           } else {
             bot.deleteMessage(userId, messageId);
             const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
             if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home});
             await ControlUserBalance(userId, coin[userId], -sum[userId]);
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
+            return await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html'});
           }
         } catch (error) {
           console.error(error)
@@ -1477,7 +1509,7 @@ bot.on('callbackQuery', async (msg) => {
     else if(data.split('_')[0] === 'withdrawal'){
       bot.deleteMessage(userId, messageId);
       let delCoin;
-      (data.split('_')[1] === 'mine') || (data.split('_')[1] === 'plex') || (data.split('_')[1] === 'usdt') ? delCoin = false : delCoin = true;
+      (data.split('_')[1] === 'mine') || (data.split('_')[1] === 'plex') || (data.split('_')[1] === 'usdt') || (data.split('_')[1] === 'mpx') || (data.split('_')[1] === 'xfi') ? delCoin = false : delCoin = true;
 
       if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
         coin[userId] = data.split('_')[1];
@@ -1491,7 +1523,19 @@ bot.on('callbackQuery', async (msg) => {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2USDT!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
+          setState(userId, 27);
+        } catch (error) {
+          console.error(error);
+          bot.sendMessage(userId, 'Возникла ошибка');
+        }
+      }
+      else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
+        try {
+          coin[userId] = data.split('_')[1];
+          balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+          minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 MPX!\nВведите сумму вывода:`, {replyMarkup: RM_Home});
           setState(userId, 27);
         } catch (error) {
           console.error(error);

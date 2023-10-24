@@ -10,8 +10,8 @@ const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.
 const bot = new TeleBot(config.token);
 
 const minimalReplenishment = {
-  mpx: 2,
-  xfi: 1
+  mpx: 10,
+  xfi: 10
 };
 
 class ReplenishmentMpxXfi {
