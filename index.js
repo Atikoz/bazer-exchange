@@ -176,7 +176,7 @@ const minimalSum = {
   plex: 10,
   ddao: 5,
   mpx: 10,
-  xfi: 1
+  xfi: 10
 };
 
 
