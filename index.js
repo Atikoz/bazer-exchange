@@ -172,11 +172,11 @@ const minimalSum = {
   bazercoin: 20,
   bazerusd: 20000,
   usdt: 5,
-  mine: 10,
-  plex: 10,
+  mine: 5,
+  plex: 5,
   ddao: 5,
-  mpx: 10,
-  xfi: 10
+  mpx: 5,
+  xfi: 5
 };
 
 
