@@ -74,17 +74,6 @@ mongoose.connect('mongodb://127.0.0.1/test');
 
 const bot = new TeleBot(config.token);
 
-const sendAlltoUsers = async () => {
-  let response = await UserModel.find({})
-  const userIds = response.map((u) => u.id);
-
-  userIds.forEach(userId => {
-    bot.sendMessage(userId, 'Мы переехали на новый домен!\n@bazerp2p_bot');
-});
-};
-
- sendAlltoUsers();
-
   async function setState(id, status) { UserModel.findOneAndUpdate({ id: id }, { status: status }).then((e) => { }); };
 
   function handleButtonSelection(selectedButtonId, arrayElement) {
