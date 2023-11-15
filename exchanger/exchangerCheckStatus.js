@@ -8,6 +8,10 @@ const BalanceUserModel = require('../model/modelBalance.js');
 
 const bot = new TeleBot (config.token);
 
+async function sendLogs(text) {
+  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
+};
+
 class ExchangeCheckStatus {
   async ExchangeCheckHash(userId, hash, coinSell, coinBuy) {
     try {
@@ -36,7 +40,8 @@ class ExchangeCheckStatus {
            {$set: {status: 'Done', processed: true}}
            );
 
-        return await bot.sendMessage(userId, `Вы обменяли ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`, { parseMode:'html' });
+        await bot.sendMessage(userId, `Вы обменяли ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`, { parseMode:'html' });
+        return sendLogs(`Пользователь ${userId} обменял ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`);
       }
 
       if (exchangeHash.data.result.status === "Fail") {

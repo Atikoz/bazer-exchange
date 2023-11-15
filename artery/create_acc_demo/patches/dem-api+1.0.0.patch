@@ -1,0 +1,255 @@
+diff --git a/node_modules/dem-api/src/Wallet.js b/node_modules/dem-api/src/Wallet.js
+index 782c3a3..0654513 100644
+--- a/node_modules/dem-api/src/Wallet.js
++++ b/node_modules/dem-api/src/Wallet.js
+@@ -184,6 +184,12 @@ class Wallet {
+         return signer.send(this._getSigner(), this.address, to, _.toString('amount'), gas, memo, toh);
+     }
+ 
++    createAccount(address,
++                  referrer,
++                  nickname, gas = '21000000', memo = '', toh = '0') {
++        return signer.createAccount(this._getSigner(), this.address, address, referrer, nickname, gas, memo, toh);
++    }
++
+     /**
+      * Generates and signs delegating/MsgDelegate transaction
+      *
+diff --git a/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto b/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto
+index f2e523a..e5f14f2 100644
+--- a/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto
++++ b/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto
+@@ -69,3 +69,75 @@ message MsgProlongImExtra {
+ }
+ 
+ message MsgProlongImExtraResponse {}
++
++message Profile {
++  option (gogoproto.goproto_getters) = false;
++
++  bool   auto_pay     = 1  [
++    (gogoproto.jsontag)  = "auto_pay,omitempty",
++    (gogoproto.moretags) = "yaml:\"auto_pay,omitempty\""
++  ];
++
++  string nickname     = 7  [
++    (gogoproto.jsontag)  = "nickname,omitempty",
++    (gogoproto.moretags) = "yaml:\"nickname,omitempty\""
++ ];
++}
++
++message MsgCreateAccount {
++  option (gogoproto.equal)           = false;
++  option (gogoproto.goproto_getters) = false;
++
++  string creator = 1 [
++    (gogoproto.jsontag)  = "creator",
++    (gogoproto.moretags) = "yaml:\"creator\""
++  ];
++  string address = 2 [
++    (gogoproto.jsontag)  = "address",
++    (gogoproto.moretags) = "yaml:\"address\""
++  ];
++  string referrer = 3 [
++    (gogoproto.jsontag)  = "referrer",
++    (gogoproto.moretags) = "yaml:\"referrer\""
++  ];
++  Profile profile = 4 [
++    (gogoproto.moretags) = "yaml:\"profile,omitempty\""
++  ];
++}
++
++message MsgCreateAccountResponse {}
++
++message Profile {
++  option (gogoproto.goproto_getters) = false;
++
++  bool   auto_pay     = 1  [
++    (gogoproto.jsontag)  = "auto_pay,omitempty",
++    (gogoproto.moretags) = "yaml:\"auto_pay,omitempty\""
++  ];
++
++  string nickname     = 7  [
++    (gogoproto.jsontag)  = "nickname,omitempty",
++    (gogoproto.moretags) = "yaml:\"nickname,omitempty\""
++ ];
++}
++
++message MsgCreateAccount {
++  option (gogoproto.equal)           = false;
++  option (gogoproto.goproto_getters) = false;
++
++  string creator = 1 [
++    (gogoproto.jsontag)  = "creator",
++    (gogoproto.moretags) = "yaml:\"creator\""
++  ];
++  string address = 2 [
++    (gogoproto.jsontag)  = "address",
++    (gogoproto.moretags) = "yaml:\"address\""
++  ];
++  string referrer = 3 [
++    (gogoproto.jsontag)  = "referrer",
++    (gogoproto.moretags) = "yaml:\"referrer\""
++  ];
++  Profile profile = 4 [
++    (gogoproto.moretags) = "yaml:\"profile,omitempty\""
++  ];
++}
+diff --git a/node_modules/dem-api/src/proto/bundle.json b/node_modules/dem-api/src/proto/bundle.json
+index 8d394dc..d7ea43d 100644
+--- a/node_modules/dem-api/src/proto/bundle.json
++++ b/node_modules/dem-api/src/proto/bundle.json
+@@ -253,6 +253,71 @@
+                 },
+                 "MsgProlongImExtraResponse": {
+                   "fields": {}
++                },
++                "Profile": {
++                  "options": {
++                    "(gogoproto.goproto_getters)": false
++                  },
++                  "fields": {
++                    "auto_pay": {
++                      "type": "bool",
++                      "id": 1,
++                      "options": {
++                        "(gogoproto.jsontag)": "auto_pay,omitempty",
++                        "(gogoproto.moretags)": "yaml:auto_pay,omitempty"
++                      }
++                    },
++                    "nickname": {
++                      "type": "string",
++                      "id": 7,
++                      "options": {
++                        "(gogoproto.jsontag)": "nickname,omitempty",
++                        "(gogoproto.moretags)": "yaml:nickname,omitempty"
++                      }
++                    }
++                  }
++                },
++                "MsgCreateAccount": {
++                  "options": {
++                    "(gogoproto.equal)": false,
++                    "(gogoproto.goproto_getters)": false
++                  },
++                  "fields": {
++                    "creator": {
++                      "type": "string",
++                      "id": 1,
++                      "options": {
++                        "(gogoproto.jsontag)": "creator",
++                        "(gogoproto.moretags)": "yaml:creator"
++                      }
++                    },
++                    "address": {
++                      "type": "string",
++                      "id": 2,
++                      "options": {
++                        "(gogoproto.jsontag)": "address",
++                        "(gogoproto.moretags)": "yaml:address"
++                      }
++                    },
++                    "referrer": {
++                      "type": "string",
++                      "id": 3,
++                      "options": {
++                        "(gogoproto.jsontag)": "referrer",
++                        "(gogoproto.moretags)": "yaml:referrer"
++                      }
++                    },
++                    "profile": {
++                      "type": "Profile",
++                      "id": 4,
++                      "options": {
++                        "(gogoproto.moretags)": "yaml:profile,omitempty"
++                      }
++                    }
++                  }
++                },
++                "MsgCreateAccountResponse": {
++                  "fields": {}
+                 }
+               }
+             }
+diff --git a/node_modules/dem-api/src/signer.js b/node_modules/dem-api/src/signer.js
+index 0cd0a0a..817faea 100644
+--- a/node_modules/dem-api/src/signer.js
++++ b/node_modules/dem-api/src/signer.js
+@@ -37,6 +37,42 @@ function send(signer, from, to, amount, gas = '21000000', memo = '', toh = '0')
+     return getTx(signer, '/artery.bank.v1beta1.MsgSend', msg, gas, memo, toh);
+ }
+ 
++/**
++ * Generates and signs bank/MsgCreateAccount transaction
++ *
++ * @param signer - TX sender credentials:
++ * @param {string} signer.accNo - account number;
++ * @param {string} signer.seqNo - sequence number;
++ * @param {string} signer.chainId - no comments.
++ * @param {string?} signer.privKey - hex representation of a private key;
++ * @param {string?} signer.pubKey - hex representation of a public key (to be obtained from a private key if omitted);
++ * @param {string?} signer.seed - mnemonic to the privKey be derived from (used only if privKey is omited).
++ * @param {string} creator - tx sender
++ * @param {string} address - account address
++ * @param {string} referrer - referrer of account
++ * @param {string} nickname - user nickname
++ * @param {string?} [gas='21000000'] - TX gas limit;
++ * @param {string?} [memo=''] - TX memo;
++ * @param {string?} [toh='0'] - timeout height;
++ * @returns {Uint8Array} - signed TX, ready to be sent.
++ */
++
++function createAccount(signer,
++                       creator,
++                       address,
++                       referrer,
++                       nickname, gas = '21000000', memo = '', toh = '0') {
++    const msg = {
++        creator,
++        address,
++        referrer,
++        profile: {
++            nickname
++        }
++    };
++    return getTx(signer, '/artery.profile.v1beta1.MsgCreateAccount', msg, gas, memo, toh);
++}
++
+ /**
+  * Generates and signs delegating/MsgDelegate transaction
+  *
+@@ -104,7 +140,7 @@ function revoke(signer, address, amount, gas = '21000000', memo = '', toh = '0')
+  * @param {string?} [toh='0'] - timeout height;
+  * @returns {Uint8Array} - signed TX, ready to be sent.
+  */
+-function buyImStorage(signer, address, amount, gas='21000000', memo='', toh='0') {
++function buyImStorage(signer, address, amount, gas = '21000000', memo = '', toh = '0') {
+     const msg = {
+         address,
+         extra_storage: amount
+@@ -129,7 +165,7 @@ function buyImStorage(signer, address, amount, gas='21000000', memo='', toh='0')
+  * @param {string?} [toh='0'] - timeout height;
+  * @returns {Uint8Array} - signed TX, ready to be sent.
+  */
+-function giveUpImExtra(signer, address, amount, gas='21000000', memo='', toh='0') {
++function giveUpImExtra(signer, address, amount, gas = '21000000', memo = '', toh = '0') {
+     const msg = {
+         address,
+         amount
+@@ -153,7 +189,7 @@ function giveUpImExtra(signer, address, amount, gas='21000000', memo='', toh='0'
+  * @param {string?} [toh='0'] - timeout height;
+  * @returns {Uint8Array} - signed TX, ready to be sent.
+  */
+-function prolongImExtra(signer, address, gas='21000000', memo='', toh='0') {
++function prolongImExtra(signer, address, gas = '21000000', memo = '', toh = '0') {
+     const msg = {
+         address
+     };
+@@ -504,6 +540,7 @@ module.exports = {
+     buyImStorage,
+     giveUpImExtra,
+     prolongImExtra,
++    createAccount,
+ 
+     wrap,
+ 

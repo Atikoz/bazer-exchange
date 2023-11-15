@@ -16,6 +16,10 @@ const { token } = require('../config.js');
 
 const bot = new TeleBot(token);
 
+async function sendLogs(text) {
+  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
+};
+
  const minimalWithdrawal = {
   del: 20,
   dar: 25,
@@ -156,6 +160,7 @@ class Replenishment {
           );
 
         await bot.sendMessage(userId, `Ваш баланс пополнено на ${amount} ${infoTransaction.data.result.data.coin}!`);
+        await sendLogs(`Баланс пользователя ${userId} пополнен на ${amount} ${infoTransaction.data.result.data.coin}`);
       }
     } catch (err) {
       console.log(err);

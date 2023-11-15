@@ -14,6 +14,10 @@ const minimalReplenishment = {
   xfi: 5
 };
 
+async function sendLogs(text) {
+  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
+};
+
 class ReplenishmentMpxXfi {
   async ReplenishmentUserWallet(userId) {
     try {
@@ -28,8 +32,8 @@ class ReplenishmentMpxXfi {
 
         const coin = userTransaction[i].tx.body.messages[0].amount[0].denom;
 
-        const examinationIf = 
-          (!await MpxXfiReplenishment.findOne({hash: userTransaction[i].txhash})) &&
+        const examinationIf =
+          (!await MpxXfiReplenishment.findOne({ hash: userTransaction[i].txhash })) &&
           !(userTransaction[i].tx.body.messages[0].from_address === userWallet) &&
           !(userTransaction[i].tx.body.messages[0].to_address === config.adminWalletMpxXfi) &&
           ((userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18) >= minimalReplenishment[coin]) &&
@@ -38,10 +42,10 @@ class ReplenishmentMpxXfi {
         if (examinationIf) {
           console.log('transaction processed');
           await MpxXfiReplenishment.create({
-          id: userId,
-          coin: coin,
-          hash: userTransaction[i].txhash,
-          amount: userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18
+            id: userId,
+            coin: coin,
+            hash: userTransaction[i].txhash,
+            amount: userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18
           });
           console.log('model user send created');
 
@@ -53,11 +57,11 @@ class ReplenishmentMpxXfi {
             const hashTransferComission = await SendCoin(config.adminMnemonicMinePlex, userWallet, 'mpx', 1);
 
             await HashSendAdminComission.create({
-            id: userId,
-            hash: hashTransferComission,
-            status: 'comission-send-user-wallet',
-            amount: amount,
-            coin: coin
+              id: userId,
+              hash: hashTransferComission,
+              status: 'comission-send-user-wallet',
+              amount: amount,
+              coin: coin
             });
 
             console.log('mpx send user wallet');
@@ -77,12 +81,12 @@ class ReplenishmentMpxXfi {
           }
 
           await TransactionMpxXfiStatus.create({
-          id: userId,
-          coin: coin,
-          hash: hashTransactionAdminWallet,
-          status: 'SendAdminWallet',
-          amount: amount,
-          processed: false
+            id: userId,
+            coin: coin,
+            hash: hashTransactionAdminWallet,
+            status: 'SendAdminWallet',
+            amount: amount,
+            processed: false
           });
 
           console.log('model send admin wallet created');
@@ -140,18 +144,19 @@ class ReplenishmentMpxXfi {
         if (adminTransaction[i].txhash === replenishment.hash) {
 
           await TransactionMpxXfiStatus.updateOne(
-            {hash: replenishment.hash},
-            {status: 'Done', processed: true}
+            { hash: replenishment.hash },
+            { status: 'Done', processed: true }
           );
 
           await BalanceUserModel.updateOne(
-            {id: replenishment.id},
+            { id: replenishment.id },
             JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
           );
 
-          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`)
+          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
+          await sendLogs(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`)
         }
-      };
+      }
     } catch (error) {
       console.error(error)
     }

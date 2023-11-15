@@ -14,7 +14,11 @@ const bot = new TeleBot(config.token);
 const minimalReplenishment = {
   mine: 5,
   plex: 5
-}
+};
+
+async function sendLogs(text) {
+  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
+};
 
 class ReplenishmentMinePlex {
   async ReplenishmentUserWallet(userId) {
@@ -26,9 +30,9 @@ class ReplenishmentMinePlex {
     try {
       if (userTransaction.data.length === 0) return
 
-      for(let i = 0; i < userTransaction.data.length; i++) {
+      for (let i = 0; i < userTransaction.data.length; i++) {
 
-        const examinationIf = 
+        const examinationIf =
           (!await MinePlexReplenishment.findOne({ hash: userTransaction.data[i].operationHash })) &&
           (userTransaction.data[i].destination === userWallet) &&
           !(userTransaction.data[i].source === config.aminWalletMinePlex) &&
@@ -46,7 +50,7 @@ class ReplenishmentMinePlex {
           console.log('model user send created');
           const balanceMine = await checkBalance(userWallet)
           console.log(balanceMine);
-          
+
           if (userTransaction.data[i].type === 'plex' && balanceMine < 1) {
             const hashTransferComission = (await sendCoin(config.adminMinePlexSk, userWallet, 1, 'mine')).data.transaction.hash;
             await HashSendAdminComission.create({
@@ -61,7 +65,7 @@ class ReplenishmentMinePlex {
           } else {
             console.log('minov hvataet');
           }
-          
+
           let hashTransactionAdminWallet;
 
           if (userTransaction.data[i].type === 'mine') {
@@ -92,7 +96,7 @@ class ReplenishmentMinePlex {
     try {
       if (replenishment.status === 'Done' && replenishment.processed) return
       const aminTransaction = await getMinePlexTransactions(config.aminWalletMinePlex);
-      
+
       if (aminTransaction.data.length === 0) return
 
       for (let i = 0; i < aminTransaction.data.length; i++) {
@@ -100,16 +104,17 @@ class ReplenishmentMinePlex {
         if (aminTransaction.data[i].operationHash === replenishment.hash) {
 
           await TransactionMinePlextStatus.updateOne(
-            {hash: replenishment.hash},
-            {status: 'Done', processed: true}
+            { hash: replenishment.hash },
+            { status: 'Done', processed: true }
           );
 
           await BalanceUserModel.updateOne(
-            {id: replenishment.id},
+            { id: replenishment.id },
             JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
           );
 
-          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`)
+          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
+          await sendLogs(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}.`)
         }
       };
     } catch (error) {
@@ -128,11 +133,11 @@ class ReplenishmentMinePlex {
         const userKey = getInfoUser.userWallet.minePlex.sk;
 
         const checkTransaction = await checkHashSendAdminComission(transaction.hash);
-        if(checkTransaction) {
+        if (checkTransaction) {
 
           await HashSendAdminComission.updateOne(
-            {hash: transaction.hash},
-            {status: 'Done'}
+            { hash: transaction.hash },
+            { status: 'Done' }
           );
 
           const hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, transaction.amount, transaction.coin)).data.transaction.hash;
@@ -154,8 +159,8 @@ class ReplenishmentMinePlex {
 
         if (chechTransaction) {
           await HashSendAdminComission.updateOne(
-            {hash: transaction.hash},
-            {status: 'Done'}
+            { hash: transaction.hash },
+            { status: 'Done' }
           );
 
           const hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
