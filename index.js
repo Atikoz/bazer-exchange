@@ -31,6 +31,7 @@ const {
   acceptCancelOrderIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
+  stackingIK,
 } = require('./keyboard.js');
 
 const {
@@ -259,9 +260,13 @@ bot.on('text', async (msg) => {
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(firstPage, 'sellExchange') });
         break;
 
+      case '💲 Стейкинг':
+        bot.sendMessage(userId, 'Вы выбрали Стейкинг. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: stackingIK });
+       break;
+
       default:
         break;
-    }
+    };
 
     //states
     if (getInfoUser === "not user") return;

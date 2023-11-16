@@ -5,7 +5,7 @@ const bot = new TeleBot (config.token);
 
 const RM_Home = bot.keyboard([
   ['Мой кабинет 📂', 'Ордера 📒'],
-  ['Конвертация 🔄'],
+  ['Конвертация 🔄', '💲 Стейкинг'],
   ['P2P','Рефералы 👥']
 ], { resize: true });
 
@@ -106,10 +106,15 @@ const buyerPayOrder = [
   'Done', 'Cancel'
 ];
 
+const stackingIK = bot.inlineKeyboard([
+  [bot.inlineButton('Перейти к стейкингу 💲', { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
+]);
+
 module.exports = {
   RM_Home,
   payOrder,
   spotOrderMenu,
+  stackingIK,
   currency,
   p2pMenuIK,
   cabinetIK,
