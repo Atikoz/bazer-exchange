@@ -9,7 +9,7 @@ const BalanceUserModel = require('../model/modelBalance.js');
 
 
 const bot = new TeleBot(config.token);
-function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms)); }
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 async function sendLogs(text) {
   bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
@@ -21,16 +21,16 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      const userTransaction = await sleep(2000).then( async () => await getTransaction(userUsdtAdress));
+      const userTransaction = await sleep(2000).then(async () => await getTransaction(userUsdtAdress));
 
       if (userTransaction.length === 0) return;
 
       for (let i = 0; i < userTransaction.length; i++) {
-        const examinationIf = !await UsdtReplenishment.findOne({hash: userTransaction[i].hash}) && userTransaction[i].coin === 'usdt' && userTransaction[i].amount >= 1 && userTransaction[i].status === 'SUCCESS' && userTransaction[i].sender !== userUsdtAdress;
+        const examinationIf = !await UsdtReplenishment.findOne({ hash: userTransaction[i].hash }) && userTransaction[i].coin === 'usdt' && userTransaction[i].amount >= 2 && userTransaction[i].status === 'SUCCESS' && userTransaction[i].sender !== userUsdtAdress;
         if (examinationIf) {
           console.log('transaction processed');
           const balanceTronUser = await getBalanceTron(userUsdtAdress, userUsdtPrivatKey);
-          
+
           if (balanceTronUser < 30) {
             await TransferTronwebTrx(config.adminPrivateKeyUsdt, config.adminWalletUsdt, userUsdtAdress, 30 - balanceTronUser);
             console.log('tron send user wallet');
@@ -62,20 +62,20 @@ class ReplenishmentUSDT {
     }
   };
 
-  async CheckUsdtTransactionAmin(replenishment){
+  async CheckUsdtTransactionAmin(replenishment) {
     try {
       if (replenishment.status === 'Done' || replenishment.status === 'Fail') return
-      const checkHash = await sleep(3000).then( async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet );
-      
+      const checkHash = await sleep(3000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
+
       if (checkHash === 'SUCCESS') {
         await TransactionUsdtStatus.updateOne(
-          {hash: replenishment.hash},
-          {status: 'Done', processed: true}
-          );
+          { hash: replenishment.hash },
+          { status: 'Done', processed: true }
+        );
         await BalanceUserModel.updateOne(
-          {id: replenishment.id},
+          { id: replenishment.id },
           JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
-          );
+        );
         await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
         await sendLogs(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`);
       }
@@ -83,7 +83,7 @@ class ReplenishmentUSDT {
         //изменение статуса проверки траназакции
         await TransactionUsdtStatus.updateOne({ hash: replenishment.hash }, { $set: { processed: true, status: "Fail" } });
         await bot.sendMessage(replenishment.id, `При пополнении возникла ошибка... Сообщите администрации!`);
-    };
+      };
 
     } catch (error) {
       console.error(error)

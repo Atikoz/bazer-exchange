@@ -12,8 +12,8 @@ const { SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactio
 const bot = new TeleBot(config.token);
 
 const minimalReplenishment = {
-  mine: 5,
-  plex: 5
+  mine: 2,
+  plex: 2
 };
 
 async function sendLogs(text) {

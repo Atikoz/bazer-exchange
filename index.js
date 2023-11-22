@@ -176,13 +176,13 @@ const minimalSum = {
   iloveyou: 200,
   bazercoin: 20,
   bazerusd: 20000,
-  usdt: 5,
-  mine: 5,
-  plex: 5,
+  usdt: 2,
+  mine: 2,
+  plex: 2,
   ddao: 5,
-  mpx: 5,
-  xfi: 5,
-  artery: 5
+  mpx: 2,
+  xfi: 2,
+  artery: 2
 };
 
 
@@ -194,6 +194,15 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
+
+    const chatMember = await bot.getChatMember('@p2plogss', userId);
+
+        // Перевіряємо, чи користувач є учасником каналу
+        if (chatMember && (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator')) {
+            bot.sendMessage(chatId, 'Ласкаво просимо! Ви підписані на канал.');
+        } else {
+            bot.sendMessage(chatId, 'Ви не підписані на канал. Будь ласка, підпишіться і повторіть спробу.');
+        }
 
     switch (text) {
       case '/start':

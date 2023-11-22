@@ -59,8 +59,8 @@ class ExchangeCoinTransaction {
           "payload": {
             "denomSell": `${sellCoin}`,
             "denomBuy": `${buyCoin}`,
-            "amountBuy": amountBuy,
-            "amountSell": amountSell
+            "amountBuy": `${amountBuy}`,
+            "amountSell": `${amountSell}`
           }
         })
       });
