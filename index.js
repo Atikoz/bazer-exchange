@@ -194,22 +194,30 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
-    const chatMember = await bot.getChatMember('@p2plogss', userId);
+    console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
-        // Перевіряємо, чи користувач є учасником каналу
-        if (chatMember && (chatMember.status === 'member' || chatMember.status === 'administrator' || chatMember.status === 'creator')) {
-            bot.sendMessage(chatId, 'Ласкаво просимо! Ви підписані на канал.');
-        } else {
-            bot.sendMessage(chatId, 'Ви не підписані на канал. Будь ласка, підпишіться і повторіть спробу.');
-        }
+    if (text === '/start') {
+      setState(userId, 0);
+      await AuthenticationService.Authentication(userId);
+      bot.sendMessage(userId, `${userName}, добро пожаловать!\nДля того чтобы продолжить работу с ботом, установите в профиль юзернейм и подпишитесь на каналы ниже:\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss`, { replyMarkup: RM_Home });
+    }
+
+    if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
+
+
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
-      case '/start':
-        setState(userId, 0);
-        await AuthenticationService.Authentication(userId);
-        bot.sendMessage(userId, `${userName}, добро пожаловать!`, { replyMarkup: RM_Home });
-        break;
+      // case '/start':
+      //   setState(userId, 0);
+      //   await AuthenticationService.Authentication(userId);
+      //   bot.sendMessage(userId, `${userName}, добро пожаловать!`, { replyMarkup: RM_Home });
+      //   break;
 
       case 'Мой кабинет 📂':
         const quantytyCoin = /*(Object.keys((await BalanceUserModel.findOne({id: userId})).main)).length;*/ 61;
@@ -271,7 +279,7 @@ bot.on('text', async (msg) => {
 
       case '💲 Стейкинг':
         bot.sendMessage(userId, 'Вы выбрали Стейкинг. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: stackingIK });
-       break;
+        break;
 
       default:
         break;
@@ -1942,6 +1950,7 @@ let comissionExchanger = [];  // комиссия обмена
 let minimalWithdrawAmount = []; // минимальная сумма вывода
 
 bot.start();
+// bot.stop();
 checkUserTransaction.start();
 // checkUserUsdtTransaction.start();
 // chechAdminUsdtTransaction.start();
