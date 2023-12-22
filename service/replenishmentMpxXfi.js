@@ -6,16 +6,13 @@ const { getMpxXfiTransactions, CheckBalance, SendCoin, CheckTransactionHash } = 
 const MpxXfiReplenishment = require('../model/modelMpxXfiReplenishment.js');
 const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
+const sendLog = require('../helpers/sendLog.js');
 
 const bot = new TeleBot(config.token);
 
 const minimalReplenishment = {
   mpx: 2,
   xfi: 2
-};
-
-async function sendLogs(text) {
-  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
 };
 
 class ReplenishmentMpxXfi {
@@ -154,7 +151,7 @@ class ReplenishmentMpxXfi {
           );
 
           await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
-          await sendLogs(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`)
+          await sendLog(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`)
         }
       }
     } catch (error) {

@@ -18,8 +18,10 @@ const WalletUserModel = mongoose.model('WalletUsers', {
   },
   mpxXfi: {
     address: String
+  },
+  artery: {
+    address: String
   }
-
 
 });
 

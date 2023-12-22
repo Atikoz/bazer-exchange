@@ -57,8 +57,6 @@ const checkBalance = async (wallet) => {
 
 const sendCoin = async (senderKey, recipientAddress, amount, coin) => {
   try {
-
-    console.log(senderKey, recipientAddress, amount, coin);
     const requestData = {
       sk: senderKey,
       operations: [

@@ -6,14 +6,11 @@ const { getTransaction, TransferTronNet, TransferTronwebTrx, getBalanceTron, tra
 const UsdtReplenishment = require('../model/modelUsdtReplenishment.js');
 const TransactionUsdtStatus = require('../model/modelTransactionsUsdtStatus.js');
 const BalanceUserModel = require('../model/modelBalance.js');
+const sendLog = require('../helpers/sendLog.js');
 
 
 const bot = new TeleBot(config.token);
 function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-async function sendLogs(text) {
-  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
-};
 
 class ReplenishmentUSDT {
   async ReplenishmentUserWalletUSDT(userId) {
@@ -77,7 +74,7 @@ class ReplenishmentUSDT {
           JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
         );
         await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
-        await sendLogs(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`);
+        await sendLog(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`);
       }
       else if (checkHash === "OUT_OF_ENERGY") {
         //изменение статуса проверки траназакции

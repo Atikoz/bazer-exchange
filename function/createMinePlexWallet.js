@@ -2,7 +2,6 @@ const axios = require ('axios');
 
 async function CreateMinePlexWallet(mnemonic) {
   try {
-    console.log(mnemonic);
     const createWallet = await axios({
       method: 'post',
       url: 'https://mineplexapi.bazerwallet.com/mineplex/api/v1/generateKeys',
@@ -12,9 +11,6 @@ async function CreateMinePlexWallet(mnemonic) {
       data : { mnemonic }
     });
 
-
-    console.log(mnemonic);
-    console.log(createWallet.data);
     return createWallet.data
 
   } catch (error) {

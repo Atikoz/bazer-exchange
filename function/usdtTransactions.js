@@ -55,9 +55,9 @@ const TransferTronNet = async (privateKey, contract, addressTo, amount, fee = 30
     let tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
 
     if (contract == config.contractBzr) amount = amount * 1e18;
-    else amount = valueToSun(amount);
+    else amount = valueToSum(amount);
     let instance = await tronWeb.contract().at(contract);
-    let result = await instance.transfer(addressTo, `${amount}`).send({ feeLimit: valueToSun(fee) });
+    let result = await instance.transfer(addressTo, `${amount}`).send({ feeLimit: valueToSum(fee) });
     console.log("TransferTronNetResult: ", result);
     return result;
   } catch (e) {
@@ -72,7 +72,7 @@ const TransferTronwebTrx = async (privateKey, addressFrom, addressTo, amount, ur
   let solidityNode = new HttpProvider(urlApi);
   let tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
   try {
-    amount = valueToSun(amount);
+    amount = valueToSum(amount);
     const tradeobj = await tronWeb.transactionBuilder.sendTrx(tronWeb.address.toHex(addressTo), amount, tronWeb.address.toHex(addressFrom));
     const signedtxn = await tronWeb.trx.sign(tradeobj, privateKey);
     const receipt = await tronWeb.trx.sendRawTransaction(signedtxn);
@@ -157,7 +157,7 @@ const getTransaction = async (address) => {
   };
 };
 
-function valueToSun(value, decimals = 6) {
+function valueToSum(value, decimals = 6) {
   value = round(value, decimals);
   value = ethers.utils.parseUnits(`${value}`, decimals);
   return value;
@@ -170,5 +170,5 @@ module.exports = {
   TransferTronwebTrx,
   transactionTronNetworkInfo,
   getTransaction,
-  valueToSun
+  valueToSum
 }

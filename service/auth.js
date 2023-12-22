@@ -5,8 +5,7 @@ const CreateUsdtWallet = require('../function/createUsdtWallet.js');
 const createDecimalWallet = require('../function/createDecimalWallet.js');
 const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
 const createMpxXfiWallet = require('../function/createMpxXfiWallet.js');
-
-
+const { createUserArteryWallet } = require('../function/createArteryWallet.js');
 
 class AuthenticationService {
   async Authentication(userId) { 
@@ -16,6 +15,8 @@ class AuthenticationService {
         const createUsdt = await CreateUsdtWallet();
         const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
         const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
+        const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
+
         if (createDelWallet.status != 'ok') return this.Authentication(userId);
   
         await UserModel.create({
@@ -40,7 +41,11 @@ class AuthenticationService {
           },
           mpxXfi: {
             address: createMpxXfi.data.account.address
+          },
+          artery: {
+            address: createArtery
           }
+        
 
         });
 
@@ -52,6 +57,8 @@ class AuthenticationService {
             plex: 0,
             mpx: 0,
             xfi: 0,
+            artery: 0,
+            cashback: 0,
             del: 0,
             ddao: 0,
             pro: 0,
@@ -120,6 +127,8 @@ class AuthenticationService {
             plex: 0,
             mpx: 0,
             xfi: 0,
+            artery: 0,
+            cashback: 0,
             del: 0,
             ddao: 0,
             pro: 0,

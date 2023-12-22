@@ -16,10 +16,6 @@ const { token } = require('../config.js');
 
 const bot = new TeleBot(token);
 
-async function sendLogs(text) {
-  bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' })
-};
-
  const minimalWithdrawal = {
   del: 20,
   dar: 25,
@@ -81,7 +77,8 @@ async function sendLogs(text) {
   iloveyou: 200,
   bazercoin: 20,
   bazerusd: 20000,
-  ddao: 5
+  ddao: 5,
+  cashback: 50
 };
 
 class Replenishment {
@@ -90,56 +87,50 @@ class Replenishment {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const getUserTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${getInfoUser.userWallet.del.address}/txs?limit=10&offset=0`);
 
-      for (let i = 0; i <= getUserTransaction.data.result.txs.length - 1; i++) {
+      await Promise.all(getUserTransaction.data.result.txs.map(async (tx) => {
+        if (tx.status === 'Success' && tx.to === getInfoUser.userWallet.del.address && tx.data.amount / 1e18 >= minimalWithdrawal[tx.data.coin]) {
+          const examinationIf = !await HashReplenishment.findOne({ id: tx.hash });
 
-        if (getUserTransaction.data.result.txs.length === 0) return;
-        const examinationIf = !await HashReplenishment.findOne({id: getUserTransaction.data.result.txs[i].hash}) &&
-        getUserTransaction.data.result.txs[i].status === 'Success' &&
-        getUserTransaction.data.result.txs[i].to === getInfoUser.userWallet.del.address &&
-        getUserTransaction.data.result.txs[i].data.amount/1e18 >= minimalWithdrawal[getUserTransaction.data.result.txs[i].data.coin];
+          if (examinationIf) {
+            await HashReplenishment.create({ id: tx.hash, coin: tx.data.coin });
+            console.log('model user send created');
 
-        if (examinationIf) {
-          await HashReplenishment.create({
-            id: getUserTransaction.data.result.txs[i].hash, 
-            coin: getUserTransaction.data.result.txs[i].data.coin 
-          });
-          console.log('model user send created');
+            const transferCommissionResponse = await TransferCommission(
+              getInfoUser.userWallet.mnemonics,
+              decimalWallet,
+              tx.data.coin,
+              tx.data.amount / 1e18
+            );
 
-          const amount = ((await TransferCommission(
-            getInfoUser.userWallet.mnemonics, 
-            decimalWallet, 
-            getUserTransaction.data.result.txs[i].data.coin, 
-            getUserTransaction.data.result.txs[i].data.amount/1e18
-          )).data.result.result.amount/1e18)+0.5;
-          
-          console.log(amount);
-          console.log('commissiuion calculated');
+            const comission = transferCommissionResponse.data.result.result.amount / 1e18;
+            console.log('Calculated comission:', comission);
 
-          const moneyTransfer = await SendCoin(
-            getInfoUser.userWallet.mnemonics, 
-            decimalWallet,
-            getUserTransaction.data.result.txs[i].data.coin,
-            getUserTransaction.data.result.txs[i].data.amount/1e18-amount
-          );
+            const moneyTransfer = await SendCoin(
+              getInfoUser.userWallet.mnemonics,
+              decimalWallet,
+              tx.data.coin,
+              tx.data.amount / 1e18 - comission
+            );
 
-          console.log(getUserTransaction.data.result.txs[i].data.coin)
-          console.log('-------------')
-          console.log(getUserTransaction.data.result.txs[i].data.amount/1e18-amount)
-          console.log('Coins send admin wallet')
-          console.log(moneyTransfer.data.result.result.tx_response.code)
+            console.log(tx.data.coin);
+            console.log('-------------');
+            console.log(tx.data.amount / 1e18 - comission);
+            console.log('Coins send admin wallet');
+            console.log(moneyTransfer.data.result.result.tx_response.code);
 
-          if (moneyTransfer.data.result.result.tx_response.code != 0) return;
+            if (moneyTransfer.data.result.result.tx_response.code !== 0) return;
 
-          await TransactionStatus.create({
-            id: userId,
-            hash: moneyTransfer.data.result.result.tx_response.txhash, 
-            status: 'UserSend',
-            amount: getUserTransaction.data.result.txs[i].data.amount/1e18, 
-            processed: false
-          });
-          console.log('Document TransactionStatus created');
+            await TransactionStatus.create({
+              id: userId,
+              hash: moneyTransfer.data.result.result.tx_response.txhash,
+              status: 'UserSend',
+              amount: tx.data.amount / 1e18,
+              processed: false,
+            });
+            console.log('Document TransactionStatus created');
+          }
         }
-      }
+      }));
     } catch (error) {
       console.error(error);
     }
@@ -147,26 +138,24 @@ class Replenishment {
 
   async CheckBalanceAdmin(hash, userId, amount) {
     try {
-      const infoTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`)
-      if (infoTransaction.data.result.status === "Success") {
+      const infoTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`);
+      if (infoTransaction.data.result.status === 'Success') {
         await BalanceUserModel.updateOne(
-          {id: userId}, 
-          JSON.parse(`{"$inc": { "main.${infoTransaction.data.result.data.coin}": ${amount} } }`)
-          );
+          { id: userId },
+          { $inc: { [`main.${infoTransaction.data.result.data.coin}`]: amount } }
+        );
 
         await TransactionStatus.updateOne(
-          {hash: hash},
-          {$set: {status: "Done", processed: true}}
-          );
+          { hash: hash },
+          { $set: { status: 'Done', processed: true } }
+        );
 
-        await bot.sendMessage(userId, `Ваш баланс пополнено на ${amount} ${infoTransaction.data.result.data.coin}!`);
-        await sendLogs(`Баланс пользователя ${userId} пополнен на ${amount} ${infoTransaction.data.result.data.coin}`);
+        await bot.sendMessage(userId, `Ваш баланс поповнено на ${amount} ${infoTransaction.data.result.data.coin}!`);
       }
     } catch (err) {
       console.log(err);
     }
   }
 }
-
 
 module.exports = new Replenishment;

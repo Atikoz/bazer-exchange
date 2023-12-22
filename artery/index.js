@@ -34,8 +34,8 @@ async function createAccount(wallet, address, nickname, nodeUrl) {
 
     console.log('Результат отправки транзакции', txResult);
 
-    return txResult.tx_response.txhash;
-}
+    return address
+  }
 
 (async function run() {
 //const privateKey = "6a63f702860c028c75eac8826e8acfa30df511971af44c8ae3c3fcf8c77ef56c";

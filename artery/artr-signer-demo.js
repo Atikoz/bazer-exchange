@@ -121,22 +121,7 @@ async function waitTxResult(txHash, nodeUrl, tries = 5, firstTimeout = 15, reque
  * @return {Promise<void>}
  */
 async function run(recipient = '', amount = 0) {
-
-    logData('Создается кошелек');
-
-    const privateKey = "6a63f702860c028c75eac8826e8acfa30df511971af44c8ae3c3fcf8c77ef56c";
-    const wallet = new ArtrWallet(null, privateKey);
-
-    // Url ноды к которой слать запросы
-    const nodeUrl = 'http://167.172.51.179:1317';
-
-    logData('Получаем данные для подписи запроса')
-
-    // Получаем текущие данные аккаунта
-    // Примичание - данные обновляются раз в блок. Если отправляется несколько транзакций подряд - за sequence number
-    // необходимо следить самостоятельно!
-    const accData = await (await fetch(nodeUrl + '/cosmos/auth/v1beta1/accounts/' + wallet.address)).json();
-
+ʼ
     // Текущая версия сети Artery Blockchain
     wallet.setChainId('artery_network-9')
 
