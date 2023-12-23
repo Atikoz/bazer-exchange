@@ -1991,5 +1991,5 @@ chechAdminMinePlexTransaction.start();
 checkHashSendAdminComission.start();
 checkUserMpxXfiTransaction.start();
 checkAdminMpxXfiTransaction.start();
-checkArtrBalance.start();
-checkArtrAdminHash.start();
+// checkArtrBalance.start();
+// checkArtrAdminHash.start();

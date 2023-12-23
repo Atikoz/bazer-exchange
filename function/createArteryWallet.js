@@ -55,7 +55,7 @@ const createArteryManyWallet = async (arr) => {
     // Создаем новый сид для пользователя (или делаем ключ другим удобным способом)
     // Получаем кошелек из сида
     console.log('select user: ', arrayUser[i]);
-    console.log('select mnemonic: ',  [i]);
+    console.log('select mnemonic: ', arrayMnemonic[i]);
 
     const newAcc = new Wallet(arrayMnemonic[i]);
 
