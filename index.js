@@ -246,7 +246,7 @@ bot.on('text', async (msg) => {
           }
         };
 
-        // startTe();
+        startTe();
         break;
 
       case 'Конвертация 🔄':
