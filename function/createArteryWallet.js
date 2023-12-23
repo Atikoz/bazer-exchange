@@ -29,7 +29,6 @@ const createArteryManyWallet = async (arr) => {
   const seed = config.adminArteryMnemonic;
   console.log('admnim mnemonic: ', seed);
   const wallet = new Wallet(seed);
-  console.log('responce wallet: ', wallet);
   const arrayMnemonic = arr.map((item) => item.mnemonics);
   const arrayUser = arr.map((item) => item.id);
 
@@ -41,7 +40,7 @@ const createArteryManyWallet = async (arr) => {
   // Получаем текущие данные аккаунта
   // Примичание - данные обновляются раз в блок. Если отправляется несколько транзакций подряд - за sequence number
   // необходимо следить самостоятельно!
-  const accData = await await axios(nodeUrl + '/cosmos/auth/v1beta1/accounts/' + wallet.address);
+  const accData = await axios(nodeUrl + '/cosmos/auth/v1beta1/accounts/' + wallet.address);
 
   // Текущая версия сети Artery Blockchain
   wallet.setChainId('artery_network-9')
@@ -76,6 +75,7 @@ const createArteryManyWallet = async (arr) => {
     // );
   };
   wallet.setSequence(Number(wallet.sequence) + 1);
+  console.log('wallets artery created');
 };
 
 const createUserArteryWallet = async (mnemonic) => {
