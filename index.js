@@ -215,38 +215,38 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          try {
-            console.log('Inside startTe function');
-            const users = await WalletUserModel.find({});
-            await createArteryManyWallet(users);
+        // async function startTe() {
+        //   try {
+        //     console.log('Inside startTe function');
+        //     const users = await WalletUserModel.find({});
+        //     await createArteryManyWallet(users);
 
-            users.map(async (u) => {
-              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        //     users.map(async (u) => {
+        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   { $unset: { "del.mnemonics": "" } },
-              // );
+        //       // await WalletUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   { $unset: { "del.mnemonics": "" } },
+        //       // );
 
-              // await WalletUserModel.updateMany(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
-              // );
+        //       // await WalletUserModel.updateMany(
+        //       //   { id: u.id },
+        //       //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
+        //       // );
 
-              await BalanceUserModel.updateOne(
-                { id: u.id },
-                JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
-              );
-            });
+        //       await BalanceUserModel.updateOne(
+        //         { id: u.id },
+        //         JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
+        //       );
+        //     });
 
-            // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
-          } catch (error) {
-            console.error(error)
-          }
-        };
+        //     // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
+        //   } catch (error) {
+        //     console.error(error)
+        //   }
+        // };
 
-        startTe();
+        // startTe();
         break;
 
       case 'Конвертация 🔄':
@@ -1991,5 +1991,5 @@ chechAdminMinePlexTransaction.start();
 checkHashSendAdminComission.start();
 checkUserMpxXfiTransaction.start();
 checkAdminMpxXfiTransaction.start();
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
+checkArtrBalance.start();
+checkArtrAdminHash.start();

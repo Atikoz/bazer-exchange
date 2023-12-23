@@ -15,6 +15,8 @@ async function createAccount(wallet, address, nickname, nodeUrl) {
 
   const txResult = await response.data;
 
+  console.log(txResult);
+
   if (txResult.tx_response.code !== 0) {
     console.log('Отправка транзакции в БЧ завершилась с ошибкой ' + txResult.tx_response.code + ": " + txResult.tx_response.data);
     throw Error('TX broadcast failed with code ' + txResult.tx_response.code + ": " + txResult.tx_response.data);
@@ -64,6 +66,7 @@ const createArteryManyWallet = async (arr) => {
     let nickname = crypto.createHash('md5').update(newAcc.address).digest("hex");
 
     const adressCreatedWallet = await createAccount(wallet, newAcc.address, nickname, nodeUrl);
+    wallet.setSequence(Number(wallet.sequence) + 1);
     await WalletUserModel.updateMany(
       { id: arrayUser[i] },
       JSON.parse(`{ "$set" : { "artery.address": "${adressCreatedWallet}" } }`)
@@ -74,7 +77,6 @@ const createArteryManyWallet = async (arr) => {
     //   JSON.parse(`{ "$inc" : { "main.artery": "0", "hold.artery": "0"} }`)
     // );
   };
-  wallet.setSequence(Number(wallet.sequence) + 1);
   console.log('wallets artery created');
 };
 
