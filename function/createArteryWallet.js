@@ -27,7 +27,9 @@ async function createAccount(wallet, address, nickname, nodeUrl) {
 
 const createArteryManyWallet = async (arr) => {
   const seed = config.adminArteryMnemonic;
+  console.log('admnim mnemonic: ', seed);
   const wallet = new Wallet(seed);
+  console.log('responce wallet: ', wallet);
   const arrayMnemonic = arr.map((item) => item.mnemonics);
   const arrayUser = arr.map((item) => item.id);
 
@@ -54,7 +56,7 @@ const createArteryManyWallet = async (arr) => {
     // Создаем новый сид для пользователя (или делаем ключ другим удобным способом)
     // Получаем кошелек из сида
     console.log('select user: ', arrayUser[i]);
-    console.log('select mnemonic: ', arrayMnemonic[i]);
+    console.log('select mnemonic: ',  [i]);
 
     const newAcc = new Wallet(arrayMnemonic[i]);
 
