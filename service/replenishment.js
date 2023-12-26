@@ -1,22 +1,20 @@
 const axios = require('axios');
 const TeleBot = require('telebot');
-const { 
-  decimalMnemonics, 
-  decimalWallet 
-} = require('../decimalConfig.js');
+const { decimalWallet } = require('../decimalConfig.js');
 const UserManagement = require('./userManagement.js');
 const HashReplenishment = require('../model/modelHashReplenishment.js');
 const {
-  SendCoin, 
+  SendCoin,
   TransferCommission
 } = require('../function/decimal.js');
 const TransactionStatus = require('../model/modelTransactionStatus.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const { token } = require('../config.js');
+const sendLogs = require('../helpers/sendLog.js');
 
 const bot = new TeleBot(token);
 
- const minimalWithdrawal = {
+const minimalWithdrawal = {
   del: 20,
   dar: 25,
   pro: 100,
@@ -140,9 +138,10 @@ class Replenishment {
     try {
       const infoTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`);
       if (infoTransaction.data.result.status === 'Success') {
+        const replenishmentCoin = infoTransaction.data.result.data.coin;
         await BalanceUserModel.updateOne(
           { id: userId },
-          { $inc: { [`main.${infoTransaction.data.result.data.coin}`]: amount } }
+          { $inc: { [`main.${replenishmentCoin}`]: amount } }
         );
 
         await TransactionStatus.updateOne(
@@ -150,7 +149,8 @@ class Replenishment {
           { $set: { status: 'Done', processed: true } }
         );
 
-        await bot.sendMessage(userId, `Ваш баланс поповнено на ${amount} ${infoTransaction.data.result.data.coin}!`);
+        await bot.sendMessage(userId, `Ваш баланс пополнено на ${amount} ${replenishmentCoin}!`);
+        await sendLogs(`Пользователь ${userId} пополнил баланс на ${amount} ${replenishmentCoin}`)
       }
     } catch (err) {
       console.log(err);

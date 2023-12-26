@@ -70,7 +70,6 @@ const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
 const { ControlUserBalance } = require('./helpers/userControl.js');
 const circumcisionAmount = require('./helpers/circumcisionAmount.js');
 const ReplenishmentArtery = require('./function/arteryTransaction.js');
-const { createArteryManyWallet } = require('./function/createArteryWallet.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -807,7 +806,7 @@ bot.on('callbackQuery', async (msg) => {
       `PLEX: ${circumcisionAmount(getInfoUser.userBalance.main.plex)}`,
       `MPX: ${circumcisionAmount(getInfoUser.userBalance.main.mpx)}`,
       `XFI: ${circumcisionAmount(getInfoUser.userBalance.main.xfi)}`,
-      `ARTR: ${circumcisionAmount(getInfoUser.userBalance.main.artery)}`,
+      `ARTERY: ${circumcisionAmount(getInfoUser.userBalance.main.artery)}`,
       `CASHBACK: ${circumcisionAmount(getInfoUser.userBalance.main.cashback)}`,
       `DEL: ${circumcisionAmount(getInfoUser.userBalance.main.del)}`,
       `DDAO: ${circumcisionAmount(getInfoUser.userBalance.main.ddao)}`,
