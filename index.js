@@ -215,59 +215,47 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          try {
-            console.log('Inside startTe function');
-            // const users = await WalletUserModel.find({});
+        const myBalance = await BalanceUserModel.findOne({id: 668169689});
+        console.log(myBalance);
 
-            const mnemonic = (await WalletUserModel.findOne({id: 1762471327})).mnemonics;
-            console.log("mnemonic: ", mnemonic);
+        // async function startTe() {
+        //   try {
+        //     console.log('Inside startTe function');
+        //     const users = await WalletUserModel.find({});
 
-            const createdWallet = await createUserArteryWallet(mnemonic);
+        //     users.map(async (u) => {
+        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-            await WalletUserModel.updateOne(
-              { id: 1762471327 },
-              JSON.parse(`{ "$set" : { "artery.address": "${createdWallet}" } }`)
-            );
+        //       // await WalletUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   { $unset: { "del.mnemonics": "" } },
+        //       // );
 
-            // users.map(async (u) => {
-            //   // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        //       // await WalletUserModel.updateMany(
+        //       //   { id: u.id },
+        //       //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
+        //       // );
 
-            //   // await WalletUserModel.updateOne(
-            //   //   { id: u.id },
-            //   //   { $unset: { "del.mnemonics": "" } },
-            //   // );
+        //       // await BalanceUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
+        //       // );
+        //     });
 
-            //   // await WalletUserModel.updateMany(
-            //   //   { id: u.id },
-            //   //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
-            //   // );
+        //     // await BalanceUserModel.updateOne(
+        //     //   { id: 1762471327 },
+        //     //   JSON.parse(`{ "$inc" : { "main.artery": "10", "hold.artery": "0" } }`)
+        //     // );
 
-            //   // await BalanceUserModel.updateOne(
-            //   //   { id: u.id },
-            //   //   JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
-            //   // );
-            // });
+            
 
-            await BalanceUserModel.updateOne(
-              { id: 1762471327 },
-              JSON.parse(`{ "$inc" : { "main.artery": "10", "hold.artery": "0" } }`)
-            );
+        //     // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
+        //   } catch (error) {
+        //     console.error(error)
+        //   }
+        // };
 
-            await bot.sendMessage(1762471327, 'Вас счет пополнено на 10 artery');
-            await sendLog('`Пользователь 1762471327 пополнил баланс на 10 artery');
-
-            const user = await WalletUserModel.findOne({id: 1762471327});
-            console.log(user);
-
-
-            // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
-          } catch (error) {
-            console.error(error)
-          }
-        };
-
-        startTe();
+        // startTe();
         break;
 
       case 'Конвертация 🔄':
