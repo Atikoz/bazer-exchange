@@ -5,9 +5,11 @@ const config = require('../config.js');
 const WalletUserModel = require('../model/modelWallet.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 
+const referAcc = 'artr17yvfmrelm4ejd40yz056j0gc2seqr32dazhclj';
+
 
 async function createAccount(wallet, address, nickname, nodeUrl) {
-  const txData = Wallet.wrap(wallet.createAccount(address, wallet.address, nickname));
+  const txData = Wallet.wrap(wallet.createAccount(address, referAcc, nickname));
   const response = await axios(nodeUrl + '/cosmos/tx/v1beta1/txs', {
     method: 'POST',
     data: JSON.stringify(txData)
