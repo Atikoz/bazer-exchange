@@ -217,7 +217,7 @@ bot.on('text', async (msg) => {
 
         await BalanceUserModel.updateOne(
           { id: 668169689 },
-          JSON.parse(`{ "$inc" : { "main.artery": "0", "hold.artery": "0" } }`)
+          JSON.parse(`{ "$set" : { "main.artery": 0, "hold.artery": 0 } }`)
         );
 
         const myBalance = await BalanceUserModel.findOne({ id: 668169689 });
