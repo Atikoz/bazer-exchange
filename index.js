@@ -215,7 +215,12 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        const myBalance = await BalanceUserModel.findOne({id: 668169689});
+        await BalanceUserModel.updateOne(
+          { id: 668169689 },
+          JSON.parse(`{ "$inc" : { "main.artery": "0", "hold.artery": "0" } }`)
+        );
+
+        const myBalance = await BalanceUserModel.findOne({ id: 668169689 });
         console.log(myBalance);
 
         // async function startTe() {
@@ -247,7 +252,7 @@ bot.on('text', async (msg) => {
         //     //   JSON.parse(`{ "$inc" : { "main.artery": "10", "hold.artery": "0" } }`)
         //     // );
 
-            
+
 
         //     // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
         //   } catch (error) {
