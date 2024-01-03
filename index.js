@@ -268,8 +268,6 @@ bot.on('text', async (msg) => {
         break;
 
       default:
-        setState(userId, 0);
-        bot.sendMessage(userId, 'Я не знаю что вам ответить(');
         break;
     };
 
