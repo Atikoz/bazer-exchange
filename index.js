@@ -1,6 +1,7 @@
 const TeleBot = require('telebot');
 const mongoose = require('mongoose');
 const config = require('./config.js');
+const validator = require('validator');
 const WalletUserModel = require('./model/modelWallet.js');
 
 const {
@@ -48,7 +49,6 @@ const CustomP2POrder = require('./model/modelP2POrder.js');
 const checkUserTransaction = require('./cron/ReplenishmentStatusCheck.js');
 const UserModel = require('./model/modelUser.js');
 const checkUserExchangeTransaction = require('./cron/StatusCheckExchanger.js');
-const updateCoinBalance = require('./cron/UpdateCoinBalance.js');
 const ExchangeRateCoin = require('./exchanger/exchangeRate.js');
 const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
@@ -70,7 +70,6 @@ const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
 const { ControlUserBalance } = require('./helpers/userControl.js');
 const circumcisionAmount = require('./helpers/circumcisionAmount.js');
 const ReplenishmentArtery = require('./function/arteryTransaction.js');
-const { createUserArteryWallet } = require('./function/createArteryWallet.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -169,10 +168,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -185,7 +184,7 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       // case '/start':
@@ -215,44 +214,45 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        // async function startTe() {
-        //   try {
-        //     console.log('Inside startTe function');
-        //     const users = await WalletUserModel.find({});
+        async function startTe() {
+          try {
+            console.log('Inside startTe function');
+            const users = await WalletUserModel.find({id: 764692835});
+            console.log(users);
 
-        //     users.map(async (u) => {
-        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+            users.map(async (u) => {
+              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-        //       // await WalletUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   { $unset: { "del.mnemonics": "" } },
-        //       // );
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   { $unset: { "del.mnemonics": "" } },
+              // );
 
-        //       // await WalletUserModel.updateMany(
-        //       //   { id: u.id },
-        //       //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
-        //       // );
+              // await WalletUserModel.updateMany(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set" : { "mpxXfi.address": "${createMpxXfi.data.account.address}" } }`)
+              // );
 
-        //       // await BalanceUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
-        //       // );
-        //     });
+              // await BalanceUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$inc" : { "main.artery": "0", "main.cashback": "0", "hold.artery": "0", "hold.cashback": "0"} }`)
+              // );
+            });
 
-        //     // await BalanceUserModel.updateOne(
-        //     //   { id: 1762471327 },
-        //     //   JSON.parse(`{ "$inc" : { "main.artery": "10", "hold.artery": "0" } }`)
-        //     // );
+            // await BalanceUserModel.updateOne(
+            //   { id: 1762471327 },
+            //   JSON.parse(`{ "$inc" : { "main.artery": "10", "hold.artery": "0" } }`)
+            // );
 
 
 
-        //     // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
-        //   } catch (error) {
-        //     console.error(error)
-        //   }
-        // };
+            // await MinePlexReplenishment.deleteOne({ hash: 'ooKMbPscbuFKG9KfV18utmLP8vrGdBMr41cufh2vheuZww2geEq' })
+          } catch (error) {
+            console.error(error)
+          }
+        };
 
-        // startTe();
+        startTe();
         break;
 
       case 'Конвертация 🔄':
@@ -268,6 +268,8 @@ bot.on('text', async (msg) => {
         break;
 
       default:
+        setState(userId, 0);
+        bot.sendMessage(userId, 'Я не знаю что вам ответить(');
         break;
     };
 
@@ -321,6 +323,8 @@ bot.on('text', async (msg) => {
           setState(userId, 0);
           return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для обмена!', { replyMarkup: RM_Home });
         };
+
+        console
 
         exchangeBuyAmount[userId] = (rateExchange[userId] * exchangeSellAmount[userId]) + 0.0001;
 
@@ -684,9 +688,10 @@ bot.on('text', async (msg) => {
 
       case 26:
         setState(userId, 0);
-        if (isNaN(text)) {
-          return bot.sendMessage(userId, 'Введено не коректное число!');
-        };
+        if (!validator.isNumeric(text)) {
+          return bot.sendMessage(userId, 'Введено не корректное число!');
+        }
+        
         selectedOrder[userId] = Number(text);
 
         const userP2POrder = await CustomP2POrder.findOne({ id: userId, orderNumber: selectedOrder[userId], status: 'Selling' });
@@ -718,15 +723,15 @@ bot.on('text', async (msg) => {
         try {
           amount[userId] = Number(text);
 
-          if (isNaN(amount[userId])) {
+          if (!validator.isNumeric(text)) {
             setState(userId, 0);
-            return bot.sendMessage(userId, 'Введено не коректное число!');
+            return bot.sendMessage(userId, 'Введено не корректное число!');
           }
 
-          if (amount[userId] < minimalWithdrawAmount[userId]) {
+          if (!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home });
-          };
+          }
 
           if ((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
             setState(userId, 0);
@@ -998,6 +1003,7 @@ bot.on('callbackQuery', async (msg) => {
       case 'accept_exchange':
         try {
           bot.deleteMessage(userId, messageId);
+          await bot.sendMessage(userId, 'Идет процесс обмена... Ожидайте');
 
           if (comissionExchanger[userId] > getInfoUser.userBalance.main.del) {
             return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для оплаты комисси!', { replyMarkup: RM_Home });
@@ -1031,29 +1037,30 @@ bot.on('callbackQuery', async (msg) => {
       case 'created_SpotOrders':
         bot.deleteMessage(userId, messageId);
         const userOrder = await CustomOrder.find({ id: userId });
-        if (userOrder.length === 0) return bot.sendMessage(userId, 'Вы еще не создавали ни 1 ордера 😞');
-        let messageUserOrder = '';
 
-        for (let i = 0; i < userOrder.length; i++) {
-          let rateCoin = '';
-          if (userOrder[i].status === 'Done' || userOrder[i].status === 'Deleted' && userOrder[i].processed) continue
-          if (userOrder[i].type === 'sell') {
-            rateCoin = userOrder[i].sellCoin;
-          } else {
-            rateCoin = userOrder[i].buyCoin;
-          };
+        if (userOrder.length === 0) {
+          return bot.sendMessage(userId, 'Вы еще не создавали ни одного ордера 😞');
+        }
 
-          messageUserOrder += `Ордер №${userOrder[i].orderNumber},
-Тип ордера: ${userOrder[i].type},
-Статус: ${userOrder[i].status},
-Продаваемая монета: ${userOrder[i].sellCoin},
-Покупаемая монета: ${userOrder[i].buyCoin},
-Сумма покупки: ${userOrder[i].buyAmount} ${userOrder[i].buyCoin},
-Сумма продажи: ${userOrder[i].sellAmount} ${userOrder[i].sellCoin},
-Курс осуществления операции: ${userOrder[i].rate} ${rateCoin.toUpperCase()}.\n\n`
-        };
+        const messageUserOrder = userOrder
+          .filter(order => !(order.status === 'Done' || (order.status === 'Deleted' && order.processed)))
+          .map(order => {
+            const rateCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
+
+            return `Ордер №${order.orderNumber},
+Тип ордера: ${order.type},
+Статус: ${order.status},
+Продажа монеты: ${order.sellCoin},
+Покупка монеты: ${order.buyCoin},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin},
+Курс осуществления операции: ${order.rate} ${rateCoin.toUpperCase()}.\n\n`;
+          })
+          .join('');
+
         bot.sendMessage(userId, messageUserOrder, { replyMarkup: settingsOrderIK });
         break;
+
 
       case 'delete_order':
         setState(userId, 17);
@@ -1063,28 +1070,30 @@ bot.on('callbackQuery', async (msg) => {
       case 'list_SpotOrders':
         bot.deleteMessage(userId, messageId);
         const listOrder = await CustomOrder.find({});
-        let messageAllOrder = '';
+        const messageAllOrderArray = [];
 
-        for (let i = 0; i < listOrder.length; i++) {
-          let rateCoin = '';
-          if (listOrder[i].status === 'Done' || listOrder[i].status === 'Deleted' && listOrder[i].processed) continue
-          if (listOrder[i].type === 'sell') {
-            rateCoin = listOrder[i].sellCoin;
-          } else {
-            rateCoin = listOrder[i].buyCoin;
-          };
+        listOrder.forEach(order => {
+          if (order.status === 'Done' || (order.status === 'Deleted' && order.processed)) return;
 
-          messageAllOrder += `Ордер №${listOrder[i].orderNumber},
-Тип ордера: ${listOrder[i].type},
-Статус: ${listOrder[i].status},
-Продаваемая монета: ${listOrder[i].sellCoin},
-Покупаемая монета: ${listOrder[i].buyCoin},
-Сумма покупки: ${listOrder[i].buyAmount} ${listOrder[i].buyCoin},
-Сумма продажи: ${listOrder[i].sellAmount} ${listOrder[i].sellCoin},
-Курс осуществления операции: ${listOrder[i].rate} ${rateCoin.toUpperCase()}.\n\n`
-        }
+          const rateCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
+          console.log(rateCoin);
+
+          messageAllOrderArray.push(
+            `Ордер №${order.orderNumber},
+Тип ордера: ${order.type},
+Статус: ${order.status},
+Продажа монеты: ${order.sellCoin},
+Покупка монеты: ${order.buyCoin},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin},
+Курс осуществления операции: ${order.rate} ${rateCoin.toUpperCase()}.\n\n`
+          );
+        });
+
+        const messageAllOrder = messageAllOrderArray.join('');
         bot.sendMessage(userId, messageAllOrder);
         break;
+
 
       case 'new_SpotOrders':
         bot.deleteMessage(userId, messageId);
@@ -1602,7 +1611,6 @@ bot.on('callbackQuery', async (msg) => {
       }
       else if (data.split('_')[1] === 'artery') {
         try {
-          console.log(data);
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
@@ -1986,16 +1994,15 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 // bot.stop();
-checkUserTransaction.start();
-checkUserUsdtTransaction.start();
-chechAdminUsdtTransaction.start();
-checkUserExchangeTransaction.start();
-// updateCoinBalance.start();
+// checkUserTransaction.start();
+// checkUserUsdtTransaction.start();
+// chechAdminUsdtTransaction.start();
+// checkUserExchangeTransaction.start();
 checkOrders.start();
-checkUserMinePlexTransaction.start();
-chechAdminMinePlexTransaction.start();
-checkHashSendAdminComission.start();
-checkUserMpxXfiTransaction.start();
-checkAdminMpxXfiTransaction.start();
-checkArtrBalance.start();
-checkArtrAdminHash.start();
+// checkUserMinePlexTransaction.start();
+// chechAdminMinePlexTransaction.start();
+// checkHashSendAdminComission.start();
+// checkUserMpxXfiTransaction.start();
+// checkAdminMpxXfiTransaction.start();
+// checkArtrBalance.start();
+// checkArtrAdminHash.start();
