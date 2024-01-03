@@ -70,6 +70,7 @@ const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
 const { ControlUserBalance } = require('./helpers/userControl.js');
 const circumcisionAmount = require('./helpers/circumcisionAmount.js');
 const ReplenishmentArtery = require('./function/arteryTransaction.js');
+const currencyRate = require('./function/coinRateUpdate.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -168,23 +169,28 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
     if (text === '/start') {
-      setState(userId, 0);
-      await AuthenticationService.Authentication(userId);
-      bot.sendMessage(userId, `${userName}, добро пожаловать!\nДля того чтобы продолжить работу с ботом, установите в профиль юзернейм и подпишитесь на каналы ниже:\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss`, { replyMarkup: RM_Home });
+      if (getInfoUser === "not user") {
+        setState(userId, 0);
+        await AuthenticationService.Authentication(userId);
+        bot.sendMessage(userId, `${userName}, добро пожаловать!\nДля того чтобы продолжить работу с ботом, установите в профиль юзернейм и подпишитесь на каналы ниже:\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss`, { replyMarkup: RM_Home });
+      } else {
+        setState(userId, 0);
+        bot.sendMessage(userId, `Привет, ${userName}!`, { replyMarkup: RM_Home });
+      }
     }
 
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       // case '/start':
@@ -687,7 +693,7 @@ bot.on('text', async (msg) => {
         if (!validator.isNumeric(text)) {
           return bot.sendMessage(userId, 'Введено не корректное число!');
         }
-        
+
         selectedOrder[userId] = Number(text);
 
         const userP2POrder = await CustomP2POrder.findOne({ id: userId, orderNumber: selectedOrder[userId], status: 'Selling' });
@@ -1486,7 +1492,7 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 13);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      rateExchange[userId] = (await ExchangeRateCoin.ExchangeRate(sellCoin[userId], buyCoin[userId]));
+      rateExchange[userId] = await currencyRate(sellCoin[userId], buyCoin[userId]);
       await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId].toUpperCase()}`);
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена торговля, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }
@@ -1757,7 +1763,7 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 15);
       bot.deleteMessage(userId, messageId);
       sellCoin[userId] = data.split('_')[1];
-      rateExchange[userId] = (await ExchangeRateCoin.ExchangeRate(buyCoin[userId], sellCoin[userId]));
+      rateExchange[userId] = await currencyRate(buyCoin[userId], sellCoin[userId]);
       await bot.sendMessage(userId, `Курс: 1 ${buyCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${sellCoin[userId].toUpperCase()}`);
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена покупка, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }

@@ -23,8 +23,6 @@ class ExchangeRateCoin {
       const rateBuyCoin = (await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin/${coinBuy}`)).data.result.current.price;
       const result = (rateSellCoin / rateBuyCoin) * 0.95;
       return result
-
-
     } catch (error) {
       console.error();
     }
