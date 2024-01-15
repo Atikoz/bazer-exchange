@@ -4,7 +4,7 @@ class ExchangeRateCoin {
   async ExchangeRate(coinSell, coinBuy) {
     try {
       let priceCoin = 1;
-
+      
       if (coinSell === 'del') {
         const responce = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin/${coinBuy}`);
         const rate = responce.data.result.current.price;
@@ -12,7 +12,7 @@ class ExchangeRateCoin {
         return (priceCoin / rate) * 0.95;
       }
       if (coinBuy === 'del') {
-        const responce = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin/${coinBuy}`);
+        const responce = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/coin/${coinSell}`);
         const rate = responce.data.result.current.price;
         priceCoin = rate * 0.95;
 

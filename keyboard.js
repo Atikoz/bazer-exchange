@@ -10,12 +10,8 @@ const RM_Home = bot.keyboard([
 ], { resize: true });
 
 const spotOrderMenu = bot.inlineKeyboard([
-  [bot.inlineButton('Мои ордера ✔️', { callback: 'created_SpotOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_SpotOrders' })],
-  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' })]
-]);
-
-const settingsOrderIK = bot.inlineKeyboard([
-  [bot.inlineButton('Удалить ❌', { callback: 'delete_order' }), bot.inlineButton('В главное меню', { callback: 'main_menu' })]
+  [bot.inlineButton('Текущие ордера ✔️', { callback: 'created_SpotOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_SpotOrders' })],
+  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' }), bot.inlineButton('Выполненные ордера ✔️', { callback: 'completed_SpotOrders' })]
 ]);
 
 const p2pMenuIK = bot.inlineKeyboard([
@@ -126,7 +122,6 @@ module.exports = {
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
-  settingsOrderIK,
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,

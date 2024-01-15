@@ -21,7 +21,6 @@ const {
   balancePage4IK,
   paymentSystemUA,
   paymentSystemRU,
-  settingsOrderIK,
   paymentSystemTUR,
   createdOrderMenu,
   balanceStartPageIK,
@@ -71,6 +70,9 @@ const { ControlUserBalance } = require('./helpers/userControl.js');
 const circumcisionAmount = require('./helpers/circumcisionAmount.js');
 const ReplenishmentArtery = require('./function/arteryTransaction.js');
 const currencyRate = require('./function/coinRateUpdate.js');
+const dataValidation = require('./helpers/dataValidation.js');
+const { freezeBalance, unfreezeBalance } = require('./helpers/holdBalanceManager.js');
+const { calculateSpotTradeFee, calculateFeeTrade } = require('./function/calculateSpotTradeFee.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -220,6 +222,15 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
+        const allOrder = await CustomOrder.find();
+
+        for (let i = 1; i < allOrder.length; i++) {
+          await CustomOrder.updateOne(
+            { orderNumber: i },
+            JSON.parse(`{ "$set" : { "comission": "0" } }`)
+          )
+        }
+
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
@@ -326,8 +337,6 @@ bot.on('text', async (msg) => {
           return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для обмена!', { replyMarkup: RM_Home });
         };
 
-        console
-
         exchangeBuyAmount[userId] = (rateExchange[userId] * exchangeSellAmount[userId]) + 0.0001;
 
         const result = (await ExchangeCoinTransaction.exchangeComission(
@@ -349,7 +358,7 @@ bot.on('text', async (msg) => {
 
       case 13:
         setState(userId, 14);
-        userRate[userId] = Number(text);
+        userRate[userId] = circumcisionAmount(Number(text));
         if (isNaN(userRate[userId])) {
           await setState(userId, 0);
           return bot.sendMessage(userId, 'Введенно не коректное число!\nВведите курс по которому будет осуществлена торговля в стиле: <i>0.0001</i>', { parseMode: "html" });
@@ -360,10 +369,19 @@ bot.on('text', async (msg) => {
 
       case 14:
         setState(userId, 0);
-        amount[userId] = Number(text);
+        amount[userId] = circumcisionAmount(Number(text));
+
         if (isNaN(amount[userId])) {
           setState(userId, 0);
           return bot.sendMessage(userId, 'Введено не коректное число!', { replyMarkup: RM_Home });
+        };
+
+        const feePaymentCurrencyBalance = getInfoUser.userBalance.main.cashback;
+        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
+
+        if (comissionExchanger[userId] > feePaymentCurrencyBalance) {
+          setState(userId, 0);
+          return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
         }
 
         if (amount[userId] > balanceUserCoin[userId]) {
@@ -371,35 +389,43 @@ bot.on('text', async (msg) => {
           return await bot.sendMessage(userId, 'На вашем балансе не достаточно средств!', { replyMarkup: RM_Home });
         }
 
-        sum[userId] = amount[userId] * userRate[userId];
-        orderNumber[userId] = (await CustomOrder.countDocuments()) + 1;
-        bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
-Тип ордера: ${orderType[userId]},
-Продаваемая монета: ${sellCoin[userId]},
-Покупаемая монета: ${buyCoin[userId]},
-Курс продажи: ${userRate[userId]} ${buyCoin[userId]},
+        sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
+        bot.sendMessage(userId, `Тип ордера: ${orderType[userId]},
+Продажа монеты: ${sellCoin[userId].toUpperCase()},
+Покупка монеты: ${buyCoin[userId].toUpperCase()},
+Курс продажи: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
 Количество продажи: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
-Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationSell') });
+Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
+Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationSell') });
         break;
 
       case 15:
         setState(userId, 16);
-        userRate[userId] = Number(text);
+        userRate[userId] = circumcisionAmount(Number(text));
         if (isNaN(userRate[userId])) {
           await setState(userId, 0);
           return bot.sendMessage(userId, 'Введенно не коректное число!\nВведите курс по которому будет осуществлена торговля в стиле: <i>0.0001</i>', { parseMode: "html" });
         }
         balanceUserCoin[userId] = getInfoUser.userBalance.main[sellCoin[userId]];
         digitsBuy[userId] = balanceUserCoin[userId] / userRate[userId];
-        bot.sendMessage(userId, `Согласно введеному курсу доступно для покупки, доступно ${digitsBuy[userId]} ${buyCoin[userId]}\nВведите количество покупки монет:`);
+        bot.sendMessage(userId, `Согласно введеному курсу доступно для покупки, доступно: ${circumcisionAmount(digitsBuy[userId])} ${buyCoin[userId]}\nВведите количество покупки монет:`);
         break;
 
       case 16:
         setState(userId, 0);
-        amount[userId] = Number(text);
+        amount[userId] = circumcisionAmount(Number(text));
         if (isNaN(amount[userId])) {
           setState(userId, 0);
           return bot.sendMessage(userId, 'Введено не коректное число!', { replyMarkup: RM_Home });
+        };
+
+        const feePaymentCurrencyBal = getInfoUser.userBalance.main.cashback;
+        sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
+        comissionExchanger[userId] = await calculateSpotTradeFee(sum[userId], sellCoin[userId]);
+
+        if (comissionExchanger[userId] > feePaymentCurrencyBal) {
+          setState(userId, 0);
+          return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
         }
 
         if (amount[userId] > digitsBuy[userId]) {
@@ -407,32 +433,13 @@ bot.on('text', async (msg) => {
           return await bot.sendMessage(userId, 'На вашем балансе не достаточно средств!\nВведите меньшую сумму или курс покупки монеты!', { replyMarkup: RM_Home });
         }
 
-        sum[userId] = amount[userId] * userRate[userId];
-        orderNumber[userId] = (await CustomOrder.countDocuments()) + 1;
-        bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
-Тип ордера: ${orderType[userId]},
-Продаваемая монета: ${sellCoin[userId]},
-Покупаемая монета: ${buyCoin[userId]},
-Курс покупки: ${userRate[userId]} ${buyCoin[userId]},
+        bot.sendMessage(userId, `Тип ордера: ${orderType[userId]},
+Покупка монеты: ${buyCoin[userId].toUpperCase()},
+Продажа монеты: ${sellCoin[userId].toUpperCase()},
+Курс покупки: 1 ${buyCoin[userId].toUpperCase()} = ${userRate[userId]} ${sellCoin[userId].toUpperCase()},
 Количество покупки: ${amount[userId]} ${buyCoin[userId].toUpperCase()},
-Количество продажи: ${sum[userId]} ${sellCoin[userId].toUpperCase()}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationBuy') });
-        break;
-
-      case 17:
-        setState(userId, 0);
-        number[userId] = Number(text);
-        selectedOrder[userId] = await CustomOrder.findOne({
-          id: userId, orderNumber: number[userId], typeOrder: 'spotSelling'
-        });
-        if (!selectedOrder[userId]) return bot.sendMessage(userId, 'Ордера с таким номером не найденно 😞');
-
-        if (selectedOrder[userId].status === 'Done' && selectedOrder[userId].processed) return bot.sendMessage(userId, `Ордер №${selectedOrder[userId].orderNumber} уже выполнен ✅`);
-
-        await CustomOrder.updateOne(
-          { id: userId, orderNumber: number[userId] },
-          { $set: { status: 'Deleted', processed: true } }
-        );
-        await bot.sendMessage(userId, `Ордер №${selectedOrder[userId].orderNumber} был успешно удалён ✅`);
+Количество продажи: ${sum[userId]} ${sellCoin[userId].toUpperCase()},
+Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationBuy') });
         break;
 
       case 18:
@@ -480,14 +487,14 @@ bot.on('text', async (msg) => {
       case 21:
         setState(userId, 0);
 
-        if (isNaN(text)) { return bot.sendMessage(userId, 'Введено не коректное число!') };
+        if (isNaN(text)) return bot.sendMessage(userId, 'Введено не коректное число!');
 
         userRate[userId] = Number(text);
         orderNumber[userId] = (await CustomP2POrder.countDocuments()) + 1;
         if (orderType[userId] === 'buy') {
           bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
 Тип ордера: ${orderType[userId]},
-Покупаемая монета: ${coin[userId]},
+Покупка монеты: ${coin[userId]},
 Количество покупки: ${amount[userId]} ${coin[userId].toUpperCase()},
 Минимальная сумма закупки монеты: ${sum[userId]} ${coin[userId].toUpperCase()},
 Валюта совершения сделки: ${currencyP2P[userId]},
@@ -496,7 +503,7 @@ bot.on('text', async (msg) => {
         } else {
           bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
 Тип ордера: ${orderType[userId]},
-Продаваемая монета: ${coin[userId]},
+Продажа монеты: ${coin[userId]},
 Количество продажи: ${amount[userId]} ${coin[userId].toUpperCase()},
 Минимальная сумма продажи монеты: ${sum[userId]} ${coin[userId].toUpperCase()},
 Валюта совершения сделки: ${currencyP2P[userId]},
@@ -794,6 +801,68 @@ bot.on('text', async (msg) => {
         }
         break;
 
+      case 29:
+        setState(userId, 0);
+        amount[userId] = text;
+        const validationSellResult = await dataValidation(userId, amount[userId], sellCoin[userId]);
+
+        if (validationSellResult.success) {
+          if (amount[userId] > number[userId]) return bot.sendMessage(userId, 'Сумма покупки монеты указана больше чем в ордере!');
+
+          const balanceCashback = getInfoUser.userBalance.main.cashback;
+          comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
+
+          if (comissionExchanger[userId] > balanceCashback) {
+            setState(userId, 0);
+            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
+          };
+
+          sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
+          const mesg = `Тип ордера: ${orderType[userId]},
+Продажа монеты: ${sellCoin[userId].toUpperCase()},
+Покупка монеты: ${buyCoin[userId].toUpperCase()},
+Курс продажи: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
+Количество продажи: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
+Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
+Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`;
+
+          await bot.sendMessage(userId, mesg, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationSell') });
+        } else {
+          await bot.sendMessage(userId, validationSellResult.errorMessage);
+        }
+        break;
+
+      case 17:
+        setState(userId, 0);
+        amount[userId] = text;
+        const validationBuyResult = await dataValidation(userId, amount[userId], buyCoin[userId]);
+
+        if (validationBuyResult.success) {
+          if (amount[userId] > number[userId]) return bot.sendMessage(userId, 'Сумма покупки монеты указана больше чем в ордере!');
+
+          const balCashback = getInfoUser.userBalance.main.cashback;
+          sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
+          comissionExchanger[userId] = await calculateSpotTradeFee(sum[userId], sellCoin[userId]);
+
+          if (comissionExchanger[userId] > balCashback) {
+            setState(userId, 0);
+            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
+          }
+
+          const mesg = `Тип ордера: ${orderType[userId]},
+Покупка монеты: ${buyCoin[userId].toUpperCase()},
+Продажа монеты: ${sellCoin[userId].toUpperCase()},
+Курс продажи: 1 ${buyCoin[userId].toUpperCase()} = ${userRate[userId]} ${sellCoin[userId].toUpperCase()},
+Количество покупки: ${amount[userId]} ${buyCoin[userId].toUpperCase()},
+Количество продажи: ${sum[userId]} ${sellCoin[userId].toUpperCase()},
+Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`;
+
+          await bot.sendMessage(userId, mesg, { replyMarkup: generateButton(acceptCancelOrderIK, 'operationBuy') });
+        } else {
+          await bot.sendMessage(userId, validationBuyResult.errorMessage);
+        }
+        break;
+
       default:
         break;
     };
@@ -888,27 +957,24 @@ bot.on('callbackQuery', async (msg) => {
 
     switch (data) {
       case 'balance':
-        bot.deleteMessage(userId, messageId);
         await pageNavigationButton(userId, textBalance, 0, 20);
-        await bot.sendMessage(userId, list[userId].join('\n'), { replyMarkup: balanceStartPageIK });
+        await bot.editMessageText({ chatId: userId, messageId: messageId }, list[userId].join('\n'), { replyMarkup: balanceStartPageIK });
         break;
 
       case 'balance_page2':
-        bot.deleteMessage(userId, messageId);
         await pageNavigationButton(userId, textBalance, 20, 40);
-        bot.sendMessage(userId, list[userId].join('\n'), { replyMarkup: balancePage2IK });
+        await bot.editMessageText({ chatId: userId, messageId: messageId }, list[userId].join('\n'), { replyMarkup: balancePage2IK }).catch((errr) => console.log(errr))
         break;
 
       case 'balance_page3':
-        bot.deleteMessage(userId, messageId);
         await pageNavigationButton(userId, textBalance, 40, 60);
-        await bot.sendMessage(userId, list[userId].join('\n'), { replyMarkup: balancePage3IK });
+        await bot.editMessageText({ chatId: userId, messageId: messageId }, list[userId].join('\n'), { replyMarkup: balancePage3IK });
         break;
 
       case 'balance_page4':
         bot.deleteMessage(userId, messageId);
         await pageNavigationButton(userId, textBalance, 60, textBalance.length);
-        await bot.sendMessage(userId, list[userId].join('\n'), { replyMarkup: balancePage4IK });
+        await bot.editMessageText({ chatId: userId, messageId: messageId }, list[userId].join('\n'), { replyMarkup: balancePage4IK });
         break;
 
       case 'user_replenishment':
@@ -1037,65 +1103,95 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'created_SpotOrders':
-        bot.deleteMessage(userId, messageId);
-        const userOrder = await CustomOrder.find({ id: userId });
+        try {
+          bot.deleteMessage(userId, messageId);
+          const userOrder = (await CustomOrder.find({ id: userId })).filter(order => !(order.status === 'Done' || order.status === 'Deleted'))
 
-        if (userOrder.length === 0) {
-          return bot.sendMessage(userId, 'Вы еще не создавали ни одного ордера 😞');
-        }
+          if (userOrder.length === 0) {
+            return bot.sendMessage(userId, 'На площадке не торгуется ни один ордер 😞');
+          }
 
-        const messageUserOrder = userOrder
-          .filter(order => !(order.status === 'Done' || (order.status === 'Deleted' && order.processed)))
-          .map(order => {
-            const rateCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
+          userOrder.forEach(order => {
+            const rateCoin = (order.type === 'buy') ? order.sellCoin : order.buyCoin;
+            const rateSellCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
 
-            return `Ордер №${order.orderNumber},
+            const settingsOrderIK = bot.inlineKeyboard([
+              [bot.inlineButton('Удалить ❌', { callback: `deleteOrder_${order.orderNumber}` })]
+            ])
+
+            bot.sendMessage(userId, `Ордер №${order.orderNumber},
 Тип ордера: ${order.type},
 Статус: ${order.status},
-Продажа монеты: ${order.sellCoin},
-Покупка монеты: ${order.buyCoin},
-Сумма покупки: ${order.buyAmount} ${order.buyCoin},
-Сумма продажи: ${order.sellAmount} ${order.sellCoin},
-Курс осуществления операции: ${order.rate} ${rateCoin.toUpperCase()}.\n\n`;
+Продажа монеты: ${order.sellCoin.toUpperCase()},
+Покупка монеты: ${order.buyCoin.toUpperCase()},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin.toUpperCase()},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin.toUpperCase()},
+Курс осуществления операции: 1 ${rateSellCoin.toUpperCase()} = ${order.rate} ${rateCoin.toUpperCase()}.`, { replyMarkup: settingsOrderIK });
           })
-          .join('');
-
-        bot.sendMessage(userId, messageUserOrder, { replyMarkup: settingsOrderIK });
+        } catch (error) {
+          console.error(error)
+        }
         break;
 
+      case 'completed_SpotOrders':
+        try {
+          bot.deleteMessage(userId, messageId);
+          const userOrder = await CustomOrder.find({ id: userId });
 
-      case 'delete_order':
-        setState(userId, 17);
-        bot.sendMessage(userId, 'Введите номер ордера который желаете удалить:');
+          if (userOrder.length === 0) {
+            return bot.sendMessage(userId, 'Вы еще не создавали ни одного ордера 😞');
+          }
+
+          const messageUserOrder = userOrder
+            .filter(order => !(order.status === 'Selling'))
+            .map(order => {
+              const rateCoin = (order.type === 'buy') ? order.sellCoin : order.buyCoin;
+              const rateSellCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
+
+              return `Ордер №${order.orderNumber},
+Тип ордера: ${order.type},
+Статус: ${order.status},
+Продажа монеты: ${order.sellCoin.toUpperCase()},
+Покупка монеты: ${order.buyCoin.toUpperCase()},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin.toUpperCase()},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin.toUpperCase()},
+Курс осуществления операции: 1 ${rateSellCoin.toUpperCase()} = ${order.rate} ${rateCoin.toUpperCase()}.\n\n`;
+            })
+            .join('');
+
+          await bot.sendMessage(userId, messageUserOrder);
+        } catch (error) {
+          console.error(error)
+        }
         break;
 
       case 'list_SpotOrders':
         bot.deleteMessage(userId, messageId);
         const listOrder = await CustomOrder.find({});
-        const messageAllOrderArray = [];
+        const filteredArray = listOrder.filter(order => !(order.status === 'Done' || (order.status === 'Deleted')));
 
-        listOrder.forEach(order => {
-          if (order.status === 'Done' || (order.status === 'Deleted' && order.processed)) return;
+        if (filteredArray.length === 0) return bot.sendMessage(userId, 'Сейчас на площадке нету ни 1 ордера.')
 
-          const rateCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
-          console.log(rateCoin);
+        filteredArray.forEach(order => {
+          const rateCoin = (order.type === 'buy') ? order.sellCoin : order.buyCoin;
+          const rateSellCoin = (order.type === 'sell') ? order.sellCoin : order.buyCoin;
 
-          messageAllOrderArray.push(
+          const selectSpotOrder = bot.inlineKeyboard([
+            [bot.inlineButton('Создать встречный ордер ✅', { callback: `createCounterOrder_${order.orderNumber}` })]
+          ])
+
+          bot.sendMessage(userId,
             `Ордер №${order.orderNumber},
 Тип ордера: ${order.type},
 Статус: ${order.status},
-Продажа монеты: ${order.sellCoin},
-Покупка монеты: ${order.buyCoin},
-Сумма покупки: ${order.buyAmount} ${order.buyCoin},
-Сумма продажи: ${order.sellAmount} ${order.sellCoin},
-Курс осуществления операции: ${order.rate} ${rateCoin.toUpperCase()}.\n\n`
-          );
+Продажа монеты: ${order.sellCoin.toUpperCase()},
+Покупка монеты: ${order.buyCoin.toUpperCase()},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin.toUpperCase()},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin.toUpperCase()},
+Курс осуществления операции: 1 ${rateSellCoin.toUpperCase()} = ${order.rate} ${rateCoin.toUpperCase()}.\n\n`,
+            { replyMarkup: selectSpotOrder });
         });
-
-        const messageAllOrder = messageAllOrderArray.join('');
-        bot.sendMessage(userId, messageAllOrder);
         break;
-
 
       case 'new_SpotOrders':
         bot.deleteMessage(userId, messageId);
@@ -1118,10 +1214,11 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'operationSell_accept':
         bot.deleteMessage(userId, messageId);
-        CustomOrder.create({
+        const orderSellNumber = (await CustomOrder.countDocuments()) + 1;
+
+        await CustomOrder.create({
           id: userId,
-          orderNumber: orderNumber[userId],
-          typeOrder: 'spotSelling',
+          orderNumber: orderSellNumber,
           type: orderType[userId],
           status: 'Selling',
           processed: false,
@@ -1129,10 +1226,14 @@ bot.on('callbackQuery', async (msg) => {
           buyCoin: buyCoin[userId],
           sellAmount: amount[userId],
           buyAmount: sum[userId],
-          rate: userRate[userId]
-        })
-        await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home });
-        await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${orderNumber[userId]}`)
+          rate: userRate[userId],
+          comission: comissionExchanger[userId]
+        });
+
+        await freezeBalance(userId, amount[userId], sellCoin[userId]);
+        await freezeBalance(userId, comissionExchanger[userId], 'cashback');
+        await bot.sendMessage(userId, `Ордер №${orderSellNumber} успешно создан ✅`, { replyMarkup: RM_Home });
+        await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${orderSellNumber}`)
 
         break;
 
@@ -1144,10 +1245,11 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'operationBuy_accept':
         bot.deleteMessage(userId, messageId);
-        CustomOrder.create({
+        const orderBuyNumber = (await CustomOrder.countDocuments()) + 1;
+
+        await CustomOrder.create({
           id: userId,
-          orderNumber: orderNumber[userId],
-          typeOrder: 'spotSelling',
+          orderNumber: orderBuyNumber,
           type: orderType[userId],
           status: 'Selling',
           processed: false,
@@ -1155,10 +1257,14 @@ bot.on('callbackQuery', async (msg) => {
           buyCoin: buyCoin[userId],
           sellAmount: sum[userId],
           buyAmount: amount[userId],
-          rate: userRate[userId]
-        })
-        await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home });
-        await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${orderNumber[userId]}`)
+          rate: userRate[userId],
+          comission: comissionExchanger[userId]
+        });
+
+        await freezeBalance(userId, sum[userId], sellCoin[userId]);
+        await freezeBalance(userId, comissionExchanger[userId], 'cashback');
+        await bot.sendMessage(userId, `Ордер №${orderBuyNumber} успешно создан ✅`, { replyMarkup: RM_Home });
+        await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${orderBuyNumber}`)
         break;
 
       case 'operationBuy_cancel':
@@ -1194,7 +1300,7 @@ bot.on('callbackQuery', async (msg) => {
           messageP2PUserOrder += `Ордер №${userP2POrder[i].orderNumber},
 Тип ордера: ${userP2POrder[i].type},
 Статус: ${userP2POrder[i].status},
-Покупаемая монета: ${userP2POrder[i].coin},
+Покупка монеты: ${userP2POrder[i].coin},
 Количество покупки: ${userP2POrder[i].amount} ${userP2POrder[i].coin},
 Минимальная сумма закупки монеты: ${userP2POrder[i].minAmount} ${userP2POrder[i].coin},
 Валюта совершения сделки: ${userP2POrder[i].currency},
@@ -1218,7 +1324,7 @@ bot.on('callbackQuery', async (msg) => {
           if (Number(buyAllP2POrder[i].id) === userId) {
 
             messageP2PBuyAllOrder += `Ордер №${buyAllP2POrder[i].orderNumber} (you),
-Покупаемая монета: ${buyAllP2POrder[i].coin},
+Покупка монеты: ${buyAllP2POrder[i].coin},
 Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
 Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
 Валюта совершения сделки: ${buyAllP2POrder[i].currency},
@@ -1226,7 +1332,7 @@ bot.on('callbackQuery', async (msg) => {
 Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.\n\n`
           } else {
             messageP2PBuyAllOrder += `Ордер №${buyAllP2POrder[i].orderNumber},
-Покупаемая монета: ${buyAllP2POrder[i].coin},
+Покупка монеты: ${buyAllP2POrder[i].coin},
 Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
 Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
 Валюта совершения сделки: ${buyAllP2POrder[i].currency},
@@ -1251,7 +1357,7 @@ bot.on('callbackQuery', async (msg) => {
           if (sellAllP2POrder[i].status === 'Done' || sellAllP2POrder[i].status === 'Filling' || sellAllP2POrder[i].status === 'Deleted' && sellAllP2POrder[i].processed) continue
           if (Number(sellAllP2POrder[i].id) === userId) {
             messageP2PSellAllOrder += `Ордер №${sellAllP2POrder[i].orderNumber} (you),
-Продаваемая монета: ${sellAllP2POrder[i].coin},
+Продажа монеты: ${sellAllP2POrder[i].coin},
 Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
 Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
 Валюта совершения сделки: ${sellAllP2POrder[i].currency},
@@ -1259,7 +1365,7 @@ bot.on('callbackQuery', async (msg) => {
 Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.\n\n`
           } else {
             messageP2PSellAllOrder += `Ордер №${sellAllP2POrder[i].orderNumber},
-Продаваемая монета: ${sellAllP2POrder[i].coin},
+Продажа монеты: ${sellAllP2POrder[i].coin},
 Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
 Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
 Валюта совершения сделки: ${sellAllP2POrder[i].currency},
@@ -1492,11 +1598,72 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 13);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      rateExchange[userId] = await currencyRate(sellCoin[userId], buyCoin[userId]);
-      await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId].toUpperCase()}`);
+      const rate = await currencyRate(sellCoin[userId], buyCoin[userId]);
+      rateExchange[userId] = circumcisionAmount(rate);
+      await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} = <code>${rateExchange[userId]}</code> ${buyCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена торговля, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }
+    else if (data.split('_')[0] === 'createCounterOrder') {
+      const selectedOrder = data.split('_')[1];
+      const selectOrderData = await CustomOrder.findOne({ orderNumber: selectedOrder });
+      console.log(selectOrderData);
 
+      if (selectOrderData.status === 'Done' || selectOrderData.status === 'Deleted') return bot.sendMessage(userId, 'Данного ордера больше не существует!');
+
+      switch (selectOrderData.type) {
+        case 'sell':
+          setState(userId, 17);
+          orderType[userId] = 'buy';
+          userRate[userId] = selectOrderData.rate;
+          sellCoin[userId] = selectOrderData.buyCoin;
+          buyCoin[userId] = selectOrderData.sellCoin;
+          number[userId] = selectOrderData.sellAmount;
+          balanceUserCoin[userId] = getInfoUser.userBalance.main[buyCoin[userId]];
+
+          const message = `Выбран ордер №${selectedOrder}!
+Для покупки доступно: ${circumcisionAmount(balanceUserCoin[userId])} ${buyCoin[userId].toUpperCase()}.
+Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.
+Введите сумму покупки ${buyCoin[userId]} (не больше: <code>${number[userId]}</code> ${buyCoin[userId]}): `
+          bot.sendMessage(userId, message, { parseMode: 'html' });
+          break;
+
+        case 'buy':
+          setState(userId, 29);
+          orderType[userId] = 'sell';
+          userRate[userId] = selectOrderData.rate;
+          buyCoin[userId] = selectOrderData.sellCoin;
+          sellCoin[userId] = selectOrderData.buyCoin;
+          number[userId] = selectOrderData.buyAmount;
+          balanceUserCoin[userId] = getInfoUser.userBalance.main[sellCoin[userId]];
+
+          const textMessage = `Выбран ордер №${selectedOrder}!
+Для продажи доступно: ${circumcisionAmount(balanceUserCoin[userId])} ${sellCoin[userId].toUpperCase()}.
+Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.
+Введите сумму продажи ${sellCoin[userId]} (не больше: <code>${number[userId]}</code> ${sellCoin[userId]}): `;
+          bot.sendMessage(userId, textMessage, { parseMode: 'html' });
+          break;
+
+        default:
+          break;
+      };
+    }
+    else if (data.split('_')[0] === 'deleteOrder') {
+      const numberDeleteOrder = data.split('_')[1];
+      const deleteOrder = await CustomOrder.findOne(
+        { id: userId, orderNumber: numberDeleteOrder }
+      );
+      if (deleteOrder.status === 'Deleted' || deleteOrder.status === 'Done') return bot.sendMessage(userId, `Простите, но ордера по №${numberDeleteOrder} не существует.`);
+
+      await CustomOrder.updateOne(
+        { id: userId, orderNumber: numberDeleteOrder },
+        { $set: { status: 'Deleted' } }
+      );
+
+      await unfreezeBalance(userId, deleteOrder.sellAmount, deleteOrder.sellCoin);
+      await unfreezeBalance(userId, deleteOrder.comission, 'cashback');
+
+      await bot.sendMessage(userId, `Ордер №${numberDeleteOrder} был успешно удалён ✅`);
+    }
     else if (data === 'replenishment_Page1') {
       bot.deleteMessage(userId, messageId);
       await pageNavigationButton(userId, arrayCoinList, 0, 20);
@@ -1695,7 +1862,7 @@ bot.on('callbackQuery', async (msg) => {
         setState(userId, 12)
         bot.deleteMessage(userId, messageId);
         buyCoin[userId] = data.split('_')[1];
-        rateExchange[userId] = (await ExchangeRateCoin.ExchangeRate(sellCoin[userId], buyCoin[userId])) - 0.001;
+        rateExchange[userId] = await ExchangeRateCoin.ExchangeRate(sellCoin[userId], buyCoin[userId]);
         await bot.sendMessage(userId, `Курс пары обмена 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}\nДоступно для обмена: ${balanceUserCoin[userId]}`);
         await bot.sendMessage(userId, 'Введите количество продажи монет:');
       } catch (error) {
@@ -1764,7 +1931,8 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId, messageId);
       sellCoin[userId] = data.split('_')[1];
       rateExchange[userId] = await currencyRate(buyCoin[userId], sellCoin[userId]);
-      await bot.sendMessage(userId, `Курс: 1 ${buyCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${sellCoin[userId].toUpperCase()}`);
+      console.log(rateExchange[userId]);
+      await bot.sendMessage(userId, `Курс: 1 ${buyCoin[userId].toUpperCase()} = <code>${circumcisionAmount(rateExchange[userId])}</code> ${sellCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена покупка, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }
     else if (data === 'buyP2P_Page1') {
@@ -1816,7 +1984,6 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId, messageId);
       if (orderType[userId] === 'buy') {
         setState(userId, 19);
-
         await bot.sendMessage(userId, 'Введите количество покупки монеты:');
       } else {
         setState(userId, 18);

@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const CustomOrder = mongoose.model('CustomOrder', {
   id: String,
   orderNumber: Number,
-  typeOrder: String,
   type: String,
   status: String,
   processed: Boolean,
@@ -11,7 +10,8 @@ const CustomOrder = mongoose.model('CustomOrder', {
   buyCoin: String,
   buyAmount: Number,
   sellAmount: Number,
-  rate: Number
+  rate: Number,
+  comission: Number
 })
 
 module.exports = CustomOrder;
