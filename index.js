@@ -72,7 +72,7 @@ const ReplenishmentArtery = require('./function/arteryTransaction.js');
 const currencyRate = require('./function/coinRateUpdate.js');
 const dataValidation = require('./helpers/dataValidation.js');
 const { freezeBalance, unfreezeBalance } = require('./helpers/holdBalanceManager.js');
-const { calculateSpotTradeFee, calculateFeeTrade } = require('./function/calculateSpotTradeFee.js');
+const { calculateSpotTradeFee } = require('./function/calculateSpotTradeFee.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 

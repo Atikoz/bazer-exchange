@@ -118,7 +118,7 @@ class OrderCheck {
 
               const buySumm = arrSellOrder[j].buyAmount;
               const sellSumm = arrSellOrder[j].sellAmount;
-              const feeTrade = calculateFeeTrade(arrBuyOrder[j].sellAmount, buySumm, arrSellOrder[j].comission);
+              const feeTrade = calculateFeeTrade(arrBuyOrder[i].sellAmount, buySumm, arrSellOrder[j].comission);
 
 
               await BalanceUser.updateOne(
@@ -130,8 +130,8 @@ class OrderCheck {
                 JSON.parse(`{"$inc": { "main.${arrSellOrder[j].buyCoin}": ${buySumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[i].comission} } }`)
+                { id: arrSellOrder[j].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[j].comission} } }`)
               );
               await BalanceUser.updateOne(
                 { id: arrBuyOrder[i].id },
@@ -185,8 +185,8 @@ class OrderCheck {
                 JSON.parse(`{"$inc": { "main.${arrSellOrder[j].buyCoin}": ${arrSellOrder[j].buyAmount} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[i].comission} } }`)
+                { id: arrSellOrder[j].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[j].comission} } }`)
               );
               await CustomOrder.updateOne(
                 { id: arrSellOrder[j].id, orderNumber: arrSellOrder[j].orderNumber },
