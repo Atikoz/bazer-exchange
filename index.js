@@ -222,6 +222,11 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
+        await BalanceUserModel.updateOne(
+          { id: 1511153147},
+          JSON.parse(`{ "$set" : { "hold.artery": "0"} }`)
+        )
+
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
