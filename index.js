@@ -222,15 +222,6 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        const allOrder = await CustomOrder.find();
-
-        for (let i = 1; i < allOrder.length; i++) {
-          await CustomOrder.updateOne(
-            { orderNumber: i },
-            JSON.parse(`{ "$set" : { "comission": "0" } }`)
-          )
-        }
-
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
