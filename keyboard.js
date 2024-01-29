@@ -82,10 +82,6 @@ const paymentSystemTUR = [
   'Isbank', 'GarantiBBVA'
 ];
 
-const backP2PmenuIK = bot.inlineKeyboard([
-  [bot.inlineButton('Назад 🔙', { callback: 'backP2Pmenu' })]
-]);
-
 const payOrder = bot.inlineKeyboard([
   [bot.inlineButton('Готово ✅', { callback: 'payOrderAccept' }), bot.inlineButton('Отменить ❌', { callback: 'payOrderCancel' })]
 ]);
@@ -113,7 +109,6 @@ module.exports = {
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
-  backP2PmenuIK,
   typeSpotOrder,
   balancePage2IK,
   balancePage3IK,

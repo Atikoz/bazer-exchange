@@ -13,7 +13,6 @@ const {
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
-  backP2PmenuIK,
   spotOrderMenu,
   typeSpotOrder,
   balancePage2IK,
@@ -170,10 +169,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -191,7 +190,7 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       // case '/start':
@@ -202,7 +201,7 @@ bot.on('text', async (msg) => {
 
       case 'Мой кабинет 📂':
         setState(userId, 0);
-        const quantytyCoin = /*(Object.keys((await BalanceUserModel.findOne({id: userId})).main)).length;*/ 61;
+        const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({id: userId})).main)).length;
         await bot.sendMessage(userId, 'Вы перейшли в свой кабинет!')
           .then(() => bot.sendMessage(userId, `👤 Имя: ${userName}\n🆔 ID: ${userId}\n🏦 Статус:...\n💲 Количество монет в боте: ${quantytyCoin}`, { replyMarkup: cabinetIK }));
         break;
@@ -2147,15 +2146,15 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 // bot.stop();
-// checkUserTransaction.start();
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
-// checkUserExchangeTransaction.start();
-// checkOrders.start();
-// checkUserMinePlexTransaction.start();
-// chechAdminMinePlexTransaction.start();
-// checkHashSendAdminComission.start();
-// checkUserMpxXfiTransaction.start();
-// checkAdminMpxXfiTransaction.start();
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
+checkUserTransaction.start();
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
+checkUserExchangeTransaction.start();
+checkOrders.start();
+checkUserMinePlexTransaction.start();
+chechAdminMinePlexTransaction.start();
+checkHashSendAdminComission.start();
+checkUserMpxXfiTransaction.start();
+checkAdminMpxXfiTransaction.start();
+checkArtrBalance.start();
+checkArtrAdminHash.start();
