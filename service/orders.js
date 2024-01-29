@@ -13,7 +13,6 @@ let arrBuyOrder = [];
 let arrSellOrder = [];
 
 class OrderCheck {
-
   async SplitOrders() {
     try {
       const buy = [];

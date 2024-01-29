@@ -22,7 +22,6 @@ const {
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
-  createdOrderMenu,
   balanceStartPageIK,
   acceptCancelOrderIK,
   acceptCancelExchangeIK,
@@ -69,10 +68,10 @@ const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
 const { ControlUserBalance } = require('./helpers/userControl.js');
 const circumcisionAmount = require('./helpers/circumcisionAmount.js');
 const ReplenishmentArtery = require('./function/arteryTransaction.js');
-const currencyRate = require('./function/coinRateUpdate.js');
 const dataValidation = require('./helpers/dataValidation.js');
 const { freezeBalance, unfreezeBalance } = require('./helpers/holdBalanceManager.js');
 const { calculateSpotTradeFee } = require('./function/calculateSpotTradeFee.js');
+const { getCoinRate, getCurrencyRate } = require('./helpers/getCoinRate.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -171,10 +170,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -192,7 +191,7 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       // case '/start':
@@ -221,11 +220,6 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
-
-        await BalanceUserModel.updateOne(
-          { id: 1511153147},
-          JSON.parse(`{ "$set" : { "hold.artery": "0"} }`)
-        )
 
         // async function startTe() {
         //   try {
@@ -441,29 +435,28 @@ bot.on('text', async (msg) => {
       case 18:
         setState(userId, 19);
         requisites[userId] = Number(text);
-        await bot.sendMessage(userId, 'Введите количество продажи монеты:');
+        bot.sendMessage(userId, 'Введите количество продажи монеты:');
         break;
 
       case 19:
-        setState(userId, 20);
         amount[userId] = Number(text);
         if (isNaN(text)) {
           setState(userId, 0);
           return bot.sendMessage(userId, 'Введено не коректное число');
-        };
+        }
 
         if (orderType[userId] === 'buy') {
-
           bot.sendMessage(userId, 'Введите минимальную сумму закупки монеты:');
         } else {
-
           if (text > getInfoUser.userBalance.main[coin[userId]]) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'На вашем балансе не достаточно средств.');
-          };
+          }
 
           bot.sendMessage(userId, 'Введите минимальную сумму продажи монеты:');
         }
+
+        setState(userId, 20);
         break;
 
       case 20:
@@ -473,10 +466,13 @@ bot.on('text', async (msg) => {
           return bot.sendMessage(userId, 'Введено не коректное число');
         };
         sum[userId] = Number(text);
+
+        const rateStockExchange = await getCurrencyRate(coin[userId], currencyP2P[userId]);
+
         if (orderType[userId] === 'buy') {
-          bot.sendMessage(userId, 'Введите курс закупки монет, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
+          bot.sendMessage(userId, `Курс на биржах: 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. Введите курс закупки монет, курс должен быть в стиле <i>0.0001</i>:`, { parseMode: "html" });
         } else {
-          bot.sendMessage(userId, 'Введите курс продажи монет, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
+          bot.sendMessage(userId, `Курс на биржах: 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. Введите курс продажи монет, курс должен быть в стиле <i>0.0001</i>:`, { parseMode: "html" });
         }
         break;
 
@@ -510,44 +506,6 @@ bot.on('text', async (msg) => {
         break;
 
       case 22:
-        if (isNaN(text)) {
-          setState(userId, 0);
-          return bot.sendMessage(userId, 'Введено не корректное число!', { replyMarkup: p2pMenuIK });
-        };
-
-        const numberOrder = Number(text);
-        selectedOrder[userId] = await CustomP2POrder.findOne({
-          orderNumber: numberOrder
-        });
-
-        if (!selectedOrder[userId]) {
-          setState(userId, 0);
-          return bot.sendMessage(userId, 'По данному запросу не найденно ни 1 ордера!', { replyMarkup: p2pMenuIK });
-        };
-
-        if (Number(selectedOrder[userId].id) === userId) {
-          setState(userId, 0);
-          return bot.sendMessage(userId, 'Нельзя выбрать свой ордер!', { replyMarkup: p2pMenuIK });
-        };
-
-        if (orderType[userId] === 'buy' && selectedOrder[userId].type === 'buy' || orderType[userId] === 'sell' && selectedOrder[userId].type === 'sell') {
-          setState(userId, 0);
-          return bot.sendMessage(userId, `Ошибка вы указали номер ордера которыйт является типом ${selectedOrder[userId].type.toUpperCase()}\nПробуйте ввести другой номер...`, { replyMarkup: p2pMenuIK });
-        };
-
-        await CustomP2POrder.updateOne(
-          { orderNumber: numberOrder },
-          { $set: { status: 'Filling' } }
-        );
-
-        if (orderType[userId] === 'sell') {
-          setState(userId, 23);
-          bot.sendMessage(userId, 'Введите реквизиты на которые желаете получить деньги:');
-        } else {
-          setState(userId, 25);
-          await bot.sendMessage(selectedOrder[userId].id, `Сработал ордер №${selectedOrder[userId].orderNumber}, покупатель в скором времени совершит оплату.`);
-          await bot.sendMessage(userId, `Лимит ордера: ${selectedOrder[userId].minAmount} - ${selectedOrder[userId].amount} ${selectedOrder[userId].coin.toUpperCase()}.\nВведите количество покупки монеты:`);
-        }
         break;
 
       case 23:
@@ -584,6 +542,13 @@ bot.on('text', async (msg) => {
         };
 
         if (text > getInfoUser.userBalance.main[coin[userId]]) {
+          await OrderFilling.deleteOne(
+            { orderNumber: selectedOrder[userId].orderNumber }
+          );
+          await CustomP2POrder.updateOne(
+            { orderNumber: selectedOrder[userId].orderNumber },
+            { $set: { status: 'Selling' } }
+          );
           return bot.sendMessage(userId, 'На вашем балансе не достаточно средств!');
         }
 
@@ -692,36 +657,6 @@ bot.on('text', async (msg) => {
         break;
 
       case 26:
-        setState(userId, 0);
-        if (!validator.isNumeric(text)) {
-          return bot.sendMessage(userId, 'Введено не корректное число!');
-        }
-
-        selectedOrder[userId] = Number(text);
-
-        const userP2POrder = await CustomP2POrder.findOne({ id: userId, orderNumber: selectedOrder[userId], status: 'Selling' });
-
-        if (!userP2POrder) {
-          return bot.sendMessage(userId, 'Не найденно ни 1 ордера с таким номером')
-        };
-
-        if (userP2POrder.type === 'buy') {
-          await CustomP2POrder.deleteOne({ id: userId, orderNumber: selectedOrder[userId] });
-          await bot.sendMessage(userId, `Ордер №${userP2POrder.orderNumber} был успешно удалён.`);
-          await sendLog(`Пользователь ${userId} удалил Р2Р ордер №${userP2POrder.orderNumber}`);
-        } else {
-          await CustomP2POrder.deleteOne({ id: userId, orderNumber: selectedOrder[userId] });
-          await BalanceUserModel.updateOne(
-            { id: userId },
-            JSON.parse(`{"$inc": { "hold.${userP2POrder.coin}": -${userP2POrder.amount} } }`)
-          );
-          await BalanceUserModel.updateOne(
-            { id: userId },
-            JSON.parse(`{"$inc": { "main.${userP2POrder.coin}": ${userP2POrder.amount} } }`)
-          );
-          await bot.sendMessage(userId, `Ордер №${userP2POrder.orderNumber} был успешно удалён, средства возвращенны на ваш баланс`);
-          await sendLog(`Пользователь ${userId} удалил Р2Р ордер №${userP2POrder.orderNumber}`);
-        }
         break;
 
       case 27:
@@ -877,6 +812,8 @@ bot.on('callbackQuery', async (msg) => {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const arrayCoinList = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
     const firstPage = arrayCoinList.slice(0, 20);
+
+    console.log(data);
 
     const textBalance = [
       '💵 Балансы:',
@@ -1274,11 +1211,6 @@ bot.on('callbackQuery', async (msg) => {
         bot.sendMessage(userId, 'Вы перешли в раздел Р2Р:', { replyMarkup: p2pMenuIK });
         break;
 
-      case 'deleteP2P':
-        setState(userId, 26);
-        bot.sendMessage(userId, 'Введите номер ордера который желаете удалить:');
-        break;
-
       case 'new_p2pOrders':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, 'Выберите тип ордера:', { replyMarkup: typeP2POrder });
@@ -1286,14 +1218,14 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'created_p2pOrders':
         bot.deleteMessage(userId, messageId);
-        const userP2POrder = await CustomP2POrder.find({ id: userId });
-        if (userP2POrder.length === 0) return bot.sendMessage(userId, 'Вы еще не создавали ни 1 ордера 😞');
-        let messageP2PUserOrder = '';
+        const userP2POrder = (await CustomP2POrder.find({ id: userId })).filter(order => !(order.status === 'Done' || order.status === 'Deleted'));
+        if (userP2POrder.length === 0) return bot.sendMessage(userId, 'Сейчас на площадке не торгуется ни 1 ордер 😞');
 
         for (let i = 0; i < userP2POrder.length; i++) {
-          if (userP2POrder[i].status === 'Done' || userP2POrder[i].status === 'Deleted' && userP2POrder[i].processed) continue
-
-          messageP2PUserOrder += `Ордер №${userP2POrder[i].orderNumber},
+          const deleteP2PIK = bot.inlineKeyboard([
+            [bot.inlineButton('Удалить ордер ❌', { callback: `deleteP2P_${userP2POrder[i].orderNumber}` })]
+          ]);
+          const messageP2PUserOrder = `Ордер №${userP2POrder[i].orderNumber},
 Тип ордера: ${userP2POrder[i].type},
 Статус: ${userP2POrder[i].status},
 Покупка монеты: ${userP2POrder[i].coin},
@@ -1301,76 +1233,86 @@ bot.on('callbackQuery', async (msg) => {
 Минимальная сумма закупки монеты: ${userP2POrder[i].minAmount} ${userP2POrder[i].coin},
 Валюта совершения сделки: ${userP2POrder[i].currency},
 Способ оплаты: ${userP2POrder[i].paymentSystem},
-Курс покупки: ${userP2POrder[i].rate} ${userP2POrder[i].currency.toUpperCase()}.\n\n`
+Курс покупки: ${userP2POrder[i].rate} ${userP2POrder[i].currency.toUpperCase()}.`
+          await bot.sendMessage(userId, messageP2PUserOrder, { replyMarkup: deleteP2PIK });
         };
-        await bot.sendMessage(userId, messageP2PUserOrder, { replyMarkup: createdOrderMenu });
         break;
 
       case 'buyList_p2pOrders':
-        setState(userId, 22);
         orderType[userId] = 'buy';
         bot.deleteMessage(userId, messageId);
-        const buyAllP2POrder = await CustomP2POrder.find({ type: 'sell' });
+        const buyAllP2POrder = (await CustomP2POrder.find({ type: 'sell' })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
         if (buyAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
 
-        let messageP2PBuyAllOrder = '';
-
         for (let i = 0; i < buyAllP2POrder.length; i++) {
-          if (buyAllP2POrder[i].status === 'Done' || buyAllP2POrder[i].status === 'Filling' || buyAllP2POrder[i].status === 'Deleted' && buyAllP2POrder[i].processed) continue
+
+          const startTradingIK = bot.inlineKeyboard([
+            [bot.inlineButton('Купить', { callback: `p2pTrade_${buyAllP2POrder[i].orderNumber}` })]
+          ]);
+
+          // если создатель ордера пользователь
           if (Number(buyAllP2POrder[i].id) === userId) {
 
-            messageP2PBuyAllOrder += `Ордер №${buyAllP2POrder[i].orderNumber} (you),
+            const messageP2PBuyUserOrder = `Ордер №${buyAllP2POrder[i].orderNumber} (you),
 Покупка монеты: ${buyAllP2POrder[i].coin},
 Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
 Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
 Валюта совершения сделки: ${buyAllP2POrder[i].currency},
 Способ оплаты: ${buyAllP2POrder[i].paymentSystem},
-Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.\n\n`
+Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.`;
+
+            bot.sendMessage(userId, messageP2PBuyUserOrder);
           } else {
-            messageP2PBuyAllOrder += `Ордер №${buyAllP2POrder[i].orderNumber},
+            const messageP2PBuyOrder = `Ордер №${buyAllP2POrder[i].orderNumber},
 Покупка монеты: ${buyAllP2POrder[i].coin},
 Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
 Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
 Валюта совершения сделки: ${buyAllP2POrder[i].currency},
 Способ оплаты: ${buyAllP2POrder[i].paymentSystem},
-Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.\n\n`
+Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.`;
+
+            await bot.sendMessage(userId, messageP2PBuyOrder, { replyMarkup: startTradingIK });
           };
         };
-        await bot.sendMessage(userId, messageP2PBuyAllOrder);
-        await bot.sendMessage(userId, 'Введите номер ордера по которому хотите начать торговлю', { replyMarkup: backP2PmenuIK, parseMode: 'html' });
         break;
 
       case 'sellList_p2pOrders':
         setState(userId, 22);
         orderType[userId] = 'sell';
         bot.deleteMessage(userId, messageId);
-        const sellAllP2POrder = await CustomP2POrder.find({ type: 'buy' });
+        const sellAllP2POrder = (await CustomP2POrder.find({ type: 'buy' })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
         if (sellAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
 
-        let messageP2PSellAllOrder = '';
-
         for (let i = 0; i < sellAllP2POrder.length; i++) {
-          if (sellAllP2POrder[i].status === 'Done' || sellAllP2POrder[i].status === 'Filling' || sellAllP2POrder[i].status === 'Deleted' && sellAllP2POrder[i].processed) continue
+
+          const startSellTradingIK = bot.inlineKeyboard([
+            [bot.inlineButton('Продать', { callback: `p2pTrade_${sellAllP2POrder[i].orderNumber}` })]
+          ]);
+
+          // если создатель ордера пользователь
           if (Number(sellAllP2POrder[i].id) === userId) {
-            messageP2PSellAllOrder += `Ордер №${sellAllP2POrder[i].orderNumber} (you),
+            const messageP2PSellUserOrder = `Ордер №${sellAllP2POrder[i].orderNumber} (you),
 Продажа монеты: ${sellAllP2POrder[i].coin},
 Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
 Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
 Валюта совершения сделки: ${sellAllP2POrder[i].currency},
 Способ оплаты: ${sellAllP2POrder[i].paymentSystem},
-Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.\n\n`
+Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.`
+
+            bot.sendMessage(userId, messageP2PSellUserOrder)
           } else {
-            messageP2PSellAllOrder += `Ордер №${sellAllP2POrder[i].orderNumber},
+            const messageP2PSellOrder = `Ордер №${sellAllP2POrder[i].orderNumber},
 Продажа монеты: ${sellAllP2POrder[i].coin},
 Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
 Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
 Валюта совершения сделки: ${sellAllP2POrder[i].currency},
 Способ оплаты: ${sellAllP2POrder[i].paymentSystem},
-Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.\n\n`
+Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.`
+
+            bot.sendMessage(userId, messageP2PSellOrder, { replyMarkup: startSellTradingIK })
           };
         };
-        await bot.sendMessage(userId, messageP2PSellAllOrder);
-        await bot.sendMessage(userId, 'Введите номер ордера по которому хотите начать торговлю', { replyMarkup: backP2PmenuIK, parseMode: 'html' });
+
         break;
 
       case 'p2pBuy':
@@ -1384,7 +1326,7 @@ bot.on('callbackQuery', async (msg) => {
         bot.deleteMessage(userId, messageId);
         firstPage.push('Page2')
         orderType[userId] = 'sell';
-        await bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(firstPage, 'sellP2P') });
+        await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(firstPage, 'sellP2P') });
         break;
 
       case 'p2p_accept':
@@ -1396,7 +1338,6 @@ bot.on('callbackQuery', async (msg) => {
             typeOrder: 'p2p',
             type: orderType[userId],
             status: 'Selling',
-            processed: false,
             coin: coin[userId],
             currency: currencyP2P[userId],
             amount: amount[userId],
@@ -1406,15 +1347,8 @@ bot.on('callbackQuery', async (msg) => {
             requisites: requisites[userId]
           });
 
-          await BalanceUserModel.updateOne(
-            { id: userId },
-            JSON.parse(`{"$inc": { "main.${coin[userId]}": -${amount[userId]} } }`)
-          );
+          await freezeBalance(userId, amount[userId], coin[userId]);
 
-          await BalanceUserModel.updateOne(
-            { id: userId },
-            JSON.parse(`{"$inc": { "hold.${coin[userId]}": ${amount[userId]} } }`)
-          );
         } else {
           CustomP2POrder.create({
             id: userId,
@@ -1422,7 +1356,6 @@ bot.on('callbackQuery', async (msg) => {
             typeOrder: 'p2p',
             type: orderType[userId],
             status: 'Selling',
-            processed: false,
             coin: coin[userId],
             currency: currencyP2P[userId],
             amount: amount[userId],
@@ -1501,20 +1434,23 @@ bot.on('callbackQuery', async (msg) => {
           { $set: { status: "Approve" } }
         );
 
-        await BalanceUserModel.updateOne(
-          { id: SellOrderData.client },
-          JSON.parse(`{"$inc": { "main.${SellOrderData.coin}": -${SellOrderData.coinAmount} } }`)
-        );
-
-        await BalanceUserModel.updateOne(
-          { id: SellOrderData.client },
-          JSON.parse(`{"$inc": { "hold.${SellOrderData.coin}": ${SellOrderData.coinAmount} } }`)
-        );
+        await freezeBalance(SellOrderData.client, SellOrderData.coinAmount, SellOrderData.coin);
 
         bot.sendMessage(SellOrderData.client, 'Заявка принята, ожидате зачисления денег на карту...');
         bot.sendMessage(SellOrderData.creatorOrder, `Сработал ордер №${SellOrderData.orderNumber}.
 Сумма покупки ${SellOrderData.coinAmount} ${SellOrderData.coin} по курсу ${SellOrderData.rate} ${SellOrderData.currency}.
 Переведите ${SellOrderData.currencyAmount} ${SellOrderData.currency} на <i><code>${SellOrderData.requisites}</code></i> и нажмите кнопку <b>«Done»</b> после перевода`, { replyMarkup: generateButton(buyerPayOrder, `buyerPayOrder_${SellOrderData.orderNumber}`), parseMode: 'html' });
+        break;
+
+      case 'p2pTradeSell_cancel':
+        bot.deleteMessage(userId, messageId);
+        await OrderFilling.deleteOne({ orderNumber: selectedOrder[userId].orderNumber });
+        await CustomP2POrder.updateOne(
+          { orderNumber: selectedOrder[userId].orderNumber },
+          { $set: { status: "Selling" } }
+        );
+
+        bot.sendMessage(userId, 'Торговля отменена!', { replyMarkup: RM_Home })
         break;
 
       default:
@@ -1594,9 +1530,9 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 13);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const rate = await currencyRate(sellCoin[userId], buyCoin[userId]);
+      const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
-      await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} = <code>${rateExchange[userId]}</code> ${buyCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
+      await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} ≈ <code>${rateExchange[userId]}</code> ${buyCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена торговля, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }
     else if (data.split('_')[0] === 'createCounterOrder') {
@@ -1926,9 +1862,9 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 15);
       bot.deleteMessage(userId, messageId);
       sellCoin[userId] = data.split('_')[1];
-      rateExchange[userId] = await currencyRate(buyCoin[userId], sellCoin[userId]);
+      rateExchange[userId] = await getCoinRate(buyCoin[userId], sellCoin[userId]);
       console.log(rateExchange[userId]);
-      await bot.sendMessage(userId, `Курс: 1 ${buyCoin[userId].toUpperCase()} = <code>${circumcisionAmount(rateExchange[userId])}</code> ${sellCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
+      await bot.sendMessage(userId, `Курс: 1 ${buyCoin[userId].toUpperCase()} ≈ <code>${circumcisionAmount(rateExchange[userId])}</code> ${sellCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена покупка, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
     }
     else if (data === 'buyP2P_Page1') {
@@ -2034,7 +1970,7 @@ bot.on('callbackQuery', async (msg) => {
       const orderData = await OrderFilling.findOne({ orderNumber: data.split('_')[1] });
       const platformOrderData = await CustomP2POrder.findOne({ orderNumber: data.split('_')[1] });
 
-      if (orderType === 'sell') {
+      if (orderType[userId] === 'sell') {
         await BalanceUserModel.updateOne(
           { id: orderData.client },
           JSON.parse(`{"$inc": { "hold.${orderData.coin}": -${orderData.coinAmount} } }`)
@@ -2048,7 +1984,7 @@ bot.on('callbackQuery', async (msg) => {
         if (orderData.coinAmount === platformOrderData.amount) {
           await CustomP2POrder.updateOne(
             { orderNumber: orderData.orderNumber },
-            { $set: { status: 'Done', processed: true } }
+            { $set: { status: 'Done' } }
           );
         }
         else if (orderData.coinAmount < platformOrderData.amount) {
@@ -2076,6 +2012,11 @@ bot.on('callbackQuery', async (msg) => {
           { orderNumber: orderData.orderNumber }
         );
 
+        console.log('creatorOrder: ', orderData);
+
+
+        console.log('creatorOrder: ', orderData.creatorOrder);
+
         await bot.sendMessage(orderData.creatorOrder, `Ордер выполнен успешно, ${orderData.coinAmount} ${orderData.coin} будут зачислены на ваш аккаунт ✅`);
         await bot.deleteMessage(orderData.client, messageId);
         await bot.sendMessage(orderData.client, 'Ордер выполнен успешно ✅');
@@ -2093,7 +2034,7 @@ bot.on('callbackQuery', async (msg) => {
         if (orderData.coinAmount === platformOrderData.amount) {
           await CustomP2POrder.updateOne(
             { orderNumber: orderData.orderNumber },
-            { $set: { status: 'Done', processed: true } }
+            { $set: { status: 'Done' } }
           );
         }
         else if (orderData.coinAmount < platformOrderData.amount) {
@@ -2124,9 +2065,56 @@ bot.on('callbackQuery', async (msg) => {
         await bot.deleteMessage(orderData.creatorOrder, messageId);
         await bot.sendMessage(orderData.creatorOrder, 'Ордер выполнен успешно ✅');
         await sendLog(`Пользователь ${orderData.client} успешно купил у пользователя ${orderData.creatorOrder} ${orderData.coinAmount} ${orderData.coin}`);
-      }
+      };
+    }
+    else if (data.split('_')[0] === 'deleteP2P') {
+      const numberDelOrder = data.split('_')[1];
+      const selectDelOrderData = await CustomP2POrder.findOne({ id: userId, orderNumber: numberDelOrder });
 
-    };
+      if (selectDelOrderData.status === 'Deleted' || selectDelOrderData.status === 'Done' || selectDelOrderData.status === 'Filling') return bot.sendMessage(userId, `Простите, но ордера по №${numberDelOrder} не существует.`);
+
+      if (selectDelOrderData.type === 'buy') {
+        await CustomP2POrder.updateOne(
+          { id: userId, orderNumber: numberDelOrder },
+          { $set: { status: 'Deleted' } }
+        );
+        await bot.sendMessage(userId, `Ордер №${numberDelOrder} был успешно удалён.`);
+        await sendLog(`Пользователь ${userId} удалил Р2Р ордер №${numberDelOrder}`);
+      } else {
+        await CustomP2POrder.updateOne(
+          { id: userId, orderNumber: numberDelOrder },
+          { $set: { status: 'Deleted' } }
+        );
+        await unfreezeBalance(userId, selectDelOrderData.amount, selectDelOrderData.coin);
+
+        await bot.sendMessage(userId, `Ордер №${numberDelOrder} был успешно удалён, средства возвращенны на ваш баланс`);
+        await sendLog(`Пользователь ${userId} удалил Р2Р ордер №${numberDelOrder}`);
+      }
+    }
+    else if (data.split('_')[0] === 'p2pTrade') {
+      const orderNumber = data.split('_')[1];
+      selectedOrder[userId] = await CustomP2POrder.findOne({ orderNumber: orderNumber });
+      coin[userId] = selectedOrder[userId].coin;
+
+      console.log(selectedOrder[userId]);
+
+      if (selectedOrder[userId].status !== 'Selling') return bot.sendMessage(userId, `Простите, но ордер №${orderNumber} нуже не доступен.`);
+
+      await CustomP2POrder.updateOne(
+        { orderNumber: orderNumber },
+        { $set: { status: 'Filling' } }
+      );
+
+      if (orderType[userId] === 'sell') {
+        setState(userId, 23);
+        bot.sendMessage(userId, `Выбран ордер №${orderNumber}. Введите реквизиты на которые желаете получить деньги:`);
+      } else {
+        setState(userId, 25);
+        await bot.sendMessage(selectedOrder[userId].id, `Сработал ордер №${orderNumber}, покупатель в скором времени совершит оплату.`);
+        await bot.sendMessage(userId, `Выбран ордер №${orderNumber}. Лимит ордера: ${selectedOrder[userId].minAmount} - ${selectedOrder[userId].amount} ${selectedOrder[userId].coin.toUpperCase()}.\nВведите количество покупки монеты:`);
+      }
+    }
+
 
   } catch (error) {
     console.error(error);
@@ -2159,15 +2147,15 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 // bot.stop();
-checkUserTransaction.start();
-checkUserUsdtTransaction.start();
-chechAdminUsdtTransaction.start();
-checkUserExchangeTransaction.start();
-checkOrders.start();
-checkUserMinePlexTransaction.start();
-chechAdminMinePlexTransaction.start();
-checkHashSendAdminComission.start();
-checkUserMpxXfiTransaction.start();
-checkAdminMpxXfiTransaction.start();
-checkArtrBalance.start();
-checkArtrAdminHash.start();
+// checkUserTransaction.start();
+// checkUserUsdtTransaction.start();
+// chechAdminUsdtTransaction.start();
+// checkUserExchangeTransaction.start();
+// checkOrders.start();
+// checkUserMinePlexTransaction.start();
+// chechAdminMinePlexTransaction.start();
+// checkHashSendAdminComission.start();
+// checkUserMpxXfiTransaction.start();
+// checkAdminMpxXfiTransaction.start();
+// checkArtrBalance.start();
+// checkArtrAdminHash.start();

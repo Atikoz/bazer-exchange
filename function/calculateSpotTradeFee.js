@@ -1,4 +1,4 @@
-const currencyRate = require("./coinRateUpdate");
+const { getCoinRate } = require('../helpers/getCoinRate.js');
 
 class calculateFee {
   //функция для вычисления комиссии за всю сделку
@@ -11,7 +11,7 @@ class calculateFee {
       const percentFee = 1;
 
       // Получение обменного курса между торговой валютой и валютой комиссии
-      const exchangeRate = await currencyRate(tradeCoin, feeCurrency);
+      const exchangeRate = await getCoinRate(tradeCoin, feeCurrency);
 
       // Расчет суммы, равной 1% от суммы сделки
       const amountOnePercent = tradeAmount / 100;

@@ -3,11 +3,11 @@ const CoinGecko = require('coingecko-api');
 
 const CoinGeckoClient = new CoinGecko();
 
-const currencyRate = async (sellCoin, buyCoin) => {
+const getAllCoinRate = async (currency) => {
   try {
     const data = await CoinGeckoClient.simple.price({
       ids: ['plex', 'crossfi-2', 'artery', 'decimal', 'tether'],
-      vs_currencies: ['rub'],
+      vs_currencies: [`${currency}`],
     });
 
     const coinGecRate = data.data;
@@ -15,10 +15,10 @@ const currencyRate = async (sellCoin, buyCoin) => {
     const responce = await axios.get('https://mainnet-explorer-api.decimalchain.com/api/coins?limit=1000');
     const rateDecimalCoin = responce.data.result.coins;
 
-    const rateToRub = {
+    const rateToCurr = {
       cashback: null,
       ddao: null,
-      del: coinGecRate.decimal.rub,
+      del: coinGecRate.decimal[currency],
       dar: null,
       pro: null,
       sbt: null,
@@ -78,30 +78,29 @@ const currencyRate = async (sellCoin, buyCoin) => {
       iloveyou: null,
       bazercoin: null,
       bazerusd: null,
-      usdt: coinGecRate.tether.rub,
+      usdt: coinGecRate.tether[currency],
       mine: 0.000092,
-      plex: coinGecRate.plex.rub,
+      plex: coinGecRate.plex[currency],
       mpx: 1.84,
-      xfi: coinGecRate['crossfi-2'].rub,
-      artery: coinGecRate.artery.rub,
+      xfi: coinGecRate['crossfi-2'][currency],
+      artery: coinGecRate.artery[currency],
     };
 
-    for (const symbol in rateToRub) {
+    for (const symbol in rateToCurr) {
       // Поиск объекта в массиве rateDecimalCoin с соответствующим title
       const foundItem = rateDecimalCoin.find(item => item.symbol === symbol);
 
-      // Если объект найден, присвоить значение из price свойству объекта rateToRub
+      // Если объект найден, присвоить значение из price свойству объекта rateToCurr
       if (foundItem) {
-        rateToRub[symbol] = Number(foundItem.price) * rateToRub.del;
+        rateToCurr[symbol] = Number(foundItem.price) * rateToCurr.del;
       };
     };
 
-    const result = rateToRub[sellCoin] / rateToRub[buyCoin];
+    return rateToCurr
 
-    return result
   } catch (error) {
     console.error(error);
   }
 };
 
-module.exports = currencyRate;
+module.exports = getAllCoinRate;

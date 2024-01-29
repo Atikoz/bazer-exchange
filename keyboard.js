@@ -19,10 +19,6 @@ const p2pMenuIK = bot.inlineKeyboard([
   [bot.inlineButton('Купить', { callback: 'buyList_p2pOrders' }), bot.inlineButton('Продать', { callback: 'sellList_p2pOrders' })]
 ]);
 
-const createdOrderMenu = bot.inlineKeyboard([
-  [bot.inlineButton('Удалить ордер', { callback: 'deleteP2P' }), bot.inlineButton('Назад 🔙', { callback: 'p2p_back' })]
-]);
-
 const typeSpotOrder = bot.inlineKeyboard([
   [bot.inlineButton('Купить', { callback: 'operation_buy' }), bot.inlineButton('Продать', { callback: 'operation_sell' })],
   [bot.inlineButton('Главное меню', { callback: 'main_menu' })],
@@ -125,7 +121,6 @@ module.exports = {
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
-  createdOrderMenu,
   balanceStartPageIK,
   acceptCancelOrderIK,
   acceptCancelExchangeIK,

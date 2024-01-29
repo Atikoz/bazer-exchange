@@ -5,7 +5,6 @@ const CustomP2POrder = mongoose.model('CustomP2POrder', {
   orderNumber: Number,
   type: String,
   status: String,
-  processed: Boolean,
   coin: String,
   currency: String,
   amount: Number,
