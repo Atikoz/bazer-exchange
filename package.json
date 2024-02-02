@@ -21,6 +21,7 @@
     "telebot": "^1.4.1",
     "tron-create-address": "^0.1.11",
     "tronweb": "^5.3.0",
+    "uuid": "^9.0.1",
     "validator": "^13.11.0"
   }
 }

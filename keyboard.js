@@ -11,7 +11,9 @@ const RM_Home = bot.keyboard([
 
 const spotOrderMenu = bot.inlineKeyboard([
   [bot.inlineButton('Текущие ордера ✔️', { callback: 'created_SpotOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_SpotOrders' })],
-  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' }), bot.inlineButton('Выполненные ордера ✔️', { callback: 'completed_SpotOrders' })]
+  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' }), bot.inlineButton('Выполненные ордера ✔️', { callback: 'completed_SpotOrders' })],
+  [bot.inlineButton('Пулы ликвидности', { callback: 'liquidity_pools' })]
+
 ]);
 
 const p2pMenuIK = bot.inlineKeyboard([
@@ -98,6 +100,11 @@ const stackingIK = bot.inlineKeyboard([
   [bot.inlineButton('Перейти к стейкингу 💲', { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
 ]);
 
+const liquidityPoolsIK = bot.inlineKeyboard([
+  [bot.inlineButton('Создать пул', { callback: 'create_liquidityPools' }), bot.inlineButton('Мои пулы', { callback: 'my_liquidityPools' })]
+])
+
+
 module.exports = {
   RM_Home,
   payOrder,
@@ -116,6 +123,7 @@ module.exports = {
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
+  liquidityPoolsIK,
   balanceStartPageIK,
   acceptCancelOrderIK,
   acceptCancelExchangeIK,
