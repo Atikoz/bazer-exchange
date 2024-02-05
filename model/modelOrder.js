@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const CustomOrder = mongoose.model('CustomOrder', {
   id: String,
   orderNumber: Number,
-  type: String,
   status: String,
   processed: Boolean,
   sellCoin: String,
