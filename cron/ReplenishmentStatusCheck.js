@@ -13,7 +13,6 @@ const checkUserTransaction = new CronJob('0 */1 * * * *', async () => {
     const status = await TransactionStatus.find({});
     status.map(async (t) => {
       if (t.status === 'Done' && t.processed) return;
-      console.log(t.amount, t.hash, t.id);
       await Replenishment.CheckBalanceAdmin(t.hash, t.id, t.amount)
   });
   } catch (error) {

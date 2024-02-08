@@ -1,3 +1,4 @@
+const circumcisionAmount = require('../helpers/circumcisionAmount.js');
 const { getCoinRate } = require('../helpers/getCoinRate.js');
 
 class calculateFee {
@@ -12,6 +13,7 @@ class calculateFee {
 
       // Получение обменного курса между торговой валютой и валютой комиссии
       const exchangeRate = await getCoinRate(tradeCoin, feeCurrency);
+      console.log('exchangeRate: ', exchangeRate);
 
       // Расчет суммы, равной 1% от суммы сделки
       const amountOnePercent = tradeAmount / 100;
@@ -22,7 +24,7 @@ class calculateFee {
       // Расчет суммы комиссии в торговой валюте
       const feeInTradeCurrency = amountPercentFee * exchangeRate;
 
-      return feeInTradeCurrency.toFixed(6);
+      return Number(feeInTradeCurrency.toFixed(6));
     } catch (error) {
       console.error(error);
     }
@@ -31,15 +33,17 @@ class calculateFee {
   //функция для вычисления комиссии за часть сделки
   calculateFeeTrade = (amountSell, amountBuy, comission) => {
     try {
-      const onePercentSellAmount = amountSell / 100;
+      if (amountSell === amountBuy) return circumcisionAmount(comission);
+      
+      const onePercentSellAmount = circumcisionAmount(amountSell / 100);
 
-      const percentBuy = amountBuy / onePercentSellAmount;
+      const percentBuy = circumcisionAmount(amountBuy / onePercentSellAmount);
 
-      const onePercentComission = comission / 100;
+      const onePercentComission = circumcisionAmount(comission / 100);
 
       const feeTrade = percentBuy * onePercentComission;
 
-      return feeTrade
+      return Number(feeTrade.toFixed(6))
     } catch (error) {
       console.error(error)
     }

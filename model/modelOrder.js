@@ -4,7 +4,6 @@ const CustomOrder = mongoose.model('CustomOrder', {
   id: String,
   orderNumber: Number,
   status: String,
-  processed: Boolean,
   sellCoin: String,
   buyCoin: String,
   buyAmount: Number,

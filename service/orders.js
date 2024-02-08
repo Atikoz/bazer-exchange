@@ -9,26 +9,18 @@ const sendLogs = require('../helpers/sendLog.js');
 const bot = new TeleBot(config.token);
 
 
-let arrBuyOrder = [];
-let arrSellOrder = [];
+let firstHalfOrders = [];
+let secondHalfOrders = [];
 
 class OrderCheck {
   async SplitOrders() {
     try {
-      const buy = [];
-      const sell = [];
       const listOrders = await CustomOrder.find({});
-
-      for (let i = 0; i < listOrders.length; i++) {
-        if (listOrders[i].status === 'Done' || listOrders[i].status === 'Deleted') continue
-        if (listOrders[i].type === 'sell') {
-          sell.push(listOrders[i]);
-        } else {
-          buy.push(listOrders[i]);
-        };
-      }
-      arrBuyOrder = Array.from(buy);
-      arrSellOrder = Array.from(sell);
+      const filteredOrders = listOrders.filter(order => order.status !== 'Done' && order.status !== 'Deleted');
+      const middleIndex = Math.floor(filteredOrders.length / 2);
+      
+      firstHalfOrders = filteredOrders.slice(0, middleIndex);
+      secondHalfOrders = filteredOrders.slice(middleIndex);
     } catch (error) {
       console.error(error)
     }
@@ -36,127 +28,127 @@ class OrderCheck {
 
   async CheckOrders() {
     try {
-      for (let i = 0; i < arrBuyOrder.length; i++) {
+      for (let i = 0; i < firstHalfOrders.length; i++) {
 
-        for (let j = 0; j < arrSellOrder.length; j++) {
+        for (let j = 0; j < secondHalfOrders.length; j++) {
 
           // вариант если курсы будут разные
-          // const rateOpening = arrBuyOrder[i].rate;
+          const roundedRateOpening = firstHalfOrders[i].rate;
+          console.log("roundedRateOpening: ", roundedRateOpening);
 
-          // // Обчислюємо курс закриття
-          // const rateClosing = 1 / rateOpening;
+          // Обчислюємо курс закриття
+          const roundedRateClosing = Number((1 / roundedRateOpening).toFixed(6));
+          console.log("roundedRateClosing: ", roundedRateClosing);
+
 
           // вариант если курсы будут одинаковые
-          const roundedRateOpening = arrBuyOrder[i].rate.toFixed(4);
-          const roundedRateClosing = arrSellOrder[j].rate.toFixed(4);
+          // const roundedRateOpening = firstHalfOrders[i].rate.toFixed(4);
+          // const roundedRateClosing = secondHalfOrders[j].rate.toFixed(4);
 
-          if (arrBuyOrder[i].buyCoin === arrSellOrder[j].sellCoin &&
-            arrBuyOrder[i].sellCoin === arrSellOrder[j].buyCoin &&
-            roundedRateClosing === roundedRateOpening) {
+          if (firstHalfOrders[i].buyCoin === secondHalfOrders[j].sellCoin &&
+            firstHalfOrders[i].sellCoin === secondHalfOrders[j].buyCoin &&
+            roundedRateClosing === secondHalfOrders[i].rate) {
+              console.log('done');
 
-
-            const conditionSellAmountBigger = arrBuyOrder[i].buyAmount < arrSellOrder[j].sellAmount &&
-              arrBuyOrder[i].status !== 'Done' && arrSellOrder[j].status !== 'Done';
-            const conditionBuyAmountBigger = arrBuyOrder[i].buyAmount > arrSellOrder[j].sellAmount &&
-              arrBuyOrder[i].status !== 'Done' && arrSellOrder[j].status !== 'Done';
-            const conditionOrdersMatched = arrBuyOrder[i].buyAmount === arrSellOrder[j].sellAmount &&
-              arrBuyOrder[i].status !== 'Done' && arrSellOrder[j].status !== 'Done';
+            const conditionSellAmountBigger = firstHalfOrders[i].buyAmount < secondHalfOrders[j].sellAmount;
+            const conditionBuyAmountBigger = firstHalfOrders[i].buyAmount > secondHalfOrders[j].sellAmount;
+            const conditionOrdersMatched = firstHalfOrders[i].buyAmount === secondHalfOrders[j].sellAmount;
 
 
             if (conditionSellAmountBigger) {
 
               console.log('1');
 
-              const buySumm = arrBuyOrder[i].buyAmount;
-              const sellSumm = arrBuyOrder[i].sellAmount;
+              const buySumm = firstHalfOrders[i].buyAmount;
+              const sellSumm = firstHalfOrders[i].sellAmount;
 
-              const feeTrade = calculateFeeTrade(arrSellOrder[j].sellAmount, buySumm, arrSellOrder[j].comission);
+              const feeTrade = calculateFeeTrade(secondHalfOrders[j].sellAmount, buySumm, secondHalfOrders[j].comission);
 
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.${arrBuyOrder[i].sellCoin}": -${sellSumm} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "hold.${firstHalfOrders[i].sellCoin}": -${sellSumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "main.${arrBuyOrder[i].buyCoin}": ${buySumm} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "main.${firstHalfOrders[i].buyCoin}": ${buySumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrBuyOrder[i].comission} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${firstHalfOrders[i].comission} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "hold.${arrSellOrder[j].sellCoin}": -${buySumm} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "hold.${secondHalfOrders[j].sellCoin}": -${buySumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "main.${arrSellOrder[j].buyCoin}": ${sellSumm} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "main.${secondHalfOrders[j].buyCoin}": ${sellSumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
+                { id: secondHalfOrders[j].id },
                 JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
               );
               await CustomOrder.updateOne(
-                { id: arrBuyOrder[i].id, orderNumber: arrBuyOrder[i].orderNumber },
-                { $set: { status: 'Done', processed: true } }
+                { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
+                { $set: { status: 'Done'} }
               );
               await CustomOrder.updateOne(
-                { id: arrSellOrder[j].id, orderNumber: arrSellOrder[j].orderNumber },
+                { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
                 { $inc: { sellAmount: -buySumm, buyAmount: -sellSumm, comission: -feeTrade } }
               );
-              bot.sendMessage(arrBuyOrder[i].id, `Ваш ордер №${arrBuyOrder[i].orderNumber} был выполнен ✅`);
-              bot.sendMessage(arrSellOrder[j].id, `По вашему ордеру №${arrSellOrder[j].orderNumber} была выполнена продажа в размере ${arrBuyOrder[i].buyAmount} ${(arrBuyOrder[i].buyCoin).toUpperCase()}.
-Данные ордера №${arrSellOrder[j].orderNumber} были обновлены!`);
-              await sendLogs(`Ордер №${arrBuyOrder[i].orderNumber} был выполнен ✅`);
-              await sendLogs(`По ордеру №${arrSellOrder[j].orderNumber} была совершена торговля.`);
+              bot.sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
+              bot.sendMessage(secondHalfOrders[j].id, `По вашему ордеру №${secondHalfOrders[j].orderNumber} была выполнена продажа в размере ${firstHalfOrders[i].buyAmount} ${(firstHalfOrders[i].buyCoin).toUpperCase()}.
+Данные ордера №${secondHalfOrders[j].orderNumber} были обновлены!`);
+              await sendLogs(`Ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
+              await sendLogs(`По ордеру №${secondHalfOrders[j].orderNumber} была совершена торговля.`);
               return
             }
             else if (conditionBuyAmountBigger) {
 
               console.log('2');
 
-              const buySumm = arrSellOrder[j].buyAmount;
-              const sellSumm = arrSellOrder[j].sellAmount;
-              const feeTrade = calculateFeeTrade(arrBuyOrder[i].sellAmount, buySumm, arrSellOrder[j].comission);
+              const buySumm = secondHalfOrders[j].buyAmount;
+              const sellSumm = secondHalfOrders[j].sellAmount;
+              const feeTrade = calculateFeeTrade(firstHalfOrders[i].sellAmount, buySumm, firstHalfOrders[j].comission);
 
 
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "hold.${arrSellOrder[j].sellCoin}": -${sellSumm} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "hold.${secondHalfOrders[j].sellCoin}": -${sellSumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "main.${arrSellOrder[j].buyCoin}": ${buySumm} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "main.${secondHalfOrders[j].buyCoin}": ${buySumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[j].comission} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${secondHalfOrders[j].comission} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "main.${arrBuyOrder[i].buyCoin}": ${sellSumm} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "main.${firstHalfOrders[i].buyCoin}": ${sellSumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.${arrBuyOrder[i].sellCoin}": -${buySumm} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "hold.${firstHalfOrders[i].sellCoin}": -${buySumm} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
+                { id: firstHalfOrders[i].id },
                 JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
               );
               await CustomOrder.updateOne(
-                { id: arrSellOrder[j].id, orderNumber: arrSellOrder[j].orderNumber },
-                { $set: { status: 'Done', processed: true } }
+                { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
+                { $set: { status: 'Done'} }
               );
               await CustomOrder.updateOne(
-                { id: arrBuyOrder[i].id, orderNumber: arrBuyOrder[i].orderNumber },
+                { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
                 { $inc: { sellAmount: -buySumm, buyAmount: -sellSumm, comission: -feeTrade } }
               );
-              bot.sendMessage(arrSellOrder[j].id, `Ваш ордер №${arrSellOrder[j].orderNumber} был выполнен ✅`);
-              bot.sendMessage(arrBuyOrder[i].id, `По вашему ордеру №${arrBuyOrder[i].orderNumber} была выполнена закупка в размере ${arrSellOrder[j].sellAmount} ${(arrSellOrder[j].sellCoin).toUpperCase()}.
-Данные ордера №${arrBuyOrder[i].orderNumber} были обновлены!`);
-              await sendLogs(`Ордер №${arrSellOrder[j].orderNumber} был выполнен ✅`);
-              await sendLogs(`По ордеру №${arrBuyOrder[i].orderNumber} была совершена торговля.`);
+              bot.sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              bot.sendMessage(firstHalfOrders[i].id, `По вашему ордеру №${firstHalfOrders[i].orderNumber} была выполнена закупка в размере ${secondHalfOrders[j].sellAmount} ${(secondHalfOrders[j].sellCoin).toUpperCase()}.
+Данные ордера №${firstHalfOrders[i].orderNumber} были обновлены!`);
+              await sendLogs(`Ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              await sendLogs(`По ордеру №${firstHalfOrders[i].orderNumber} была совершена торговля.`);
 
               return
             }
@@ -164,41 +156,41 @@ class OrderCheck {
               console.log('3');
 
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.${arrBuyOrder[i].sellCoin}": -${arrBuyOrder[i].sellAmount} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "hold.${firstHalfOrders[i].sellCoin}": -${firstHalfOrders[i].sellAmount} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "main.${arrBuyOrder[i].buyCoin}": ${arrBuyOrder[i].buyAmount} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "main.${firstHalfOrders[i].buyCoin}": ${firstHalfOrders[i].buyAmount} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrBuyOrder[i].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrBuyOrder[i].comission} } }`)
+                { id: firstHalfOrders[i].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${firstHalfOrders[i].comission} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "hold.${arrSellOrder[j].sellCoin}": -${arrSellOrder[j].sellAmount} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "hold.${secondHalfOrders[j].sellCoin}": -${secondHalfOrders[j].sellAmount} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "main.${arrSellOrder[j].buyCoin}": ${arrSellOrder[j].buyAmount} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "main.${secondHalfOrders[j].buyCoin}": ${secondHalfOrders[j].buyAmount} } }`)
               );
               await BalanceUser.updateOne(
-                { id: arrSellOrder[j].id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${arrSellOrder[j].comission} } }`)
+                { id: secondHalfOrders[j].id },
+                JSON.parse(`{"$inc": { "hold.cashback": -${secondHalfOrders[j].comission} } }`)
               );
               await CustomOrder.updateOne(
-                { id: arrSellOrder[j].id, orderNumber: arrSellOrder[j].orderNumber },
-                { $set: { status: 'Done', processed: true } }
+                { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
+                { $set: { status: 'Done'} }
               );
               await CustomOrder.updateOne(
-                { id: arrBuyOrder[i].id, orderNumber: arrBuyOrder[i].orderNumber },
-                { $set: { status: 'Done', processed: true } }
+                { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
+                { $set: { status: 'Done'} }
               );
-              bot.sendMessage(arrSellOrder[j].id, `Ваш ордер №${arrSellOrder[j].orderNumber} был выполнен ✅`);
-              bot.sendMessage(arrBuyOrder[i].id, `Ваш ордер №${arrBuyOrder[i].orderNumber} был выполнен ✅`);
-              await sendLogs(`Ордер №${arrSellOrder[j].orderNumber} был выполнен ✅`);
-              await sendLogs(`Ордер №${arrBuyOrder[i].orderNumber} был выполнен ✅`);
+              bot.sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              bot.sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
+              await sendLogs(`Ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              await sendLogs(`Ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
               return
             }
           }
@@ -208,6 +200,7 @@ class OrderCheck {
       console.error(error)
     }
   }
+  
 }
 
 module.exports = new OrderCheck();

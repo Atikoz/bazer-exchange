@@ -14,7 +14,6 @@ const {
   typeP2POrder,
   buyerPayOrder,
   spotOrderMenu,
-  typeSpotOrder,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
@@ -173,10 +172,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -194,7 +193,7 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       // case '/start':
@@ -223,6 +222,8 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
+
+        await CustomOrder.deleteMany();
 
         // async function startTe() {
         //   try {
@@ -730,7 +731,8 @@ bot.on('text', async (msg) => {
       case 26:
         setState(userId, 0);
         amount[userId] = text;
-        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId]);
+        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
+        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId], comissionExchanger[userId]);
 
         if (!isValidPoolData.status) return bot.sendMessage(userId, isValidPoolData.errorMessage);
 
@@ -738,7 +740,8 @@ bot.on('text', async (msg) => {
 
         const createPoolMesg = `Торговля осуществляется по рыночной цене.
 Пара: ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()},
-Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.`;
+Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.
+Комиссия: ${comissionExchanger[userId]} CASHBACK.`;
         bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(acceptCancelPoolArr, 'createPool') });
         break;
 
@@ -1013,14 +1016,13 @@ bot.on('callbackQuery', async (msg) => {
       case 'completed_SpotOrders':
         try {
           bot.deleteMessage(userId, messageId);
-          const userOrder = await CustomOrder.find({ id: userId });
+          const userOrder = (await CustomOrder.find({ id: userId })).filter(order => !(order.status === 'Selling'));
 
           if (userOrder.length === 0) {
-            return bot.sendMessage(userId, 'Вы еще не создавали ни одного ордера 😞');
+            return bot.sendMessage(userId, 'У вас не сработал еще ни один ордер 😞');
           }
 
           const messageUserOrder = userOrder
-            .filter(order => !(order.status === 'Selling'))
             .map(order => {
               return `Ордер №${order.orderNumber},
 Статус: ${order.status},
@@ -1077,7 +1079,6 @@ bot.on('callbackQuery', async (msg) => {
           id: userId,
           orderNumber: spotTradeOrderNumber,
           status: 'Selling',
-          processed: false,
           sellCoin: sellCoin[userId],
           buyCoin: buyCoin[userId],
           sellAmount: amount[userId],
@@ -1355,13 +1356,14 @@ bot.on('callbackQuery', async (msg) => {
         bot.deleteMessage(userId, messageId);
         firstPage.push('Page2');
         coinSellArray[userId] = Array.from(arrayCoinList);
-        bot.sendMessage(userId, 'Выберите монету для продажи:', { replyMarkup: generateButton(firstPage, 'sellCoinPool') })
+        bot.sendMessage(userId, 'Комиссия составляет 1% от суммы пула, оплата осуществляется в монете <b>CASHBACK</b>. Выберите монету для продажи:', { replyMarkup: generateButton(firstPage, 'sellCoinPool'), parseMode: 'html' })
         break;
 
       case 'my_liquidityPools':
         bot.deleteMessage(userId, messageId);
         const allUserPool = await LiquidityPools.find({ id: userId });
-
+        if (allUserPool.length === 0) return bot.sendMessage(userId, 'На данный момент у вас нету ни одного пула ликвидности.');
+        
         for (let i = 0; i < allUserPool.length; i++) {
           const deletePoolIK = bot.inlineKeyboard([
             [bot.inlineButton('Удалить пул ❌', { callback: `deletePool_${allUserPool[i].token}` })]
@@ -1380,10 +1382,12 @@ bot.on('callbackQuery', async (msg) => {
           token: createdToken,
           sellCoin: sellCoin[userId],
           buyCoin: buyCoin[userId],
-          amount: amount[userId]
+          amount: amount[userId],
+          comission: comissionExchanger[userId]
         });
 
         await freezeBalance(userId, amount[userId], sellCoin[userId]);
+        await freezeBalance(userId, comissionExchanger[userId], 'cashback');
         bot.sendMessage(userId, 'Пул успешно создан ✔️');
         sendLog(`Пользователь ${userId} создал пул ликвидности ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()}`)
         break;
@@ -1478,16 +1482,19 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'createCounterOrder') {
       const selectedOrder = data.split('_')[1];
       const selectOrderData = await CustomOrder.findOne({ orderNumber: selectedOrder });
-      console.log(selectOrderData);
 
       if (selectOrderData.status === 'Done' || selectOrderData.status === 'Deleted') return bot.sendMessage(userId, 'Данного ордера больше не существует!');
-          
+      const rateCounterOrder = Number((1 / selectOrderData.rate).toFixed(4));
+
         setState(userId, 29);
-        userRate[userId] = selectOrderData.rate;
+        userRate[userId] = rateCounterOrder;
         buyCoin[userId] = selectOrderData.sellCoin;
         sellCoin[userId] = selectOrderData.buyCoin;
         number[userId] = selectOrderData.buyAmount;
         balanceUserCoin[userId] = getInfoUser.userBalance.main[sellCoin[userId]];
+
+        console.log('rateOrde: ', selectOrderData.rate);
+        console.log('rateCounterOrde: ', rateCounterOrder);
 
         const textMessage = `Выбран ордер №${selectedOrder}!
 Для продажи доступно: ${circumcisionAmount(balanceUserCoin[userId])} ${sellCoin[userId].toUpperCase()}.
@@ -2067,15 +2074,15 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 // bot.stop();
-// checkUserTransaction.start();
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
-// checkUserExchangeTransaction.start();
-// checkOrders.start();
-// checkUserMinePlexTransaction.start();
-// chechAdminMinePlexTransaction.start();
-// checkHashSendAdminComission.start();
-// checkUserMpxXfiTransaction.start();
-// checkAdminMpxXfiTransaction.start();
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
+checkUserTransaction.start();
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
+checkUserExchangeTransaction.start();
+checkOrders.start();
+checkUserMinePlexTransaction.start();
+chechAdminMinePlexTransaction.start();
+checkHashSendAdminComission.start();
+checkUserMpxXfiTransaction.start();
+checkAdminMpxXfiTransaction.start();
+checkArtrBalance.start();
+checkArtrAdminHash.start();
