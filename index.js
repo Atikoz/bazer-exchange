@@ -2039,6 +2039,7 @@ bot.on('callbackQuery', async (msg) => {
 
       await LiquidityPools.deleteOne({ token: poolToken });
       await unfreezeBalance(userId, selectedPool.amount, selectedPool.sellCoin);
+      await unfreezeBalance(userId, selectedPool.comission, 'cashback');
       bot.sendMessage(userId, `Пул с парой ${selectedPool.sellCoin}/${selectedPool.buyCoin} был успешно удалён!\nДеньги будут возвращены на баланс.`);
       sendLog(`Пользователь ${userId} удалил пул ликвидности.`)
     }
