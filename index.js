@@ -223,8 +223,6 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        await CustomOrder.deleteMany();
-
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
@@ -1349,7 +1347,8 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'liquidity_pools':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Выберите действие:', { replyMarkup: liquidityPoolsIK })
+        bot.sendMessage(userId, 'На стадии разработки...')
+        // bot.sendMessage(userId, 'Выберите действие:', { replyMarkup: liquidityPoolsIK })
         break;
 
       case 'create_liquidityPools':

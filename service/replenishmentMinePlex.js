@@ -25,7 +25,8 @@ class ReplenishmentMinePlex {
     const userTransaction = await getMinePlexTransactions(userWallet);
 
     try {
-      if (userTransaction.data.length === 0) return
+      if (userTransaction.data.length === 0) return console.log('the user has no transactions')
+      console.log('the user has transactions mine plex')
 
       for (let i = 0; i < userTransaction.data.length; i++) {
 
