@@ -21,6 +21,10 @@ const WalletUserModel = mongoose.model('WalletUsers', {
   },
   artery: {
     address: String
+  },
+  minter: {
+    address: String,
+    privateKey: String
   }
 
 });

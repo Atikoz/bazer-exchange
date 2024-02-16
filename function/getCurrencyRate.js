@@ -10,6 +10,12 @@ const getAllCoinRate = async (currency) => {
       vs_currencies: [`${currency}`],
     });
 
+    const bipRate = {
+      rub: 0.03,
+      try: 0.01,
+      uah: 0.01
+    }
+
     const coinGecRate = data.data;
 
     const responce = await axios.get('https://mainnet-explorer-api.decimalchain.com/api/coins?limit=1000');
@@ -84,6 +90,7 @@ const getAllCoinRate = async (currency) => {
       mpx: 1.84,
       xfi: coinGecRate['crossfi-2'][currency],
       artery: coinGecRate.artery[currency],
+      bip: bipRate[currency]
     };
 
     for (const symbol in rateToCurr) {

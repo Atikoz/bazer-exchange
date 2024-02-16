@@ -18,7 +18,7 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      const userTransaction = await sleep(2000).then(async () => await getTransaction(userUsdtAdress));
+      const userTransaction = await sleep(3000).then(async () => await getTransaction(userUsdtAdress));
 
       if (userTransaction.length === 0) return;
 
