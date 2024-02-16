@@ -227,36 +227,36 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          try {
+        // async function startTe() {
+        //   try {
 
-            console.log('Inside startTe function');
-            const users = await WalletUserModel.find({});
-            users.map(async (u) => {
-              const a = createMinterWallet(u.mnemonics);
-              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        //     console.log('Inside startTe function');
+        //     const users = await WalletUserModel.find({});
+        //     users.map(async (u) => {
+        //       const a = createMinterWallet(u.mnemonics);
+        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   { $unset: { "del.mnemonics": "" } },
-              // );
+        //       // await WalletUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   { $unset: { "del.mnemonics": "" } },
+        //       // );
 
-              await WalletUserModel.updateOne(
-                { id: u.id },
-                JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-              );
+        //       await WalletUserModel.updateOne(
+        //         { id: u.id },
+        //         JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
+        //       );
 
-              await BalanceUserModel.updateOne(
-                { id: u.id },
-                JSON.parse(`{ "$set" : { "main.bip": "0", "hold.bip": "0"} }`)
-              );
-            });
-          } catch (error) {
-            console.error(error)
-          }
-        };
+        //       await BalanceUserModel.updateOne(
+        //         { id: u.id },
+        //         JSON.parse(`{ "$set" : { "main.bip": "0", "hold.bip": "0"} }`)
+        //       );
+        //     });
+        //   } catch (error) {
+        //     console.error(error)
+        //   }
+        // };
 
-        startTe();
+        // startTe();
         break;
 
       case 'Конвертация 🔄':
