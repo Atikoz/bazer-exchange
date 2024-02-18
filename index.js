@@ -2107,27 +2107,27 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 bot.start();
 // bot.stop();
 
-//Decimal
-checkOrders.start();
-checkUserTransaction.start();
-checkUserExchangeTransaction.start();
+// //Decimal
+// checkOrders.start();
+// checkUserTransaction.start();
+// checkUserExchangeTransaction.start();
 
-//USDT
-checkUserUsdtTransaction.start();
-chechAdminUsdtTransaction.start();
+// //USDT
+// checkUserUsdtTransaction.start();
+// chechAdminUsdtTransaction.start();
 
-//MINE PLEX
-checkUserMinePlexTransaction.start();
-chechAdminMinePlexTransaction.start();
-checkHashSendAdminComission.start();
+// //MINE PLEX
+// checkUserMinePlexTransaction.start();
+// chechAdminMinePlexTransaction.start();
+// checkHashSendAdminComission.start();
 
-//MPX XFI
-checkUserMpxXfiTransaction.start();
-checkAdminMpxXfiTransaction.start();
+// //MPX XFI
+// checkUserMpxXfiTransaction.start();
+// checkAdminMpxXfiTransaction.start();
 
-//ARTERY
-checkArtrBalance.start();
-checkArtrAdminHash.start();
+// //ARTERY
+// checkArtrBalance.start();
+// checkArtrAdminHash.start();
 
 //BIP
 checkMinterTransaction.start()

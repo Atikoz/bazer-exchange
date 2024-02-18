@@ -1,11 +1,11 @@
 const axios = require('axios');
+const Decimal = require('decimal.js');
 const { Minter, TX_TYPE } = require("minter-js-sdk");
 
 const minter = new Minter({ apiType: 'node', baseURL: 'http://api-minter.mnst.club:8843/v2/' });
-const seedTestAcc = 'ordinary client target bounce cinnamon trumpet crumble cactus junk music shoot elbow';
 
 class MinterTransaction {
-  sendBip = async (address, amount, seed = seedTestAcc) => {
+  sendBip = async (address, amount, seed) => {
     try {
       const txParams = {
         type: TX_TYPE.SEND,
@@ -21,7 +21,7 @@ class MinterTransaction {
       return { status: true, hash: sendRequest.hash };
 
     } catch (error) {
-      console.error(error);
+      console.error(error.response.data);
       return { status: false, error: error.response.data.error.message };
 
     }
@@ -39,8 +39,9 @@ class MinterTransaction {
       };
 
       const feeData = await minter.estimateTxCommission(txParams);
+      const amountFee = new Decimal(feeData.commission);
 
-      return feeData.commission
+      return amountFee * 1.001
     } catch (error) {
       console.error(error)
     }

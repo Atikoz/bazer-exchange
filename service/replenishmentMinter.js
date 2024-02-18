@@ -18,12 +18,13 @@ class ReplenishmentMinter {
       const userSeed = getInfoUser.userWallet.mnemonics;
 
       const userTransactionArr = await getTransaction(userAddress);
+
       userTransactionArr.forEach(async transaction => {
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
           transaction.data.to === userAddress &&
-          transaction.data.value >= 100;
+          +transaction.data.value >= 100;
 
         if (requirements) {
           console.log('found trancsaction');
@@ -36,7 +37,7 @@ class ReplenishmentMinter {
 
           const sendBipAdminWallet = await sendBip(config.adminMinterWallet, amountTransferAdminWallet, userSeed);
 
-          if (!sendBipAdminWallet.status) return bot.sendMessage('При пополнении возникла ошибка, обратитесь в техподдержку...');
+          if (!sendBipAdminWallet.status) return console.log('transfer error: ', sendBipAdminWallet.error);
           console.log('coins send amin wallet');
 
 
@@ -81,7 +82,7 @@ class ReplenishmentMinter {
         sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} BIP`);
       } else {
         console.log(resultTx);
-        bot.sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);
+        bot.sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);;
       }
     })
   }
