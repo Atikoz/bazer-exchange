@@ -132,7 +132,7 @@ const getTransaction = async (address) => {
       // }
   
        
-      if (transaction.trigger_info.contract_address === "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") {
+      if (transaction.contract_address === "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") {
         getTransactionsData.push({
           hash: hash,
           coin: "usdt",
@@ -141,7 +141,7 @@ const getTransaction = async (address) => {
           amount: Number(transaction.trigger_info.parameter._value / 1e6),
         });
       }
-      else if (transaction.trigger_info.contract_address === "TTpfubxpeCtyqLqS3iAV8MXa2xxQG2pfNw") {
+      else if (transaction.contract_address === "TTpfubxpeCtyqLqS3iAV8MXa2xxQG2pfNw") {
         getTransactionsData.push({
           hash: hash,
           coin: "bzr",
