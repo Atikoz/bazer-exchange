@@ -217,10 +217,6 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        await ControlUserBalance(1762471327, 'cashback', 60);
-        bot.sendMessage(1762471327, 'Ваш баланс пополнено на 60 CASHBACK')
-        sendLog('Пользователь 1762471327 пополнил счет на 60 CASHBACK');
-
         // async function startTe() {
         //   try {
 

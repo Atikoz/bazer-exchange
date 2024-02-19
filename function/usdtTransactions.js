@@ -138,7 +138,7 @@ const getTransaction = async (address) => {
           coin: "usdt",
           status: contractRet, //OUT_OF_ENERGY //SUCCESS
           sender: transaction.from_address,
-          amount: Number(transaction.trigger_info.parameter._value / 1e6),
+          amount: +transaction.quant / 1e6,
         });
       }
       else if (transaction.contract_address === "TTpfubxpeCtyqLqS3iAV8MXa2xxQG2pfNw") {
@@ -147,7 +147,7 @@ const getTransaction = async (address) => {
           coin: "bzr",
           status: contractRet, //OUT_OF_ENERGY //SUCCESS
           sender: transaction.from_address,
-          amount: Number(transaction.trigger_info.parameter._value / 1e18),
+          amount: +transaction.quant / 1e18,
         });
       }
     }));
