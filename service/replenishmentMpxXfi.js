@@ -7,6 +7,7 @@ const HashSendAdminComission = require('../model/modelHashSendAdminComission.js'
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
 const sendLog = require('../helpers/sendLog.js');
 const sendMessage = require('../helpers/tgFunction.js');
+const sleep = require('../helpers/sleepFunction.js');
 
 
 const minimalReplenishment = {
@@ -45,12 +46,12 @@ class ReplenishmentMpxXfi {
           });
           console.log('model user send created');
 
-          const balanceMpx = await CheckBalance(userWallet);
+          const balanceMpx = await sleep(5000).then(async () => await CheckBalance(userWallet));
           const amount = userTransaction[i].tx.body.messages[0].amount[0].amount / 1e18;
           console.log('BLANCE MPX:', balanceMpx);
 
           if (coin === 'xfi' && balanceMpx < 1) {
-            const hashTransferComission = await SendCoin(config.adminMnemonicMinePlex, userWallet, 'mpx', 1);
+            const hashTransferComission = await sleep(5000).then(async () => await SendCoin(config.adminMnemonicMinePlex, userWallet, 'mpx', 1));
 
             await HashSendAdminComission.create({
               id: userId,
@@ -69,10 +70,10 @@ class ReplenishmentMpxXfi {
           let hashTransactionAdminWallet;
 
           if (coin === 'mpx') {
-            hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount - 1);
+            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount - 1));
             console.log('mpx send admin wallet');
           } else {
-            hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount);
+            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount));
             console.log('xfi send admin wallet');
           }
 
@@ -131,7 +132,7 @@ class ReplenishmentMpxXfi {
 
       if (replenishment.status === 'Done' && replenishment.processed) return
 
-      const adminTransaction = await getMpxXfiTransactions(config.adminWalletMpxXfi);
+      const adminTransaction = await sleep(5000).then(async () => await getMpxXfiTransactions(config.adminWalletMpxXfi));
 
       if (adminTransaction.length === 0) return
 

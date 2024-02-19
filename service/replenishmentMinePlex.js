@@ -9,7 +9,7 @@ const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.
 const { SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactions.js');
 const sendLog = require('../helpers/sendLog.js');
 const sendMessage = require('../helpers/tgFunction.js');
-
+const sleep = require('../helpers/sleepFunction.js');
 
 const minimalReplenishment = {
   mine: 2,
@@ -21,7 +21,7 @@ class ReplenishmentMinePlex {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const userWallet = getInfoUser.userWallet.minePlex.address;
     const userKey = getInfoUser.userWallet.minePlex.sk;
-    const userTransaction = await getMinePlexTransactions(userWallet);
+    const userTransaction = await sleep(5000).then(async () => await getMinePlexTransactions(userWallet));
 
     try {
       if (userTransaction.data.length === 0) return
@@ -44,11 +44,11 @@ class ReplenishmentMinePlex {
             amount: userTransaction.data[i].amount
           });
           console.log('model user send created');
-          const balanceMine = await checkBalance(userWallet)
+          const balanceMine = await sleep(5000).then(async () => await checkBalance(userWallet));
           console.log(balanceMine);
 
           if (userTransaction.data[i].type === 'plex' && balanceMine < 1) {
-            const hashTransferComission = (await sendCoin(config.adminMinePlexSk, userWallet, 1, 'mine')).data.transaction.hash;
+            const hashTransferComission = await sleep(5000).then(async () => (await sendCoin(config.adminMinePlexSk, userWallet, 1, 'mine')).data.transaction.hash);
             await HashSendAdminComission.create({
               id: userId,
               hash: hashTransferComission,
@@ -65,10 +65,10 @@ class ReplenishmentMinePlex {
           let hashTransactionAdminWallet;
 
           if (userTransaction.data[i].type === 'mine') {
-            hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, userTransaction.data[i].amount - 1, userTransaction.data[i].type)).data.transaction.hash;
+            hashTransactionAdminWallet = await sleep(5000).then(async () => (await sendCoin(userKey, config.aminWalletMinePlex, userTransaction.data[i].amount - 1, userTransaction.data[i].type)).data.transaction.hash);
             console.log('mine send admin wallet');
           } else {
-            hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, userTransaction.data[i].amount, userTransaction.data[i].type)).data.transaction.hash;
+            hashTransactionAdminWallet = await sleep(5000).then(async () => (await sendCoin(userKey, config.aminWalletMinePlex, userTransaction.data[i].amount, userTransaction.data[i].type)).data.transaction.hash);
             console.log('plex send admin wallet');
           }
 
@@ -91,7 +91,7 @@ class ReplenishmentMinePlex {
   async CheckMinePlexTransactionAmin(replenishment) {
     try {
       if (replenishment.status === 'Done' && replenishment.processed) return
-      const aminTransaction = await getMinePlexTransactions(config.aminWalletMinePlex);
+      const aminTransaction = await sleep(5000).then(async () => await getMinePlexTransactions(config.aminWalletMinePlex));
 
       if (aminTransaction.data.length === 0) return
 
@@ -128,7 +128,7 @@ class ReplenishmentMinePlex {
       if (transaction.coin === 'mine' || transaction.coin === 'plex') {
         const userKey = getInfoUser.userWallet.minePlex.sk;
 
-        const checkTransaction = await checkHashSendAdminComission(transaction.hash);
+        const checkTransaction = await sleep(5000).then(async () => await checkHashSendAdminComission(transaction.hash));
         if (checkTransaction) {
 
           await HashSendAdminComission.updateOne(
@@ -136,7 +136,7 @@ class ReplenishmentMinePlex {
             { status: 'Done' }
           );
 
-          const hashTransactionAdminWallet = (await sendCoin(userKey, config.aminWalletMinePlex, transaction.amount, transaction.coin)).data.transaction.hash;
+          const hashTransactionAdminWallet = await sleep(5000).then(async () => (await sendCoin(userKey, config.aminWalletMinePlex, transaction.amount, transaction.coin)).data.transaction.hash);
 
           await TransactionMinePlextStatus.create({
             id: transaction.id,
@@ -159,7 +159,7 @@ class ReplenishmentMinePlex {
             { status: 'Done' }
           );
 
-          const hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
+          const hashTransactionAdminWallet = await sleep(5000).then(async () => await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount));
 
           await TransactionMpxXfiStatus.create({
             id: transaction.id,

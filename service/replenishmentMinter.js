@@ -6,6 +6,7 @@ const TransactionMinterStatus = require('../model/modelMinterStatusTransaction.j
 const BalanceUserModel = require('../model/modelBalance.js');
 const sendLogs = require('../helpers/sendLog.js');
 const sendMessage = require('../helpers/tgFunction.js');
+const sleep = require('../helpers/sleepFunction.js');
 
 
 class ReplenishmentMinter {
@@ -15,7 +16,7 @@ class ReplenishmentMinter {
       const userAddress = getInfoUser.userWallet.minter.address;
       const userSeed = getInfoUser.userWallet.mnemonics;
 
-      const userTransactionArr = await getTransaction(userAddress);
+      const userTransactionArr = await sleep(5000).then(async () =>  await getTransaction(userAddress));
 
       userTransactionArr.forEach(async transaction => {
 
@@ -27,13 +28,13 @@ class ReplenishmentMinter {
         if (requirements) {
           console.log('found trancsaction');
 
-          const commissionTransfer = await getCommissionTx(config.adminMinterWallet, transaction.data.value);
+          const commissionTransfer = await sleep(5000).then(async () => await getCommissionTx(config.adminMinterWallet, transaction.data.value));
           console.log('commission tx: ', commissionTransfer);
 
           const amountTransferAdminWallet = transaction.data.value - commissionTransfer;
           console.log('amountTransferAdminWallet: ', amountTransferAdminWallet);
 
-          const sendBipAdminWallet = await sendBip(config.adminMinterWallet, amountTransferAdminWallet, userSeed);
+          const sendBipAdminWallet = await sleep(5000).then(async () => await sendBip(config.adminMinterWallet, amountTransferAdminWallet, userSeed));
 
           if (!sendBipAdminWallet.status) return console.log('transfer error: ', sendBipAdminWallet.error);
           console.log('coins send amin wallet');
@@ -63,7 +64,7 @@ class ReplenishmentMinter {
     const adminTransactions = (await TransactionMinterStatus.find()).filter(tx => tx.status !== 'Done');;
     if (adminTransactions.length === 0) return
     adminTransactions.forEach(async (transaction) => {
-      const resultTx = await checkMinterHash(transaction.hash);
+      const resultTx = await sleep(5000).then(async () => await checkMinterHash(transaction.hash));
 
       if (resultTx.code === "0") {
         await TransactionMinterStatus.updateOne(

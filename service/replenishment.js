@@ -10,6 +10,7 @@ const TransactionStatus = require('../model/modelTransactionStatus.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const sendLogs = require('../helpers/sendLog.js');
 const sendMessage = require('../helpers/tgFunction.js');
+const sleep = require('../helpers/sleepFunction.js');
 
 
 const minimalWithdrawal = {
@@ -82,7 +83,7 @@ class Replenishment {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userWallet = getInfoUser.userWallet.del.address;
-      const answer = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${userWallet}/txs?limit=10&offset=0`);
+      const answer = await sleep(5000).then(async () => await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${userWallet}/txs?limit=10&offset=0`));
       const userTransaction = answer.data.result.txs;
 
       await Promise.all(userTransaction.map(async (tx) => {
@@ -96,22 +97,22 @@ class Replenishment {
             await HashReplenishment.create({ id: tx.hash, coin: tx.data.coin });
             console.log('model user send created');
 
-            const transferCommissionResponse = await TransferCommission(
+            const transferCommissionResponse = await sleep(5000).then(async () => await TransferCommission(
               getInfoUser.userWallet.mnemonics,
               decimalWallet,
               tx.data.coin,
               tx.data.amount / 1e18
-            );
+            ));
 
             const comission = transferCommissionResponse.data.result.result.amount / 1e18;
             console.log('Calculated comission:', comission);
 
-            const moneyTransfer = await SendCoin(
+            const moneyTransfer = await sleep(5000).then(async () => await SendCoin(
               getInfoUser.userWallet.mnemonics,
               decimalWallet,
               tx.data.coin,
               tx.data.amount / 1e18 - comission
-            );
+            ));
 
             console.log(tx.data.coin);
             console.log('-------------');
@@ -139,7 +140,7 @@ class Replenishment {
 
   async CheckBalanceAdmin(hash, userId, amount) {
     try {
-      const infoTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`);
+      const infoTransaction = await sleep(5000).then(async () => await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`));
       if (infoTransaction.data.result.status === 'Success') {
         const replenishmentCoin = infoTransaction.data.result.data.coin;
         await BalanceUserModel.updateOne(
