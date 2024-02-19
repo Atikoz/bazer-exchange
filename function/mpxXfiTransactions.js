@@ -12,7 +12,8 @@ const getMpxXfiTransactions = async (wallet) => {
     
     return axios.request(config)
     .then((response) => {
-      return response.data.data.txs
+      if(response.data)
+      return response.data.txs
     })
   } catch (error) {
     console.error(error);
@@ -30,7 +31,7 @@ const CheckTransactionHash = async (hash) => {
     return axios.request(config)
     .then((response) => {
       console.log(response.data);
-      return response.data.data.txhash
+      return response.data.txhash
     })
   } catch (error) {
     console.error(error)
@@ -39,30 +40,40 @@ const CheckTransactionHash = async (hash) => {
 
 const CheckBalance = async (wallet) => {
   try {
-    let config = {
+    const config = {
       method: 'get',
       url: `https://explorer-api.mineplex.io/address/${wallet}`,
-      headers: { }
+      headers: {}
     };
-    
-    return axios.request(config)
-    .then((response) => {
-      console.log(response.data);
 
-      if (response.status === "ok" && response.data && response.data.ERROR) return 0
-      
-      if (response.status === "ok" && response.data && response.data.data.coins.denom[0].mpx) {
-        console.log('mpx est')
-        return response.data.data.coins.denom[0].mpx
+    const response = await axios.request(config);
+    console.log(response.data);
+
+    if (response.data.code && response.data.code === 5) {
+      // Обработка случая, когда учетная запись не найдена
+      console.log("Учетная запись не найдена:", response.data.message);
+      return 0;
+    } else if (response.data.coins && response.data.coins.length > 0) {
+      // Обработка успешного ответа с балансом
+      const mpxBalance = response.data.coins.find((coin) => coin.denom === "mpx");
+      if (mpxBalance) {
+        console.log('mpx есть');
+        return mpxBalance.amount;
       } else {
-        console.log('balans ne pustoy, no mpx net');
-        return 0
+        console.log('баланс не пустой, но mpx отсутствует');
+        return 0;
       }
-    })
+    } else {
+      // Обработка других случаев
+      console.log('Неожиданный формат ответа API:', response.data);
+      return 0;
+    }
   } catch (error) {
-    console.error(error)
-  };
+    console.error(error);
+    return 0; // Обработка ошибки запроса
+  }
 };
+
 
 const SendCoin = async (senderMnemonic, resiverWallet, coin, amount) => {
   try {
