@@ -1,13 +1,10 @@
-const TeleBot = require('telebot');
-const config = require('../config.js');
-
-const bot = new TeleBot(config.token);
+const sendMessage = require("./tgFunction");
 
 
 async function sendLogs(text) {
   try {
     // console.log(text);
-    bot.sendMessage('@p2plogss', `${text}`, { parseMode: 'html' });
+    sendMessage('@p2plogss', `${text}`, { parseMode: 'html' });
   } catch (error) {
     console.error(error)
   }

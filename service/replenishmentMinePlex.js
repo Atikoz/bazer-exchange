@@ -1,4 +1,3 @@
-const TeleBot = require('telebot');
 const { getMinePlexTransactions, sendCoin, checkBalance, checkHashSendAdminComission } = require('../function/minePlexTransactions.js');
 const MinePlexReplenishment = require('../model/modelMinePlexReplenishment.js');
 const UserManagement = require('./userManagement.js');
@@ -9,8 +8,8 @@ const HashSendAdminComission = require('../model/modelHashSendAdminComission.js'
 const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
 const { SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactions.js');
 const sendLog = require('../helpers/sendLog.js');
+const sendMessage = require('../helpers/tgFunction.js');
 
-const bot = new TeleBot(config.token);
 
 const minimalReplenishment = {
   mine: 2,
@@ -110,7 +109,7 @@ class ReplenishmentMinePlex {
             JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
           );
 
-          await bot.sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
+          sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
           await sendLog(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}.`)
         }
       };

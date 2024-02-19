@@ -106,7 +106,7 @@ const getTransaction = async (address) => {
     const getTransactionsData = [];
     const response = await axios({
       method: 'get',
-      url: `https://tron.p2p.bazerwallet.com/tron-client/api/v1/getTransfers?address=${address}&limit=50&start=0`,
+      url: `https://apilist.tronscanapi.com/api/token_trc20/transfers?toAddress=${address}`,
       headers: { }
     });
 

@@ -1,12 +1,8 @@
 const CustomOrder = require('../model/modelOrder.js');
 const BalanceUser = require('../model/modelBalance.js');
-const TeleBot = require('telebot');
-const config = require('../config.js');
 const { calculateFeeTrade } = require('../function/calculateSpotTradeFee.js');
 const sendLogs = require('../helpers/sendLog.js');
-
-
-const bot = new TeleBot(config.token);
+const sendMessage = require('../helpers/tgFunction.js');
 
 
 let firstHalfOrders = [];
@@ -96,8 +92,8 @@ class OrderCheck {
                 { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
                 { $inc: { sellAmount: -buySumm, buyAmount: -sellSumm, comission: -feeTrade } }
               );
-              bot.sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
-              bot.sendMessage(secondHalfOrders[j].id, `По вашему ордеру №${secondHalfOrders[j].orderNumber} была выполнена продажа в размере ${firstHalfOrders[i].buyAmount} ${(firstHalfOrders[i].buyCoin).toUpperCase()}.
+              sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
+              sendMessage(secondHalfOrders[j].id, `По вашему ордеру №${secondHalfOrders[j].orderNumber} была выполнена продажа в размере ${firstHalfOrders[i].buyAmount} ${(firstHalfOrders[i].buyCoin).toUpperCase()}.
 Данные ордера №${secondHalfOrders[j].orderNumber} были обновлены!`);
               await sendLogs(`Ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
               await sendLogs(`По ордеру №${secondHalfOrders[j].orderNumber} была совершена торговля.`);
@@ -144,8 +140,8 @@ class OrderCheck {
                 { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
                 { $inc: { sellAmount: -buySumm, buyAmount: -sellSumm, comission: -feeTrade } }
               );
-              bot.sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
-              bot.sendMessage(firstHalfOrders[i].id, `По вашему ордеру №${firstHalfOrders[i].orderNumber} была выполнена закупка в размере ${secondHalfOrders[j].sellAmount} ${(secondHalfOrders[j].sellCoin).toUpperCase()}.
+              sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              sendMessage(firstHalfOrders[i].id, `По вашему ордеру №${firstHalfOrders[i].orderNumber} была выполнена закупка в размере ${secondHalfOrders[j].sellAmount} ${(secondHalfOrders[j].sellCoin).toUpperCase()}.
 Данные ордера №${firstHalfOrders[i].orderNumber} были обновлены!`);
               await sendLogs(`Ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
               await sendLogs(`По ордеру №${firstHalfOrders[i].orderNumber} была совершена торговля.`);
@@ -187,8 +183,8 @@ class OrderCheck {
                 { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
                 { $set: { status: 'Done'} }
               );
-              bot.sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
-              bot.sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
+              sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
+              sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
               await sendLogs(`Ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
               await sendLogs(`Ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
               return

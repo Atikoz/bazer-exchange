@@ -6,7 +6,7 @@ const getMpxXfiTransactions = async (wallet) => {
   try {
     let config = {
       method: 'get',
-      url: `https://mpxapi.bazerwallet.com/mpx/api/v1/txs?address=${wallet}&page=0`,
+      url: `https://explorer-api.mineplex.io/txs?address=${wallet}&page=0`,
       headers: { }
     };
     
@@ -23,7 +23,7 @@ const CheckTransactionHash = async (hash) => {
   try {
     let config = {
       method: 'get',
-      url: `https://mpxapi.bazerwallet.com/mpx/api/v1/tx?tx=${hash}`,
+      url: `https://explorer-api.mineplex.io/tx/${hash}`,
       headers: { }
     };
     
@@ -41,7 +41,7 @@ const CheckBalance = async (wallet) => {
   try {
     let config = {
       method: 'get',
-      url: `https://mpxapi.bazerwallet.com/mpx/api/v1/balance?address=${wallet}`,
+      url: `https://explorer-api.mineplex.io/address/${wallet}`,
       headers: { }
     };
     

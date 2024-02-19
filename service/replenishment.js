@@ -1,5 +1,4 @@
 const axios = require('axios');
-const TeleBot = require('telebot');
 const { decimalWallet } = require('../decimalConfig.js');
 const UserManagement = require('./userManagement.js');
 const HashReplenishment = require('../model/modelHashReplenishment.js');
@@ -9,10 +8,9 @@ const {
 } = require('../function/decimal.js');
 const TransactionStatus = require('../model/modelTransactionStatus.js');
 const BalanceUserModel = require('../model/modelBalance.js');
-const { token } = require('../config.js');
 const sendLogs = require('../helpers/sendLog.js');
+const sendMessage = require('../helpers/tgFunction.js');
 
-const bot = new TeleBot(token);
 
 const minimalWithdrawal = {
   del: 20,
@@ -83,10 +81,15 @@ class Replenishment {
   async ReplenishmentUserWallet(userId) {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
-      const getUserTransaction = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${getInfoUser.userWallet.del.address}/txs?limit=10&offset=0`);
+      const userWallet = getInfoUser.userWallet.del.address;
+      const answer = await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${userWallet}/txs?limit=10&offset=0`);
+      const userTransaction = answer.data.result.txs;
 
-      await Promise.all(getUserTransaction.data.result.txs.map(async (tx) => {
-        if (tx.status === 'Success' && tx.to === getInfoUser.userWallet.del.address && tx.data.amount / 1e18 >= minimalWithdrawal[tx.data.coin]) {
+      await Promise.all(userTransaction.map(async (tx) => {
+        if (tx.status === 'Success' &&
+          tx.to === userWallet &&
+          tx.data.amount / 1e18 >= minimalWithdrawal[tx.data.coin]
+        ) {
           const examinationIf = !await HashReplenishment.findOne({ id: tx.hash });
 
           if (examinationIf) {
@@ -149,7 +152,7 @@ class Replenishment {
           { $set: { status: 'Done', processed: true } }
         );
 
-        await bot.sendMessage(userId, `Ваш баланс пополнено на ${amount} ${replenishmentCoin}!`);
+        sendMessage(userId, `Ваш баланс пополнено на ${amount} ${replenishmentCoin}!`);
         await sendLogs(`Пользователь ${userId} пополнил баланс на ${amount} ${replenishmentCoin}`)
       }
     } catch (err) {

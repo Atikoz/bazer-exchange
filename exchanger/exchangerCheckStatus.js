@@ -1,13 +1,10 @@
-const mongoose = require('mongoose');
 const axios = require('axios');
-const TeleBot = require('telebot');
 const sendLog = require('../helpers/sendLog.js');
-const config = require('../config.js');
 const ExchangeStatus = require('../model/modelExchangeStatus');
 const BalanceUserModel = require('../model/modelBalance.js');
+const sendMessage = require('../helpers/tgFunction.js');
 
 
-const bot = new TeleBot (config.token);
 
 class ExchangeCheckStatus {
   async ExchangeCheckHash(userId, hash, coinSell, coinBuy) {
@@ -37,7 +34,7 @@ class ExchangeCheckStatus {
            {$set: {status: 'Done', processed: true}}
            );
 
-        await bot.sendMessage(userId, `Вы обменяли ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`, { parseMode:'html' });
+        sendMessage(userId, `Вы обменяли ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`, { parseMode:'html' });
         return sendLog(`Пользователь ${userId} обменял ${exchangeHash.data.result.data.max_amount_to_sell/1e18} ${coinSell.toUpperCase()} на ${exchangeHash.data.result.data.amount_to_buy/1e18} ${coinBuy.toUpperCase()} ✅\nTxHash:<code>${hash}</code>`);
       }
 
@@ -47,7 +44,7 @@ class ExchangeCheckStatus {
            {$set: {status: 'Fail', processed: true}}
            );
            
-        return bot.sendMessage(userId,`При обмене возникла ошибка!\nTxHash: <code>${hash}</code>`, { parseMode: 'html' });
+        return sendMessage(userId,`При обмене возникла ошибка!\nTxHash: <code>${hash}</code>`);
       }
     } catch (error) {
       console.error(error)

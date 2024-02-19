@@ -43,24 +43,17 @@ const BalanceUserModel = require('./model/modelBalance.js');
 const UserManagement = require('./service/userManagement.js');
 const CustomOrder = require('./model/modelOrder.js');
 const CustomP2POrder = require('./model/modelP2POrder.js');
-const checkUserTransaction = require('./cron/ReplenishmentStatusCheck.js');
 const UserModel = require('./model/modelUser.js');
-const checkUserExchangeTransaction = require('./cron/StatusCheckExchanger.js');
 const ExchangeRateCoin = require('./exchanger/exchangeRate.js');
 const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
-const checkOrders = require('./cron/OrderCheck.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
 const { TransferTronNet } = require('./function/usdtTransactions.js');
 
-const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('./cron/ReplenishmentUsdtCheck.js');
-const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('./cron/ReplenishmentMineCheck.js');
 const { sendCoin } = require('./function/minePlexTransactions.js');
 const ReplenishmentMpxXfi = require('./function/mpxXfiTransactions.js');
 const SendMpxXfi = ReplenishmentMpxXfi.SendCoin;
 
-const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('./cron/ReplenishmentMpxXfiCheck.js');
-const { checkArtrBalance, checkArtrAdminHash } = require('./cron/ReplenishmentArtr.js');
 const sendLog = require('./helpers/sendLog.js');
 const generateButton = require('./helpers/generateButton.js');
 const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
@@ -74,9 +67,7 @@ const { getCoinRate, getCurrencyRate } = require('./helpers/getCoinRate.js');
 const poolDataValidation = require('./function/poolDataValidation.js');
 const LiquidityPools = require('./model/modelLiquidityPools.js');
 const { v4 } = require('uuid');
-const createMinterWallet = require('./function/createMinterWallet.js');
-const { getCommissionTx, checkMinterHash, getGasPrise, sendBip } = require('./function/minterTransaction.js');
-const checkMinterTransaction = require('./cron/ReplenishmentMinterCheck.js');
+const { sendBip } = require('./function/minterTransaction.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -166,7 +157,6 @@ const minimalSum = {
   cashback: 50,
   bip: 100
 };
-
 
 
 //text
@@ -1565,7 +1555,7 @@ bot.on('callbackQuery', async (msg) => {
       const textReplenishment = [
         `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
         'Деньги прийдут в течении 10 минут.',
-        `Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}.`,
+        `<b>Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}. В случает пополнения суммы меньшей минимальной деньги не будут зачислены на счет!</b>`,
         'Для пополнение баланса переведите средства на свой адрес ниже:'
       ].join('\n');
       await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
@@ -2107,27 +2097,3 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 bot.start();
 // bot.stop();
 
-// //Decimal
-// checkOrders.start();
-// checkUserTransaction.start();
-// checkUserExchangeTransaction.start();
-
-// //USDT
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
-
-// //MINE PLEX
-// checkUserMinePlexTransaction.start();
-// chechAdminMinePlexTransaction.start();
-// checkHashSendAdminComission.start();
-
-// //MPX XFI
-// checkUserMpxXfiTransaction.start();
-// checkAdminMpxXfiTransaction.start();
-
-// //ARTERY
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
-
-//BIP
-checkMinterTransaction.start()

@@ -2,12 +2,10 @@ const UserManagement = require('./userManagement.js');
 const { getTransaction, getCommissionTx, checkMinterHash, sendBip } = require('../function/minterTransaction.js');
 const MinterReplenishment = require('../model/modelMinterReplenishment.js');
 const config = require('../config.js');
-const TeleBot = require('telebot');
 const TransactionMinterStatus = require('../model/modelMinterStatusTransaction.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const sendLogs = require('../helpers/sendLog.js');
-
-const bot = new TeleBot(config.token);
+const sendMessage = require('../helpers/tgFunction.js');
 
 
 class ReplenishmentMinter {
@@ -78,11 +76,11 @@ class ReplenishmentMinter {
           { $inc: { [`main.bip`]: transaction.amount } }
         );
 
-        bot.sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} BIP`);
+        sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} BIP`);
         sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} BIP`);
       } else {
         console.log(resultTx);
-        bot.sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);;
+        sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);
       }
     })
   }

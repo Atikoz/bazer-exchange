@@ -1,12 +1,11 @@
 const axios = require('axios');
-const TeleBot = require('telebot');
 const { Wallet } = require('artery-api');
 const config = require('../config.js');
 const ArteryReplenishment = require('../model/modelArterySendAdmin.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const sendLog = require('../helpers/sendLog.js');
+const sendMessage = require('../helpers/tgFunction.js');
 
-const bot = new TeleBot(config.token);
 const nodeUrl = 'http://167.172.51.179:1317';
 
 class ReplenishmentArtery {
@@ -215,7 +214,7 @@ class ReplenishmentArtery {
       const logMessage = `Пользователь ${transaction.id} пополнил баланс на ${transaction.amount} artery`;
 
       await Promise.all([
-        bot.sendMessage(transaction.id, message),
+        sendMessage(transaction.id, message),
         sendLog(logMessage)
       ])
     } catch (error) {
