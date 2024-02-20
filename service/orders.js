@@ -28,7 +28,7 @@ class OrderCheck {
 
         for (let j = 0; j < secondHalfOrders.length; j++) {
 
-          const precision = 0.001; // пороговое значение для сравнения
+          const precision = 0.0005; // пороговое значение для сравнения
 
           const roundedRateOpening = firstHalfOrders[i].rate;
           console.log("roundedRateOpening: ", roundedRateOpening);
