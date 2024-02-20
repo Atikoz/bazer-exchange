@@ -15,7 +15,7 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      const userTransaction = await sleep(5000).then(async () => await getTransaction(userUsdtAdress));
+      const userTransaction = await sleep(15000).then(async () => await getTransaction(userUsdtAdress));
 
       if (userTransaction.length === 0) return;
 
@@ -59,7 +59,7 @@ class ReplenishmentUSDT {
   async CheckUsdtTransactionAmin(replenishment) {
     try {
       if (replenishment.status === 'Done' || replenishment.status === 'Fail') return
-      const checkHash = await sleep(5000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
+      const checkHash = await sleep(15000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
 
       if (checkHash === 'SUCCESS') {
         await TransactionUsdtStatus.updateOne(
