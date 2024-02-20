@@ -22,7 +22,8 @@ class ReplenishmentMinePlex {
     const userWallet = getInfoUser.userWallet.minePlex.address;
     const userKey = getInfoUser.userWallet.minePlex.sk;
     const userTransaction = await sleep(5000).then(async () => await getMinePlexTransactions(userWallet));
-
+    console.log(userTransaction);
+    
     try {
       if (userTransaction.data.length === 0) return
 

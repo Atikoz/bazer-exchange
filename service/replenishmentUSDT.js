@@ -15,7 +15,7 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      const userTransaction = await sleep(15000).then(async () => await getTransaction(userUsdtAdress));
+      const userTransaction = await sleep(10000).then(async () => await getTransaction(userUsdtAdress));
 
       if (userTransaction.length === 0) return;
 
@@ -23,7 +23,7 @@ class ReplenishmentUSDT {
         const examinationIf = !await UsdtReplenishment.findOne({ hash: userTransaction[i].hash }) && userTransaction[i].coin === 'usdt' && userTransaction[i].amount >= 2 && userTransaction[i].status === 'SUCCESS' && userTransaction[i].sender !== userUsdtAdress;
         if (examinationIf) {
           console.log('transaction processed');
-          const balanceTronUser = await getBalanceTron(userUsdtAdress, userUsdtPrivatKey);
+          const balanceTronUser = await sleep(10000).then(async () => await getBalanceTron(userUsdtAdress, userUsdtPrivatKey));
 
           if (balanceTronUser < 30) {
             await TransferTronwebTrx(config.adminPrivateKeyUsdt, config.adminWalletUsdt, userUsdtAdress, 30 - balanceTronUser);
@@ -59,7 +59,7 @@ class ReplenishmentUSDT {
   async CheckUsdtTransactionAmin(replenishment) {
     try {
       if (replenishment.status === 'Done' || replenishment.status === 'Fail') return
-      const checkHash = await sleep(15000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
+      const checkHash = await sleep(5000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
 
       if (checkHash === 'SUCCESS') {
         await TransactionUsdtStatus.updateOne(
