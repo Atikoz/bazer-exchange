@@ -14,7 +14,7 @@ class OrderCheck {
       const listOrders = await CustomOrder.find({});
       const filteredOrders = listOrders.filter(order => order.status !== 'Done' && order.status !== 'Deleted');
       const middleIndex = Math.floor(filteredOrders.length / 2);
-      
+
       firstHalfOrders = filteredOrders.slice(0, middleIndex);
       secondHalfOrders = filteredOrders.slice(middleIndex);
     } catch (error) {
@@ -28,13 +28,24 @@ class OrderCheck {
 
         for (let j = 0; j < secondHalfOrders.length; j++) {
 
-          // вариант если курсы будут разные
+          const precision = 0.001; // пороговое значение для сравнения
+
           const roundedRateOpening = firstHalfOrders[i].rate;
           console.log("roundedRateOpening: ", roundedRateOpening);
 
-          // Обчислюємо курс закриття
-          const roundedRateClosing = Number((1 / roundedRateOpening).toFixed(6));
+          const roundedRateClosing = 1 / roundedRateOpening;
           console.log("roundedRateClosing: ", roundedRateClosing);
+
+          const difference = Math.abs(roundedRateClosing - secondHalfOrders[i].rate);
+          console.log('difference: ', difference);
+
+          // вариант если курсы будут разные
+          // const roundedRateOpening = firstHalfOrders[i].rate;
+          // console.log("roundedRateOpening: ", roundedRateOpening);
+
+          // // Обчислюємо курс закриття
+          // const roundedRateClosing = Number((1 / roundedRateOpening).toFixed(6));
+          // console.log("roundedRateClosing: ", roundedRateClosing);
 
 
           // вариант если курсы будут одинаковые
@@ -43,8 +54,9 @@ class OrderCheck {
 
           if (firstHalfOrders[i].buyCoin === secondHalfOrders[j].sellCoin &&
             firstHalfOrders[i].sellCoin === secondHalfOrders[j].buyCoin &&
-            roundedRateClosing === secondHalfOrders[i].rate) {
-              console.log('done');
+            // roundedRateClosing === secondHalfOrders[i].rate
+            difference < precision) {
+            console.log('done');
 
             const conditionSellAmountBigger = firstHalfOrders[i].buyAmount < secondHalfOrders[j].sellAmount;
             const conditionBuyAmountBigger = firstHalfOrders[i].buyAmount > secondHalfOrders[j].sellAmount;
@@ -86,7 +98,7 @@ class OrderCheck {
               );
               await CustomOrder.updateOne(
                 { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
-                { $set: { status: 'Done'} }
+                { $set: { status: 'Done' } }
               );
               await CustomOrder.updateOne(
                 { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
@@ -134,7 +146,7 @@ class OrderCheck {
               );
               await CustomOrder.updateOne(
                 { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
-                { $set: { status: 'Done'} }
+                { $set: { status: 'Done' } }
               );
               await CustomOrder.updateOne(
                 { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
@@ -177,11 +189,11 @@ class OrderCheck {
               );
               await CustomOrder.updateOne(
                 { id: secondHalfOrders[j].id, orderNumber: secondHalfOrders[j].orderNumber },
-                { $set: { status: 'Done'} }
+                { $set: { status: 'Done' } }
               );
               await CustomOrder.updateOne(
                 { id: firstHalfOrders[i].id, orderNumber: firstHalfOrders[i].orderNumber },
-                { $set: { status: 'Done'} }
+                { $set: { status: 'Done' } }
               );
               sendMessage(secondHalfOrders[j].id, `Ваш ордер №${secondHalfOrders[j].orderNumber} был выполнен ✅`);
               sendMessage(firstHalfOrders[i].id, `Ваш ордер №${firstHalfOrders[i].orderNumber} был выполнен ✅`);
@@ -196,7 +208,7 @@ class OrderCheck {
       console.error(error)
     }
   }
-  
+
 }
 
 module.exports = new OrderCheck();

@@ -9,11 +9,12 @@ const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/ReplenishmentMineCheck.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
-console.log('tim lid lox');
 
+
+//SpotTrade
+checkOrders.start();
 
 //Decimal
-checkOrders.start();
 checkUserTransaction.start();
 checkUserExchangeTransaction.start();
 

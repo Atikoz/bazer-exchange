@@ -4,6 +4,7 @@ const config = require('./config.js');
 const validator = require('validator');
 const WalletUserModel = require('./model/modelWallet.js');
 
+
 const {
   RM_Home,
   payOrder,
@@ -1490,7 +1491,7 @@ bot.on('callbackQuery', async (msg) => {
       const selectOrderData = await CustomOrder.findOne({ orderNumber: selectedOrder });
 
       if (selectOrderData.status === 'Done' || selectOrderData.status === 'Deleted') return bot.sendMessage(userId, 'Данного ордера больше не существует!');
-      const rateCounterOrder = Number((1 / selectOrderData.rate).toFixed(4));
+      const rateCounterOrder = (1 / selectOrderData.rate).toFixed(4);
 
       setState(userId, 29);
       userRate[userId] = rateCounterOrder;
