@@ -1,22 +1,68 @@
 const axios = require('axios');
 const CoinGecko = require('coingecko-api');
+const { getPriceCoinInBip } = require('./minterTransaction');
 
 const CoinGeckoClient = new CoinGecko();
+
+const getMinterCoinRate = async (currency) => {
+  try {
+    const convertId = {
+      uah: 2824,
+      try: 2810,
+      rub: 2806
+    };
+
+    const config = {
+      method: 'get',
+      url: `https://pro-api.coinmarketcap.com/v1/cryptocurrency/category?id=604f2762ebccdd50cd175fcc&convert_id=${convertId[currency]}`,
+      headers: { 
+        'X-CMC_PRO_API_KEY': 'b5e3ae62-2e9c-42fd-9471-777582509a1e'
+      }
+    };
+    
+    const responce = await axios.request(config);
+    const dataBip = (responce.data.data.coins).filter((el) => el.id === 4957);
+    const priceBip = dataBip[0].quote[`${convertId[currency]}`].price;
+
+    console.log('price bip', +priceBip, currency);
+
+    const priceHubInBip = await getPriceCoinInBip('hub');
+    const priceMontserhubInBip = await getPriceCoinInBip('MONSTERHUB');
+    
+    console.log('price hub', priceHubInBip, 'BIP');
+    console.log('price monsterhub', priceMontserhubInBip, 'BIP');
+
+    const priceAllCoin = {
+      bip: +priceBip,
+      hub: +priceBip * priceHubInBip,
+      monsterhub: +priceBip * priceMontserhubInBip
+    }
+
+    console.log(priceAllCoin);
+
+
+    return priceAllCoin
+
+  } catch (error) {
+    console.error(error);
+    return {
+      bip: 0,
+      hub: 0,
+      monsterhub: 0
+    }
+  }
+};
 
 const getAllCoinRate = async (currency) => {
   try {
     const data = await CoinGeckoClient.simple.price({
-      ids: ['plex', 'crossfi-2', 'artery', 'decimal', 'tether'],
+      ids: ['plex', 'crossfi-2', 'artery', 'decimal', 'tether', 'binancecoin'],
       vs_currencies: [`${currency}`],
     });
 
-    const bipRate = {
-      rub: 0.03,
-      try: 0.01,
-      uah: 0.01
-    }
-
     const coinGecRate = data.data;
+    const priceMinterCoin = await getMinterCoinRate(currency);
+
 
     const responce = await axios.get('https://mainnet-explorer-api.decimalchain.com/api/coins?limit=1000');
     const rateDecimalCoin = responce.data.result.coins;
@@ -90,7 +136,11 @@ const getAllCoinRate = async (currency) => {
       mpx: 1.84,
       xfi: coinGecRate['crossfi-2'][currency],
       artery: coinGecRate.artery[currency],
-      bip: bipRate[currency]
+      bip: priceMinterCoin.bip,
+      usdtbsc: coinGecRate.tether[currency],
+      monsterhub: priceMinterCoin.monsterhub,
+      bnb: coinGecRate.binancecoin[currency],
+      hub: priceMinterCoin.hub
     };
 
     for (const symbol in rateToCurr) {

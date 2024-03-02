@@ -5,6 +5,7 @@ const TransactionMinterStatus = mongoose.model('Transaction-Minter-Status', {
   hash: String,
   status: String,
   amount: Number,
+  coin: String
 })
 
 module.exports = TransactionMinterStatus;

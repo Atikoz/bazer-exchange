@@ -1,5 +1,5 @@
 const UserManagement = require('./userManagement.js');
-const { getTransaction, getCommissionTx, checkMinterHash, sendBip } = require('../function/minterTransaction.js');
+const { getTransaction, getCommissionTx, checkMinterHash, sendMinter, getCoinId, getBalance } = require('../function/minterTransaction.js');
 const MinterReplenishment = require('../model/modelMinterReplenishment.js');
 const config = require('../config.js');
 const TransactionMinterStatus = require('../model/modelMinterStatusTransaction.js');
@@ -16,43 +16,77 @@ class ReplenishmentMinter {
       const userAddress = getInfoUser.userWallet.minter.address;
       const userSeed = getInfoUser.userWallet.mnemonics;
 
-      const userTransactionArr = await sleep(5000).then(async () =>  await getTransaction(userAddress));
+      const minimumAmounts = {
+        BIP: 100,
+        HUB: 0.01,
+        MONSTERHUB: 0.01,
+        BNB: 0.0001,
+        USDTBSC: 2
+      };
+
+      const userTransactionArr = await sleep(5000).then(async () => await getTransaction(userAddress));
 
       userTransactionArr.forEach(async transaction => {
 
+        const coin = transaction.data.coin.symbol;
+        const minimumAmount = minimumAmounts[coin];
+
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
+          (coin === 'BIP' || coin === 'HUB' || coin === 'MONSTERHUB' || coin === 'BNB' || coin === 'USDTBSC') &&
           transaction.data.to === userAddress &&
-          +transaction.data.value >= 100;
+          +transaction.data.value >= minimumAmount;
 
         if (requirements) {
           console.log('found trancsaction');
 
-          const commissionTransfer = await sleep(5000).then(async () => await getCommissionTx(config.adminMinterWallet, transaction.data.value));
-          console.log('commission tx: ', commissionTransfer);
+          const coinId = await getCoinId(coin);
+          const commissionTransfer = await sleep(5000).then(async () => await getCommissionTx(config.adminMinterWallet, transaction.data.value, coinId));
+          console.log('commission send', coin, 'tx: ', commissionTransfer);
 
-          const amountTransferAdminWallet = transaction.data.value - commissionTransfer;
-          console.log('amountTransferAdminWallet: ', amountTransferAdminWallet);
+          if (coin === 'BIP') {
+            const amountTransferAdminWallet = transaction.data.value - commissionTransfer;
+            console.log('amountTransferAdminWallet: ', amountTransferAdminWallet);
 
-          const sendBipAdminWallet = await sleep(5000).then(async () => await sendBip(config.adminMinterWallet, amountTransferAdminWallet, userSeed));
+            const sendBipAdminWallet = await sleep(5000).then(async () => await sendMinter(config.adminMinterWallet, amountTransferAdminWallet, userSeed, coin));
 
-          if (!sendBipAdminWallet.status) return console.log('transfer error: ', sendBipAdminWallet.error);
-          console.log('coins send amin wallet');
+            if (!sendBipAdminWallet.status) return console.log('transfer error: ', sendBipAdminWallet.error);
+            console.log('coins send amin wallet');
 
+            await TransactionMinterStatus.create({
+              id: id,
+              hash: sendBipAdminWallet.hash,
+              status: 'Send Admin',
+              amount: transaction.data.value,
+              coin: coin
+            })
+          } else {
+            const objectBip = (await getBalance(userAddress)).find((element) => element.coin.symbol === 'BIP') ?? null;
+            const balanceBip = objectBip.value / 1e18;
+            console.log(balanceBip);
+            if (commissionTransfer > balanceBip) {
+              const numberOfNeededCoins = commissionTransfer - balanceBip;
+              await sendMinter(userAddress, numberOfNeededCoins, config.adminMinterMnemonic, 'bip').then(async () => await sleep(10000));
+            }
+            const sendCoinAdminWallet = await sendMinter(config.adminMinterWallet, transaction.data.value, userSeed, coin);
 
-          await MinterReplenishment.create({
-            id: id,
-            hash: transaction.hash,
-            amount: transaction.data.value
-          });
+            await TransactionMinterStatus.create({
+              id: id,
+              hash: sendCoinAdminWallet.hash,
+              status: 'Send Admin',
+              amount: transaction.data.value,
+              coin: coin
+            })
+          }
 
-          await TransactionMinterStatus.create({
-            id: id,
-            hash: sendBipAdminWallet.hash,
-            status: 'Send Admin',
-            amount: transaction.data.value
-          })
-          console.log('minter hash model created');
+            await MinterReplenishment.create({
+              id: id,
+              hash: transaction.hash,
+              amount: transaction.data.value,
+              coin: coin
+            });
+
+            console.log('minter hash model created');
         }
       });
     } catch (error) {
@@ -61,30 +95,36 @@ class ReplenishmentMinter {
   };
 
   balanceCheckAdminWallet = async () => {
-    const adminTransactions = (await TransactionMinterStatus.find()).filter(tx => tx.status !== 'Done');;
-    if (adminTransactions.length === 0) return
-    adminTransactions.forEach(async (transaction) => {
-      const resultTx = await sleep(5000).then(async () => await checkMinterHash(transaction.hash));
-
-      if (resultTx.code === "0") {
-        await TransactionMinterStatus.updateOne(
-          { hash: transaction.hash },
-          { status: 'Done' }
-        );
-
-        await BalanceUserModel.updateOne(
-          { id: transaction.id },
-          { $inc: { [`main.bip`]: transaction.amount } }
-        );
-
-        sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} BIP`);
-        sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} BIP`);
-      } else {
-        console.log(resultTx);
-        sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);
-      }
-    })
-  }
-};
+    try {
+      const adminTransactions = (await TransactionMinterStatus.find()).filter(tx => tx.status !== 'Done');
+      if (adminTransactions.length === 0) return
+      
+      adminTransactions.forEach(async (transaction) => {
+        const resultTx = await sleep(5000).then(async () => await checkMinterHash(transaction.hash));
+        const coin = transaction.coin;
+  
+        if (resultTx.code === "0") {
+          await TransactionMinterStatus.updateOne(
+            { hash: transaction.hash },
+            { status: 'Done' }
+          );
+  
+          await BalanceUserModel.updateOne(
+            { id: transaction.id },
+            { $inc: { [`main.${coin.toLowerCase()}`]: transaction.amount } }
+          );
+  
+          sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} ${coin.toUpperCase()}`);
+          sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} ${coin.toUpperCase()}`);
+        } else {
+          console.log(resultTx);
+          sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);
+        }
+      })
+    } catch (error) {
+      console.error(error)
+    }
+  };
+}
 
 module.exports = new ReplenishmentMinter;

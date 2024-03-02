@@ -97,20 +97,25 @@ const stackingIK = bot.inlineKeyboard([
 
 const liquidityPoolsIK = bot.inlineKeyboard([
   [bot.inlineButton('Создать пул', { callback: 'create_liquidityPools' }), bot.inlineButton('Мои пулы', { callback: 'my_liquidityPools' })]
-])
+]);
+
+const exchangeIK = bot.inlineKeyboard([
+  [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })]
+]);
 
 
 module.exports = {
   RM_Home,
   payOrder,
-  spotOrderMenu,
   stackingIK,
   currency,
   p2pMenuIK,
   cabinetIK,
+  exchangeIK,
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
+  spotOrderMenu,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,

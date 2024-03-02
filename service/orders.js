@@ -28,24 +28,24 @@ class OrderCheck {
 
         for (let j = 0; j < secondHalfOrders.length; j++) {
 
-          const precision = 0.0005; // пороговое значение для сравнения
+          // const precision = 0.0005; // пороговое значение для сравнения
 
-          const roundedRateOpening = firstHalfOrders[i].rate;
-          console.log("roundedRateOpening: ", roundedRateOpening);
-
-          const roundedRateClosing = 1 / roundedRateOpening;
-          console.log("roundedRateClosing: ", roundedRateClosing);
-
-          const difference = Math.abs(roundedRateClosing - secondHalfOrders[i].rate);
-          console.log('difference: ', difference);
-
-          // вариант если курсы будут разные
           // const roundedRateOpening = firstHalfOrders[i].rate;
           // console.log("roundedRateOpening: ", roundedRateOpening);
 
-          // // Обчислюємо курс закриття
-          // const roundedRateClosing = Number((1 / roundedRateOpening).toFixed(6));
+          // const roundedRateClosing = 1 / roundedRateOpening;
           // console.log("roundedRateClosing: ", roundedRateClosing);
+
+          // const difference = Math.abs(roundedRateClosing - secondHalfOrders[i].rate);
+          // console.log('difference: ', difference);
+
+          // вариант если курсы будут разные
+          const roundedRateOpening = firstHalfOrders[i].rate;
+          console.log("roundedRateOpening: ", roundedRateOpening);
+
+          // Обчислюємо курс закриття
+          const roundedRateClosing = Number(1 / roundedRateOpening);
+          console.log("roundedRateClosing: ", roundedRateClosing);
 
 
           // вариант если курсы будут одинаковые
@@ -54,8 +54,8 @@ class OrderCheck {
 
           if (firstHalfOrders[i].buyCoin === secondHalfOrders[j].sellCoin &&
             firstHalfOrders[i].sellCoin === secondHalfOrders[j].buyCoin &&
-            // roundedRateClosing === secondHalfOrders[i].rate
-            difference < precision) {
+            roundedRateClosing === secondHalfOrders[i].rate
+            /* difference < precision*/) {
             console.log('done');
 
             const conditionSellAmountBigger = firstHalfOrders[i].buyAmount < secondHalfOrders[j].sellAmount;
