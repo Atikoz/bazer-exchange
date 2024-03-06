@@ -760,7 +760,7 @@ bot.on('text', async (msg) => {
           `Курс: 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId].toUpperCase()}`,
           `Количество продажи монеты: ${(exchangeSellAmount[userId]).toFixed(4)} ${sellCoin[userId].toUpperCase()}`,
           `Количество покупки монеты: ${exchangeBuyAmount[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
-          `Комиссия составляет ${comissionExchanger[userId]} BIP`
+          `Комиссия составляет ${comissionExchanger[userId]} BIP.`
         ].join('\n');
 
         const arrAnswer = ['accept', 'cancel']
@@ -970,9 +970,16 @@ bot.on('callbackQuery', async (msg) => {
             const sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, coin[userId]);
 
             if (sendBipResult.status) {
-              bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-              await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BIP\nTxHash: <code>${sendBipResult.hash}</code>`);
-              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 70));
+              if (coin[userId] === 'bip') {
+                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BIP\nTxHash: <code>${sendBipResult.hash}</code>`);
+                await ControlUserBalance(userId, coin[userId], -(amount[userId] + 70));
+              } else {
+                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${(coin[userId]).toUpperCase()}\nTxHash: <code>${sendBipResult.hash}</code>`);
+                await ControlUserBalance(userId, coin[userId], -amount[userId]);
+                await ControlUserBalance(userId, 'bip', -70);
+              }
             } else {
               bot.sendMessage(userId, 'Возникла ошибка при выводе, попробуйте попытку позже. Если проблема не исчезнет обратитесь в техподдержку.')
             }
@@ -1481,13 +1488,12 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'minterExchange_accept':
         bot.deleteMessage(userId, messageId);
-        const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic)
-          .then(async (result) => console.log(result.hash));
+        const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic);
 
         await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.hash}</code>`, { parseMode: 'html'});
         await ControlUserBalance(userId, sellCoin[userId], -exchangeSellAmount[userId]);
         await ControlUserBalance(userId, buyCoin[userId], exchangeBuyAmount[userId]);
-        await ControlUserBalance(userId, 'BIP', -comissionExchanger[userId]);
+        await ControlUserBalance(userId, 'bip', -comissionExchanger[userId]);
 
         await sendLog(`Пользователь ${userId} конвертировал монеты из сети Minter.\nTxHash: <code>${exchange.hash}</code>`)
         break;
@@ -2217,13 +2223,13 @@ bot.on('callbackQuery', async (msg) => {
       bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(coinSellArray[userId], 'buyMinterExchange') });
     }
     else if (data.split('_')[0] === 'buyMinterExchange') {
-      setState(userId, 17);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
       const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
       const balanceSellCoin = await getBalanceCoin(userId, sellCoin[userId]);
       bot.sendMessage(userId, `Курс 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId]}. Введите количество продажи ${sellCoin[userId].toUpperCase()} (доступно ${balanceSellCoin}):`);
+      setState(userId, 17);
     }
 
   } catch (error) {

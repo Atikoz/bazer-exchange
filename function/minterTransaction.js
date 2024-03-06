@@ -141,7 +141,8 @@ class MinterTransaction {
 
       return exchange
     } catch (error) {
-      console.error(error)
+      console.error(error);
+      return 'ya lox, functia uhode d catch'
     }
   };
 

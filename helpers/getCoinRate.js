@@ -3,7 +3,7 @@ const getAllCoinRate = require("../function/getCurrencyRate");
 class GetRate {
   constructor() {
     this.rateObj = null;  // Зберігаємо останні дані getAllCoinRate
-    this.updateInterval = 5 * 60 * 1000;  // Оновлюємо кожні 5 хвилин
+    this.updateInterval = 15 * 60 * 1000;  // Оновлюємо кожні 5 хвилин
     this.updateRateObj();  // Викликаємо один раз при створенні об'єкту
     setInterval(() => this.updateRateObj(), this.updateInterval);  // Оновлюємо по інтервалу
   }
