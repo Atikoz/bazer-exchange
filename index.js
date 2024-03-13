@@ -4,6 +4,7 @@ const config = require('./config.js');
 const validator = require('validator');
 const WalletUserModel = require('./model/modelWallet.js');
 
+
 const {
   RM_Home,
   payOrder,
@@ -11,6 +12,7 @@ const {
   p2pMenuIK,
   cabinetIK,
   exchangeIK,
+  adminPanelIK,
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
@@ -173,10 +175,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -194,7 +196,7 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
 
-    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       case 'Мой кабинет 📂':
@@ -217,6 +219,7 @@ bot.on('text', async (msg) => {
       case 'Рефералы 👥':
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
+
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
@@ -252,7 +255,11 @@ bot.on('text', async (msg) => {
         break;
 
       case '💲 Стейкинг':
-        bot.sendMessage(userId, 'Вы выбрали Стейкинг. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: stackingIK });
+        bot.sendMessage(userId, 'Вы выбрали Стейкинг. Выбирете раздел:', { replyMarkup: stackingIK });
+        break;
+
+      case '/admin':
+        bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
         break;
 
       default:
@@ -961,9 +968,9 @@ bot.on('callbackQuery', async (msg) => {
               console.error(error)
             }
           }
-          if (coin[userId] === 'bip' || 
+          if (coin[userId] === 'bip' ||
             coin[userId] === 'hub' ||
-            coin[userId] === 'monsterhub' || 
+            coin[userId] === 'monsterhub' ||
             coin[userId] === 'bnb' ||
             coin[userId] === 'usdtbsc') {
             bot.deleteMessage(userId, messageId);
@@ -1490,7 +1497,7 @@ bot.on('callbackQuery', async (msg) => {
         bot.deleteMessage(userId, messageId);
         const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic);
 
-        await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.hash}</code>`, { parseMode: 'html'});
+        await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.hash}</code>`, { parseMode: 'html' });
         await ControlUserBalance(userId, sellCoin[userId], -exchangeSellAmount[userId]);
         await ControlUserBalance(userId, buyCoin[userId], exchangeBuyAmount[userId]);
         await ControlUserBalance(userId, 'bip', -comissionExchanger[userId]);
@@ -1722,18 +1729,18 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'withdrawal') {
       bot.deleteMessage(userId, messageId);
       let delCoin;
-      (data.split('_')[1] === 'mine') || 
-      (data.split('_')[1] === 'plex') || 
-      (data.split('_')[1] === 'usdt') || 
-      (data.split('_')[1] === 'mpx') || 
-      (data.split('_')[1] === 'xfi') || 
-      (data.split('_')[1] === 'artery') || 
-      (data.split('_')[1] === 'bip') || 
-      (data.split('_')[1] === 'monsterhub') || 
-      (data.split('_')[1] === 'bnb') || 
-      (data.split('_')[1] === 'usdtbsc') || 
-      (data.split('_')[1] === 'hub') ? 
-      delCoin = false : delCoin = true;
+      (data.split('_')[1] === 'mine') ||
+        (data.split('_')[1] === 'plex') ||
+        (data.split('_')[1] === 'usdt') ||
+        (data.split('_')[1] === 'mpx') ||
+        (data.split('_')[1] === 'xfi') ||
+        (data.split('_')[1] === 'artery') ||
+        (data.split('_')[1] === 'bip') ||
+        (data.split('_')[1] === 'monsterhub') ||
+        (data.split('_')[1] === 'bnb') ||
+        (data.split('_')[1] === 'usdtbsc') ||
+        (data.split('_')[1] === 'hub') ?
+        delCoin = false : delCoin = true;
 
       if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
         coin[userId] = data.split('_')[1];

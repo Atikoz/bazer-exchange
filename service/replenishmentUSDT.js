@@ -52,7 +52,7 @@ class ReplenishmentUSDT {
         };
       };
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   };
 
@@ -80,7 +80,7 @@ class ReplenishmentUSDT {
       };
 
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   };
 };

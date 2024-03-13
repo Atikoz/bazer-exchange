@@ -103,6 +103,10 @@ const exchangeIK = bot.inlineKeyboard([
   [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })]
 ]);
 
+const adminPanelIK = bot.inlineKeyboard([
+  [bot.inlineButton('Удалить найденую транзакцию', { callback: 'deleteUserHash' })]
+]);
+
 
 module.exports = {
   RM_Home,

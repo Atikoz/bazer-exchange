@@ -90,7 +90,7 @@ class ReplenishmentMpxXfi {
         }
       }
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   };
 
@@ -155,7 +155,7 @@ class ReplenishmentMpxXfi {
         }
       }
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   }
 };

@@ -91,36 +91,39 @@ class Replenishment {
           tx.to === userWallet &&
           tx.data.amount / 1e18 >= minimalWithdrawal[tx.data.coin]
         ) {
+          
           const examinationIf = !await HashReplenishment.findOne({ id: tx.hash });
 
           if (examinationIf) {
-            await HashReplenishment.create({ id: tx.hash, coin: tx.data.coin });
-            console.log('model user send created');
-
-            const transferCommissionResponse = await sleep(5000).then(async () => await TransferCommission(
+            const comission = await sleep(5000).then(async () => await TransferCommission(
               getInfoUser.userWallet.mnemonics,
               decimalWallet,
               tx.data.coin,
-              tx.data.amount / 1e18
+              (tx.data.amount / 1e18) - 63
             ));
 
-            const comission = transferCommissionResponse.data.result.result.amount / 1e18;
             console.log('Calculated comission:', comission);
 
             const moneyTransfer = await sleep(5000).then(async () => await SendCoin(
               getInfoUser.userWallet.mnemonics,
               decimalWallet,
               tx.data.coin,
-              tx.data.amount / 1e18 - comission
+              (tx.data.amount / 1e18 - comission) - 63
             ));
+
+            const codeTransfer = moneyTransfer.data.result.result.tx_response.code;
 
             console.log(tx.data.coin);
             console.log('-------------');
-            console.log(tx.data.amount / 1e18 - comission);
+            console.log(tx.data.amount / 1e18 - comission - 50);
             console.log('Coins send admin wallet');
-            console.log(moneyTransfer.data.result.result.tx_response.code);
+            console.log(moneyTransfer.data.result.result);
+            console.log(codeTransfer);
 
-            if (moneyTransfer.data.result.result.tx_response.code !== 0) return;
+            if (codeTransfer !== 0) return;
+
+            await HashReplenishment.create({ id: tx.hash, coin: tx.data.coin });
+            console.log('model user send created');
 
             await TransactionStatus.create({
               id: userId,

@@ -90,7 +90,7 @@ class ReplenishmentMinter {
         }
       });
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   };
 
@@ -122,7 +122,7 @@ class ReplenishmentMinter {
         }
       })
     } catch (error) {
-      console.error(error)
+      // console.error(error)
     }
   };
 }
