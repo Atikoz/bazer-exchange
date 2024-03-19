@@ -222,39 +222,34 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        async function startTe() {
-          try {
-            console.log('Inside startTe function');
-            const users = await WalletUserModel.find({});
-            users.map(async (u) => {
-              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        // async function startTe() {
+        //   try {
+        //     console.log('Inside startTe function');
+        //     const users = await WalletUserModel.find({});
+        //     users.map(async (u) => {
+        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   { $unset: { "del.mnemonics": "" } },
-              // );
+        //       // await WalletUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   { $unset: { "del.mnemonics": "" } },
+        //       // );
 
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-              // );
+        //       // await WalletUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
+        //       // );
 
-              await ProfitPoolModel.create({
-                id: u.id,
-                profit: 0
-              });
+        //       // await BalanceUserModel.updateOne(
+        //       //   { id: u.id },
+        //       //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
+        //       // );
+        //     });
+        //   } catch (error) {
+        //     console.error(error)
+        //   }
+        // };
 
-              // await BalanceUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
-              // );
-            });
-          } catch (error) {
-            console.error(error)
-          }
-        };
-
-        startTe();
+        // startTe();
         break;
 
       case 'Конвертация 🔄':

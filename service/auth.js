@@ -6,6 +6,7 @@ const createDecimalWallet = require('../function/createDecimalWallet.js');
 const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
 const createMpxXfiWallet = require('../function/createMpxXfiWallet.js');
 const { createUserArteryWallet } = require('../function/createArteryWallet.js');
+const ProfitPoolModel = require('../model/profitLiquidityPool.js');
 
 class AuthenticationService {
   async Authentication(userId) { 
@@ -22,6 +23,11 @@ class AuthenticationService {
         await UserModel.create({
           id: userId,
           status: 0
+        });
+
+        await ProfitPoolModel.create({
+          id: userId,
+          profit: 0
         });
 
         await WalletUserModel.create({
@@ -192,7 +198,9 @@ class AuthenticationService {
             bazerusd: 0
           }
         });
+
         return 'ok';
+
        } else return;
     } catch (error) {
       console.error(error)
