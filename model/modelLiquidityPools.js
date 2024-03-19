@@ -5,8 +5,7 @@ const LiquidityPools = mongoose.model('Liquidity-Pools', {
   token: String,
   sellCoin: String,
   buyCoin: String,
-  amount: Number,
-  comission: Number
+  amount: Number
 });
 
 module.exports = LiquidityPools;

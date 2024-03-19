@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Decimal = require('decimal.js');
+const valueToNumber = require('../helpers/valueToNumber.js');
 const { Minter, TX_TYPE } = require("minter-js-sdk");
 
 const minter = new Minter({ apiType: 'node', baseURL: 'http://api-minter.mnst.club:8843/v2/' });
@@ -80,7 +81,6 @@ class MinterTransaction {
   getCoinId = async (coinName) => {
     try {
       const coinId = await minter.getCoinId(coinName.toUpperCase());
-      console.log(coinName, '=', +coinId);
 
       return +coinId
     } catch (error) {
@@ -98,31 +98,40 @@ class MinterTransaction {
 
       const response = (await axios.request(config)).data;
       const routeExchange = response.path;
-      console.log('routeExchange: ', routeExchange);
 
       return routeExchange
     } catch (error) {
-      console.error('request error: ', response.error.message);
+      console.error('request error: ', error.message);
     }
   };
 
   getFeeExchange = async (routeArray, valueToSell) => {
     try {
-      const amount = valueToSell * 1e18;
+      const amount = valueToNumber(valueToSell);
+      const firstElement = 0;
+      const lastElement = routeArray.length - 1;
+      let url = `http://api-minter.mnst.club:8843/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[lastElement]}&coin_id_to_sell=${routeArray[firstElement]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool`;
+
+      if (routeArray.length > 2) {
+        for (let i = 1; i < routeArray.length - 1; i++) {
+          url += `&route=${routeArray[i]}`;
+        }
+      };
+
       const config = {
         method: 'get',
-        url: `http://api-minter.mnst.club:8843/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[4]}&coin_id_to_sell=${routeArray[0]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool&route=${routeArray[1]}&route=${routeArray[2]}&route=${routeArray[3]}`,
+        url: url,
         headers: {}
       };
 
       const responce = (await axios.request(config)).data;
       const fee = ((responce.commission / 1e18) * 1.001).toFixed(2);
-      console.log('fee', +fee);
 
       return +fee
 
-    } catch (err) {
-      console.error('request error: ', err)
+    } catch (error) {
+      console.error('request error: ', error.message);
+      return false
     }
   };
 
@@ -139,10 +148,10 @@ class MinterTransaction {
 
       const exchange = await minter.postTx(txParams, { seedPhrase: seed });
 
-      return exchange
+      return { status: true, data: exchange }
     } catch (error) {
       console.error(error);
-      return 'ya lox, functia uhode d catch'
+      return { status: false, message: error.message }
     }
   };
 
@@ -166,9 +175,9 @@ class MinterTransaction {
     const config = {
       method: 'get',
       url: `http://api-minter.mnst.club:8843/v2/address/${address}?delegated=false`,
-      headers: { }
+      headers: {}
     };
-    
+
     const request = await axios.request(config);
     const balanceArray = request.data.balance;
 

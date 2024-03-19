@@ -73,6 +73,9 @@ const { v4 } = require('uuid');
 const { sendMinter, getCoinId, getRouteExchange, getFeeExchange, exchangeMinterTransaction, getPriceCoinInBip } = require('./function/minterTransaction.js');
 const exchangeValidator = require('./validator/minterExchangeValidator.js');
 const getBalanceCoin = require('./helpers/getBalanceCoin.js');
+const ProfitPoolModel = require('./model/profitLiquidityPool.js');
+const poolProfitDValidator = require('./validator/withdrawPoolProfirValidator.js');
+const poolProfitManagement = require('./helpers/poolProfitManagement.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -195,7 +198,6 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
-
     if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
@@ -220,34 +222,39 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        // async function startTe() {
-        //   try {
-        //     console.log('Inside startTe function');
-        //     const users = await WalletUserModel.find({});
-        //     users.map(async (u) => {
-        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        async function startTe() {
+          try {
+            console.log('Inside startTe function');
+            const users = await WalletUserModel.find({});
+            users.map(async (u) => {
+              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-        //       // await WalletUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   { $unset: { "del.mnemonics": "" } },
-        //       // );
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   { $unset: { "del.mnemonics": "" } },
+              // );
 
-        //       // await WalletUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-        //       // );
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
+              // );
 
-        //       await BalanceUserModel.updateOne(
-        //         { id: u.id },
-        //         JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
-        //       );
-        //     });
-        //   } catch (error) {
-        //     console.error(error)
-        //   }
-        // };
+              await ProfitPoolModel.create({
+                id: u.id,
+                profit: 0
+              });
 
-        // startTe();
+              // await BalanceUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
+              // );
+            });
+          } catch (error) {
+            console.error(error)
+          }
+        };
+
+        startTe();
         break;
 
       case 'Конвертация 🔄':
@@ -378,12 +385,6 @@ bot.on('text', async (msg) => {
 Количество продажи: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
 Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
 Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'spotTrade') });
-        break;
-
-      case 15:
-        break;
-
-      case 16:
         break;
 
       case 18:
@@ -734,8 +735,7 @@ bot.on('text', async (msg) => {
       case 26:
         setState(userId, 0);
         amount[userId] = text;
-        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
-        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId], comissionExchanger[userId]);
+        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId]);
 
         if (!isValidPoolData.status) return bot.sendMessage(userId, isValidPoolData.errorMessage);
 
@@ -743,8 +743,7 @@ bot.on('text', async (msg) => {
 
         const createPoolMesg = `Торговля осуществляется по рыночной цене.
 Пара: ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()},
-Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.
-Комиссия: ${comissionExchanger[userId]} CASHBACK.`;
+Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.`;
         bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(acceptCancelPoolArr, 'createPool') });
         break;
 
@@ -754,10 +753,15 @@ bot.on('text', async (msg) => {
         exchangeSellAmount[userId] = +text;
         const sellCoinId = await getCoinId(sellCoin[userId]);
         const buyCoinId = await getCoinId(buyCoin[userId]);
+        const audit = Number.isInteger(exchangeSellAmount[userId]);
+
+        if (!audit) return bot.sendMessage(userId, 'Введенное число не является целым!');
+
         const stringRouteArray = await getRouteExchange(sellCoinId, buyCoinId, exchangeSellAmount[userId]);
         exchangeRoute[userId] = stringRouteArray.map(str => +str);
 
         comissionExchanger[userId] = await getFeeExchange(exchangeRoute[userId], exchangeSellAmount[userId]);
+        if (!comissionExchanger[userId]) return bot.sendMessage(userId, 'Возникла ошибка, попробуйте попытку позже.');
         const resultExchangeMinterValidation = await exchangeValidator(userId, exchangeSellAmount[userId], sellCoin[userId], comissionExchanger[userId]);
 
         if (!resultExchangeMinterValidation.status) return bot.sendMessage(userId, resultExchangeMinterValidation.errorMessage);
@@ -772,6 +776,22 @@ bot.on('text', async (msg) => {
 
         const arrAnswer = ['accept', 'cancel']
         bot.sendMessage(userId, textMinterExchange, { replyMarkup: generateButton(arrAnswer, 'minterExchange') });
+        break;
+
+
+      case 15:
+        setState(userId, 0);
+        amount[userId] = +text;
+        const validationProfitPool = await poolProfitDValidator(userId, amount[userId]);
+
+        if (!validationProfitPool.status) return bot.sendMessage(userId, validationProfitPool.errorMessage);
+
+        const choice = ['accept', 'cancel'];
+
+        await bot.sendMessage(userId, `Выполнить вывод прибыли из пулов ликвидности в размере ${amount[userId]} CASHBACK?`, { replyMarkup: generateButton(choice, 'withdrawPoolProfit') });
+        break;
+
+      case 16:
         break;
 
       default:
@@ -1411,9 +1431,10 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'create_liquidityPools':
         bot.deleteMessage(userId, messageId);
+        const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
         firstPage.push('Page2');
-        coinSellArray[userId] = Array.from(arrayCoinList);
-        bot.sendMessage(userId, 'Комиссия составляет 1% от суммы пула, оплата осуществляется в монете <b>CASHBACK</b>. Выберите монету для продажи:', { replyMarkup: generateButton(firstPage, 'sellCoinPool'), parseMode: 'html' })
+        coinSellArray[userId] = Array.from(allCoin);
+        bot.sendMessage(userId, 'Вы перешли в раздел создания пула ликвидности. Доход начисляется в монете <b>CASHBACK</b>. Выберите монету для продажи:', { replyMarkup: generateButton(firstPage, 'sellCoinPool'), parseMode: 'html' })
         break;
 
       case 'my_liquidityPools':
@@ -1430,6 +1451,16 @@ bot.on('callbackQuery', async (msg) => {
         }
         break;
 
+      case 'profit_liquidityPools':
+        bot.deleteMessage(userId, messageId);
+        const balanceProfit = (await ProfitPoolModel.findOne({ id: userId })).profit;
+        const cancelButt = bot.inlineKeyboard([
+          [bot.inlineButton('Назад' , { callback: 'cancel' })],
+        ]);
+        bot.sendMessage(userId, `Введите сумму снятия прибыли из пулов ликвидности (доступно ${balanceProfit} CASHBACK): `, { replyMarkup: cancelButt });
+        setState(userId, 15);
+        break;
+
       case 'createPool_accept':
         bot.deleteMessage(userId, messageId);
         const createdToken = v4();
@@ -1440,11 +1471,9 @@ bot.on('callbackQuery', async (msg) => {
           sellCoin: sellCoin[userId],
           buyCoin: buyCoin[userId],
           amount: amount[userId],
-          comission: comissionExchanger[userId]
         });
 
         await freezeBalance(userId, amount[userId], sellCoin[userId]);
-        await freezeBalance(userId, comissionExchanger[userId], 'cashback');
         bot.sendMessage(userId, 'Пул успешно создан ✔️');
         sendLog(`Пользователь ${userId} создал пул ликвидности ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()}`)
         break;
@@ -1489,7 +1518,7 @@ bot.on('callbackQuery', async (msg) => {
         );
         coinSellArray[userId] = Array.from(minterCoinList);
 
-        await bot.sendMessage(userId, 'Вы перейшли в раздел конвертации в сети <b>Minter</>.\nОплата комисии производится в монете <b>BIP</b>', { parseMode: 'html' });
+        await bot.sendMessage(userId, 'Вы перейшли в раздел конвертации в сети <b>Minter</>.\n<b>Для обмена доступны только целые суммы!</b>. Оплата комисии производится в монете <b>BIP</b>.', { parseMode: 'html' });
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(minterCoinList, 'sellMinterExchange') });
         break;
 
@@ -1497,15 +1526,32 @@ bot.on('callbackQuery', async (msg) => {
         bot.deleteMessage(userId, messageId);
         const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic);
 
-        await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.hash}</code>`, { parseMode: 'html' });
+        if (!exchange.status) return await bot.sendMessage(userId, `Возникла непредвиденная ошибка! Сообщите администрации.`, { parseMode: 'html' });
+
+        await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.data.hash}</code>`, { parseMode: 'html' });
         await ControlUserBalance(userId, sellCoin[userId], -exchangeSellAmount[userId]);
         await ControlUserBalance(userId, buyCoin[userId], exchangeBuyAmount[userId]);
         await ControlUserBalance(userId, 'bip', -comissionExchanger[userId]);
 
-        await sendLog(`Пользователь ${userId} конвертировал монеты из сети Minter.\nTxHash: <code>${exchange.hash}</code>`)
+        await sendLog(`Пользователь ${userId} конвертировал монеты из сети Minter.\nTxHash: <code>${exchange.data.hash}</code>`)
         break;
 
       case 'minterExchange_cancel':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        break;
+
+      case 'withdrawPoolProfit_accept':
+        bot.deleteMessage(userId, messageId);
+        
+        await poolProfitManagement(userId, -amount[userId]);
+        await ControlUserBalance(userId, 'cashback', amount[userId]);
+
+        await bot.sendMessage(userId, `Вы успешно вывели ${amount[userId]} CASHBACK из пулов ликвидности. Средства успешно начислены на ваш баланс.`);
+        await sendLog(`Пользователь ${userId} вывел прибыль из пулов ликвидности в размере ${amount[userId]} CASHBACK.`)
+        break;
+
+      case 'withdrawPoolProfit_cancel':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
         break;
@@ -2218,7 +2264,6 @@ bot.on('callbackQuery', async (msg) => {
 
       await LiquidityPools.deleteOne({ token: poolToken });
       await unfreezeBalance(userId, selectedPool.amount, selectedPool.sellCoin);
-      await unfreezeBalance(userId, selectedPool.comission, 'cashback');
       bot.sendMessage(userId, `Пул с парой ${selectedPool.sellCoin}/${selectedPool.buyCoin} был успешно удалён!\nДеньги будут возвращены на баланс.`);
       sendLog(`Пользователь ${userId} удалил пул ликвидности.`)
     }

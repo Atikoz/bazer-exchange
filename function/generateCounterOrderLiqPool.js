@@ -5,6 +5,7 @@ const CustomOrder = require("../model/modelOrder");
 const { calculateFeeTrade } = require("./calculateSpotTradeFee");
 
 const generateCounterOrderLiqPool = async () => {
+  console.log('start');
   const ordersSpotTrade = (await CustomOrder.find()).filter(order => order.status !== 'Done' && order.status !== 'Deleted');
   const liquidityPools = await LiquidityPools.find();
 
@@ -23,7 +24,7 @@ const generateCounterOrderLiqPool = async () => {
   for (const order of ordersSpotTrade) {
     for (const pool of liquidityPools) {
       const poolMarketRate = await getCoinRate(pool.sellCoin, pool.buyCoin);
-      const roundedRateClosing = Number((1 / poolMarketRate).toFixed(4));
+      const roundedRateClosing = 1 / poolMarketRate;
       const spreadPercentage = 1; // % разброса
 
       // Перевірка на співпадання пари та ринкового курсу
@@ -33,11 +34,10 @@ const generateCounterOrderLiqPool = async () => {
         order.rate >= roundedRateClosing * (1 - spreadPercentage / 100) &&
         order.rate <= roundedRateClosing * (1 + spreadPercentage / 100)
       ) {
-        const ratePoolOrder = circumcisionAmount(1 / order.rate);
+        const ratePoolOrder = 1 / order.rate;
         const countOrder = (await CustomOrder.countDocuments()) + 1;
         const checkAmount = checkAmountPoolAndOrder(order.buyAmount, pool.amount);
         const calculationBuyAmount = circumcisionAmount(checkAmount.amount / order.rate);
-        const comissionDeal = calculateFeeTrade(pool.amount, checkAmount.amount, pool.comission);
 
         // Створення зустрічного ордеру
         await CustomOrder.create({
@@ -49,7 +49,7 @@ const generateCounterOrderLiqPool = async () => {
           buyAmount: calculationBuyAmount,
           sellAmount: checkAmount.amount,
           rate: ratePoolOrder,
-          comission: comissionDeal,
+          comission: 0,
         });
 
         if (checkAmount.status) {
@@ -57,7 +57,7 @@ const generateCounterOrderLiqPool = async () => {
         } else {
           await LiquidityPools.updateOne(
             { token: pool.token },
-            { $inc: { amount: -(order.buyAmount), comission: -comissionDeal } }
+            { $inc: { amount: -(order.buyAmount)} }
           );
         }
       }

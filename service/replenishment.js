@@ -108,16 +108,16 @@ class Replenishment {
               getInfoUser.userWallet.mnemonics,
               decimalWallet,
               tx.data.coin,
-              (tx.data.amount / 1e18 - comission) - 63
+              tx.data.amount / 1e18 - comission
             ));
 
-            const codeTransfer = moneyTransfer.data.result.result.tx_response.code;
+            const codeTransfer = moneyTransfer.result.tx_response.code;
 
             console.log(tx.data.coin);
             console.log('-------------');
-            console.log(tx.data.amount / 1e18 - comission - 50);
+            console.log(tx.data.amount / 1e18 - comission);
             console.log('Coins send admin wallet');
-            console.log(moneyTransfer.data.result.result);
+            console.log(moneyTransfer.result);
             console.log(codeTransfer);
 
             if (codeTransfer !== 0) return;
@@ -127,7 +127,7 @@ class Replenishment {
 
             await TransactionStatus.create({
               id: userId,
-              hash: moneyTransfer.data.result.result.tx_response.txhash,
+              hash: moneyTransfer.result.tx_response.txhash,
               status: 'UserSend',
               amount: tx.data.amount / 1e18,
               processed: false,

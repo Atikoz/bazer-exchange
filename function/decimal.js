@@ -2,10 +2,8 @@ const axios = require('axios');
 
 async function SendCoin(mnemonics, wallet, coin, amount) {
   try {
-    console.log('coin', coin)
-    console.log('amount', amount)
 
-    return await axios({
+    const request = await axios({
       method: 'POST',
       url: `https://cryptoapi7.ru/api/v1/sendCoins`,
       data: JSON.stringify({
@@ -31,7 +29,11 @@ async function SendCoin(mnemonics, wallet, coin, amount) {
           "amount": `${amount}`,
         }
       })
-    })
+    });
+
+    const data = request.data.result;
+
+    return data
   } catch (error) {
     console.error(error)
   }

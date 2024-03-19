@@ -96,7 +96,8 @@ const stackingIK = bot.inlineKeyboard([
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([
-  [bot.inlineButton('Создать пул', { callback: 'create_liquidityPools' }), bot.inlineButton('Мои пулы', { callback: 'my_liquidityPools' })]
+  [bot.inlineButton('Создать пул', { callback: 'create_liquidityPools' }), bot.inlineButton('Мои пулы', { callback: 'my_liquidityPools' })],
+  [bot.inlineButton('Снять прибыль с пула', { callback: 'profit_liquidityPools' })]
 ]);
 
 const exchangeIK = bot.inlineKeyboard([
