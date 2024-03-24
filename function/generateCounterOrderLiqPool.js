@@ -5,7 +5,6 @@ const CustomOrder = require("../model/modelOrder");
 const { calculateFeeTrade } = require("./calculateSpotTradeFee");
 
 const generateCounterOrderLiqPool = async () => {
-  console.log('start');
   const ordersSpotTrade = (await CustomOrder.find()).filter(order => order.status !== 'Done' && order.status !== 'Deleted');
   const liquidityPools = await LiquidityPools.find();
 

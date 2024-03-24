@@ -1,11 +1,10 @@
 const generateCounterOrderLiqPool = require('../function/generateCounterOrderLiqPool');
-const { SplitOrders, CheckOrders } = require('../service/orders');
+const CheckOrders = require('../service/checkOrders.js');
 
 const CronJob = require('cron').CronJob;
 
 const checkOrders = new CronJob('0 */1 * * * *', async () => {
   try {
-    await SplitOrders();
     await CheckOrders();
     await generateCounterOrderLiqPool();
   } catch (error) {
