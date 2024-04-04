@@ -3,7 +3,6 @@ const BalanceUser = require('../model/modelBalance.js');
 const { calculateFeeTrade } = require('../function/calculateSpotTradeFee.js');
 const sendLogs = require('../helpers/sendLog.js');
 const sendMessage = require('../helpers/tgFunction.js');
-const poolProfitManagement = require('../helpers/poolProfitManagement.js');
 
 
 const CheckOrders = async () => {
@@ -79,62 +78,21 @@ const CheckOrders = async () => {
               { id: secondOrder.id },
               JSON.parse(`{"$inc": { "main.${secondOrder.buyCoin}": ${sellSumm} } }`)
             );
+            await BalanceUser.updateOne(
+              { id: firstOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+            );
 
 
             //комиссия
-            if (firstOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
-              );
-
-              if (firstOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, feeTrade);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${feeTrade} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = feeTrade / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(firstOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${firstOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            }
-            else if (secondOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
-              );
-
-              if (secondOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, firstOrder.comission);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${firstOrder.comission} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = firstOrder.comission / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(secondOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${secondOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            } else {
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
-              );
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
-              );
-            }
+            await BalanceUser.updateOne(
+              { id: secondOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
+            );
+            await BalanceUser.updateOne(
+              { id: firstOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+            );
 
 
             //обновление данных ордера
@@ -184,59 +142,15 @@ const CheckOrders = async () => {
 
 
             //комиссия
-            if (firstOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
-              );
+            await BalanceUser.updateOne(
+              { id: secondOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
+            );
+            await BalanceUser.updateOne(
+              { id: firstOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
+            );
 
-              if (firstOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, secondOrder.comission);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${secondOrder.comission} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = secondOrder.comission / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(firstOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${firstOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            }
-            else if (secondOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
-              );
-
-              if (secondOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, feeTrade);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${feeTrade} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = feeTrade / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(secondOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${secondOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            } else {
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
-              );
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
-              );
-            }
 
             //обновление данных ордеров
             await CustomOrder.updateOne(
@@ -280,59 +194,14 @@ const CheckOrders = async () => {
 
 
             //комиссия
-            if (firstOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
-              );
-
-              if (firstOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, secondOrder.comission);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${secondOrder.comission} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = secondOrder.comission / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(firstOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${firstOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            }
-            else if (secondOrder.comission === 0) {
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
-              );
-
-              if (secondOrder.id === 1511153147) {
-                await poolProfitManagement(1511153147, firstOrder.comission);
-
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${firstOrder.comission} CASHBACK.`);
-              } else {
-                const onePercentFirstOrderComission = firstOrder.comission / 100;
-                const percentVova = onePercentFirstOrderComission * 15;
-                const percentInvestor = onePercentFirstOrderComission * 85;
-
-                await poolProfitManagement(1511153147, percentVova);
-                await poolProfitManagement(secondOrder.id, percentInvestor);
-
-                sendLogs(`Пользователю ${secondOrder.id} начислена награда из пулов ликвидности в размере: ${percentInvestor} CASHBACK.`);
-                sendLogs(`Пользователю 1511153147 начислена награда из пулов ликвидности в размере: ${percentVova} CASHBACK.`);
-              }
-            } else {
-              await BalanceUser.updateOne(
-                { id: firstOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
-              );
-              await BalanceUser.updateOne(
-                { id: secondOrder.id },
-                JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
-              );
-            }
+            await BalanceUser.updateOne(
+              { id: firstOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+            );
+            await BalanceUser.updateOne(
+              { id: secondOrder.id },
+              JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
+            );
 
 
             //обновление статусов ордеров

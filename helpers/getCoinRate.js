@@ -32,7 +32,7 @@ class GetRate {
     try {
       const currObj = this.rateObj[currency.toLowerCase()];
 
-      return (currObj[coin]).toFixed(2)
+      return +(currObj[coin]).toFixed(2)
 
     } catch (error) {
       console.error(error)

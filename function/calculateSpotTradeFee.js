@@ -33,7 +33,7 @@ class calculateFee {
   //функция для вычисления комиссии за часть сделки
   calculateFeeTrade = (amountSell, amountBuy, comission) => {
     try {
-      if (amountSell === amountBuy) return circumcisionAmount(comission);
+      if (amountSell === amountBuy) return comission;
       
       const onePercentSellAmount = circumcisionAmount(amountSell / 100);
 
@@ -43,7 +43,7 @@ class calculateFee {
 
       const feeTrade = percentBuy * onePercentComission;
 
-      return Number(feeTrade.toFixed(6))
+      return +feeTrade.toFixed(6)
     } catch (error) {
       console.error(error)
     }

@@ -1,4 +1,4 @@
-const ProfitPoolModel = require("../model/profitLiquidityPool");
+const ProfitPoolModel = require("../model/modelProfitPool");
 
 const poolProfitManagement = async (userId, amount) => {
   try {
@@ -7,7 +7,7 @@ const poolProfitManagement = async (userId, amount) => {
       JSON.parse(`{"$inc": { "profit": ${amount} } }`)
     );
   } catch (error) {
-    console.error(error)
+    console.error(error.message)
   }
 };
 

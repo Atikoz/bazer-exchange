@@ -1,4 +1,4 @@
-const generateCounterOrderLiqPool = require('../function/generateCounterOrderLiqPool');
+const generateCounterOrderLiqPool = require('../function/liquidityPool/generateCounterOrderLiqPool.js');
 const CheckOrders = require('../service/checkOrders.js');
 
 const CronJob = require('cron').CronJob;
