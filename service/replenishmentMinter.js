@@ -45,7 +45,7 @@ class ReplenishmentMinter {
           console.log('commission send', coin, 'tx: ', commissionTransfer);
 
           if (coin === 'BIP') {
-            const amountTransferAdminWallet = transaction.data.value - commissionTransfer;
+            const amountTransferAdminWallet = transaction.data.value - 35;
             console.log('amountTransferAdminWallet: ', amountTransferAdminWallet);
 
             const sendBipAdminWallet = await sleep(5000).then(async () => await sendMinter(config.adminMinterWallet, amountTransferAdminWallet, userSeed, coin));
