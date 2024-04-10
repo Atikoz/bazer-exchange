@@ -1,5 +1,5 @@
-const ExchangeCheckStatus = require('../exchanger/exchangerCheckStatus.js');
-const ExchangerStatus = require('../model/modelExchangeStatus.js');
+const ExchangeCheckStatus = require('../../exchanger/exchangerCheckStatus.js');
+const ExchangerStatus = require('../../model/modelExchangeStatus.js');
 
 const CronJob = require('cron').CronJob;
 

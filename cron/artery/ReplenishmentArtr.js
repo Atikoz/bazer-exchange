@@ -1,6 +1,6 @@
-const WalletUserModel = require('../model/modelWallet');
-const { checkBalanceArtery, checkAdminWallet } = require('../function/arteryTransaction.js');
-const ArteryReplenishment = require('../model/modelArterySendAdmin.js');
+const WalletUserModel = require('../../model/modelWallet.js');
+const { checkBalanceArtery, checkAdminWallet } = require('../../function/arteryTransaction.js');
+const ArteryReplenishment = require('../../model/modelArterySendAdmin.js');
 
 const CronJob = require('cron').CronJob;
 

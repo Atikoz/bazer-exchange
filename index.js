@@ -54,8 +54,7 @@ const OrderFilling = require('./model/modelOrderFilling.js');
 const { TransferTronNet } = require('./function/usdtTransactions.js');
 
 const { sendCoin } = require('./function/minePlexTransactions.js');
-const ReplenishmentMpxXfi = require('./function/mpxXfiTransactions.js');
-const SendMpxXfi = ReplenishmentMpxXfi.SendCoin;
+const { SendMpxXfi } = require('./function/mpxXfiTransactions.js');
 
 const sendLog = require('./helpers/sendLog.js');
 const generateButton = require('./helpers/generateButton.js');
@@ -78,7 +77,6 @@ const poolProfitManagement = require('./helpers/poolProfitManagement.js');
 const LiquidityPoolModel = require('./model/modelLiquidityPool.js');
 const withdrawInvestmentsPoolValidator = require('./validator/withdrawInvestmentsPool.js');
 const WithdrawInvestments = require('./function/liquidityPool/withdrawInvestments.js');
-
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -227,6 +225,8 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
+        const a = await BalanceUserModel.findOne({id: 601013890});
+        console.log(a);
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
@@ -795,9 +795,9 @@ bot.on('text', async (msg) => {
         const validationWithdrawPoolInv = await withdrawInvestmentsPoolValidator(sellCoin[userId], buyCoin[userId], coin[userId], amount[userId], userId);
 
         if (!validationWithdrawPoolInv.status) return bot.sendMessage(userId, validationWithdrawPoolInv.message);
-        comissionExchanger[userId] = 
+        comissionExchanger[userId] =
 
-        bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
+          bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
         break;
 
       default:
@@ -1471,6 +1471,7 @@ bot.on('callbackQuery', async (msg) => {
           const dataWithdrawInvestmentsIK = bot.inlineKeyboard([
             [bot.inlineButton('Вывести из пула ❌', { callback: `dataWithdrawInvestments_${pool.firstCoin}_${pool.secondCoin}` })] //1 монета в колбеке - которую пользователь инвестировал, 2 - которою получает
           ]);
+          console.log('amountSecondCoin', pool.amountSecondCoin);
           bot.sendMessage(userId, `Пара: ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()},
 Количество монет в пуле:
 ${circumcisionAmount(pool.amountFirstCoin)} ${pool.firstCoin.toUpperCase()}
@@ -1618,10 +1619,10 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         await sendLog(`Пользователь ${userId} вывел сумму из пулов ликвидности в размере ${amount[userId]} ${coin[userId].toUpperCase()}.`)
         break;
 
-        case 'withdrawInvestPool_cancel':
-          bot.deleteMessage(userId, messageId);
-          bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
-          break;
+      case 'withdrawInvestPool_cancel':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        break;
 
       default:
         break;

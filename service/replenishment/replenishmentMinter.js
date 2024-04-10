@@ -1,12 +1,12 @@
-const UserManagement = require('./userManagement.js');
-const { getTransaction, getCommissionTx, checkMinterHash, sendMinter, getCoinId, getBalance } = require('../function/minterTransaction.js');
-const MinterReplenishment = require('../model/modelMinterReplenishment.js');
-const config = require('../config.js');
-const TransactionMinterStatus = require('../model/modelMinterStatusTransaction.js');
-const BalanceUserModel = require('../model/modelBalance.js');
-const sendLogs = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
-const sleep = require('../helpers/sleepFunction.js');
+const UserManagement = require('../userManagement.js');
+const { getTransaction, getCommissionTx, checkMinterHash, sendMinter, getCoinId, getBalance } = require('../../function/minterTransaction.js');
+const MinterReplenishment = require('../../model/modelMinterReplenishment.js');
+const config = require('../../config.js');
+const TransactionMinterStatus = require('../../model/modelMinterStatusTransaction.js');
+const BalanceUserModel = require('../../model/modelBalance.js');
+const sendLogs = require('../../helpers/sendLog.js');
+const sendMessage = require('../../helpers/tgFunction.js');
+const sleep = require('../../helpers/sleepFunction.js');
 
 
 class ReplenishmentMinter {

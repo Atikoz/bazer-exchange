@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 const checkOrders = require('../cron/OrderCheck.js');
-const checkUserTransaction = require('../cron/ReplenishmentStatusCheck.js');
-const checkMinterTransaction = require('../cron/ReplenishmentMinterCheck.js');
-const checkUserExchangeTransaction = require('../cron/StatusCheckExchanger.js');
-const { checkArtrBalance, checkArtrAdminHash } = require('../cron/ReplenishmentArtr.js');
-const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron/ReplenishmentUsdtCheck.js');
-const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/ReplenishmentMpxXfiCheck.js');
-const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/ReplenishmentMineCheck.js');
+const checkUserTransaction = require('../cron/decimal/ReplenishmentStatusCheck.js');
+const checkMinterTransaction = require('../cron/minter/ReplenishmentMinterCheck.js');
+const checkUserExchangeTransaction = require('../cron/decimal/StatusCheckExchanger.js');
+const { checkArtrBalance, checkArtrAdminHash } = require('../cron/artery/ReplenishmentArtr.js');
+const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron/usdt/ReplenishmentUsdtCheck.js');
+const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/mpxXfi/ReplenishmentMpxXfiCheck.js');
+const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/minePlex/ReplenishmentMineCheck.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 

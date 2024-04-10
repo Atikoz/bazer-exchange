@@ -1,5 +1,5 @@
-const WalletUserModel = require('../model/modelWallet');
-const { checkUserTransaction, balanceCheckAdminWallet } = require('../service/replenishmentMinter');
+const WalletUserModel = require('../../model/modelWallet');
+const { checkUserTransaction, balanceCheckAdminWallet } = require('../../service/replenishment/replenishmentMinter');
 
 
 const CronJob = require('cron').CronJob;

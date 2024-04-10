@@ -1,16 +1,16 @@
 const axios = require('axios');
-const { decimalWallet } = require('../decimalConfig.js');
-const UserManagement = require('./userManagement.js');
-const HashReplenishment = require('../model/modelHashReplenishment.js');
+const { decimalWallet } = require('../../decimalConfig.js');
+const UserManagement = require('../userManagement.js');
+const HashReplenishment = require('../../model/modelHashReplenishment.js');
 const {
   SendCoin,
   TransferCommission
-} = require('../function/decimal.js');
-const TransactionStatus = require('../model/modelTransactionStatus.js');
-const BalanceUserModel = require('../model/modelBalance.js');
-const sendLogs = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
-const sleep = require('../helpers/sleepFunction.js');
+} = require('../../function/decimal.js');
+const TransactionStatus = require('../../model/modelTransactionStatus.js');
+const BalanceUserModel = require('../../model/modelBalance.js');
+const sendLogs = require('../../helpers/sendLog.js');
+const sendMessage = require('../../helpers/tgFunction.js');
+const sleep = require('../../helpers/sleepFunction.js');
 
 
 const minimalWithdrawal = {
@@ -78,7 +78,7 @@ const minimalWithdrawal = {
   cashback: 50
 };
 
-class Replenishment {
+class ReplenishmentDecimal {
   async ReplenishmentUserWallet(userId) {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
@@ -165,4 +165,4 @@ class Replenishment {
   }
 }
 
-module.exports = new Replenishment;
+module.exports = new ReplenishmentDecimal;

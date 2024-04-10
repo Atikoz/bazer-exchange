@@ -1,6 +1,6 @@
-const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions');
-const WalletUserModel = require('../model/modelWallet');
-const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin } = require('../service/replenishmentMpxXfi');
+const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions');
+const WalletUserModel = require('../../model/modelWallet');
+const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin } = require('../../service/replenishment/replenishmentMpxXfi');
 
 
 const CronJob = require('cron').CronJob;

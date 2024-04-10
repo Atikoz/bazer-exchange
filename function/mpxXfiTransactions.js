@@ -75,7 +75,7 @@ const CheckBalance = async (wallet) => {
 };
 
 
-const SendCoin = async (senderMnemonic, resiverWallet, coin, amount) => {
+const SendMpxXfi = async (senderMnemonic, resiverWallet, coin, amount) => {
   try {
     let data = qs.stringify({
       'fromMnemonic': senderMnemonic,
@@ -109,5 +109,5 @@ module.exports = {
   getMpxXfiTransactions,
   CheckTransactionHash,
   CheckBalance,
-  SendCoin
+  SendMpxXfi
 }

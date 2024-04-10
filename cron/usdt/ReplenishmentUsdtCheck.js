@@ -1,8 +1,8 @@
 const { resolve } = require('mathjs');
-const TransactionUsdtStatus = require('../model/modelTransactionsUsdtStatus');
-const WalletUserModel = require('../model/modelWallet');
-const { ReplenishmentUserWalletUSDT, CheckUsdtTransactionAmin } = require('../service/replenishmentUSDT');
-const sleep = require('../helpers/sleepFunction');
+const TransactionUsdtStatus = require('../../model/modelTransactionsUsdtStatus');
+const WalletUserModel = require('../../model/modelWallet');
+const { ReplenishmentUserWalletUSDT, CheckUsdtTransactionAmin } = require('../../service/replenishment/replenishmentUSDT');
+const sleep = require('../../helpers/sleepFunction');
 
 
 const CronJob = require('cron').CronJob;

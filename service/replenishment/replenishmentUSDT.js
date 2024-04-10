@@ -1,13 +1,13 @@
 // const axios = require('axios');
-const config = require('../config.js');
-const UserManagement = require('./userManagement.js');
-const { getTransaction, TransferTronNet, TransferTronwebTrx, getBalanceTron, transactionTronNetworkInfo } = require('../function/usdtTransactions.js');
-const UsdtReplenishment = require('../model/modelUsdtReplenishment.js');
-const TransactionUsdtStatus = require('../model/modelTransactionsUsdtStatus.js');
-const BalanceUserModel = require('../model/modelBalance.js');
-const sendLog = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
-const sleep = require('../helpers/sleepFunction.js');
+const config = require('../../config.js');
+const UserManagement = require('../userManagement.js');
+const { getTransaction, TransferTronNet, TransferTronwebTrx, getBalanceTron, transactionTronNetworkInfo } = require('../../function/usdtTransactions.js');
+const UsdtReplenishment = require('../../model/modelUsdtReplenishment.js');
+const TransactionUsdtStatus = require('../../model/modelTransactionsUsdtStatus.js');
+const BalanceUserModel = require('../../model/modelBalance.js');
+const sendLog = require('../../helpers/sendLog.js');
+const sendMessage = require('../../helpers/tgFunction.js');
+const sleep = require('../../helpers/sleepFunction.js');
 
 class ReplenishmentUSDT {
   async ReplenishmentUserWalletUSDT(userId) {

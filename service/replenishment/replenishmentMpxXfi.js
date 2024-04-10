@@ -1,13 +1,13 @@
-const config = require('../config.js');
-const UserManagement = require('./userManagement.js');
-const BalanceUserModel = require('../model/modelBalance.js');
-const { getMpxXfiTransactions, CheckBalance, SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactions.js');
-const MpxXfiReplenishment = require('../model/modelMpxXfiReplenishment.js');
-const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
-const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
-const sendLog = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
-const sleep = require('../helpers/sleepFunction.js');
+const config = require('../../config.js');
+const UserManagement = require('../userManagement.js');
+const BalanceUserModel = require('../../model/modelBalance.js');
+const { getMpxXfiTransactions, CheckBalance, SendCoin, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
+const MpxXfiReplenishment = require('../../model/modelMpxXfiReplenishment.js');
+const HashSendAdminComission = require('../../model/modelHashSendAdminComission.js');
+const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions.js');
+const sendLog = require('../../helpers/sendLog.js');
+const sendMessage = require('../../helpers/tgFunction.js');
+const sleep = require('../../helpers/sleepFunction.js');
 
 
 const minimalReplenishment = {

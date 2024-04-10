@@ -1,15 +1,15 @@
-const { getMinePlexTransactions, sendCoin, checkBalance, checkHashSendAdminComission } = require('../function/minePlexTransactions.js');
-const MinePlexReplenishment = require('../model/modelMinePlexReplenishment.js');
-const UserManagement = require('./userManagement.js');
-const config = require('../config.js');
-const TransactionMinePlextStatus = require('../model/modelMinePlexStatusTransactions.js');
-const BalanceUserModel = require('../model/modelBalance.js');
-const HashSendAdminComission = require('../model/modelHashSendAdminComission.js');
-const TransactionMpxXfiStatus = require('../model/modelMpxXfiStatusTransactions.js');
-const { SendCoin, CheckTransactionHash } = require('../function/mpxXfiTransactions.js');
-const sendLog = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
-const sleep = require('../helpers/sleepFunction.js');
+const { getMinePlexTransactions, sendCoin, checkBalance, checkHashSendAdminComission } = require('../../function/minePlexTransactions.js');
+const MinePlexReplenishment = require('../../model/modelMinePlexReplenishment.js');
+const UserManagement = require('../userManagement.js');
+const config = require('../../config.js');
+const TransactionMinePlextStatus = require('../../model/modelMinePlexStatusTransactions.js');
+const BalanceUserModel = require('../../model/modelBalance.js');
+const HashSendAdminComission = require('../../model/modelHashSendAdminComission.js');
+const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions.js');
+const { SendCoin, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
+const sendLog = require('../../helpers/sendLog.js');
+const sendMessage = require('../../helpers/tgFunction.js');
+const sleep = require('../../helpers/sleepFunction.js');
 
 const minimalReplenishment = {
   mine: 2,

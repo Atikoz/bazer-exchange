@@ -1,7 +1,7 @@
-const HashSendAdminComission = require('../model/modelHashSendAdminComission');
-const TransactionMinePlextStatus = require('../model/modelMinePlexStatusTransactions');
-const WalletUserModel = require('../model/modelWallet');
-const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin, CheckCommissionTransactionAmin } = require('../service/replenishmentMinePlex');
+const HashSendAdminComission = require('../../model/modelHashSendAdminComission');
+const TransactionMinePlextStatus = require('../../model/modelMinePlexStatusTransactions');
+const WalletUserModel = require('../../model/modelWallet');
+const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin, CheckCommissionTransactionAmin } = require('../../service/replenishment/replenishmentMinePlex');
 
 
 const CronJob = require('cron').CronJob;
