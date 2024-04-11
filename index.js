@@ -225,8 +225,6 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         bot.sendMessage(userId, 'Раздел в разработке');
 
-        const a = await BalanceUserModel.findOne({id: 601013890});
-        console.log(a);
         // async function startTe() {
         //   try {
         //     console.log('Inside startTe function');
