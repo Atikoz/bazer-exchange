@@ -181,10 +181,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -201,7 +201,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       case 'Мой кабинет 📂':
@@ -1433,6 +1433,29 @@ bot.on('callbackQuery', async (msg) => {
         bot.sendMessage(userId, 'Выберите действие:', { replyMarkup: liquidityPoolsIK })
         break;
 
+      case 'all_liquidityPools':
+        bot.deleteMessage(userId, messageId)
+        const allPoolUsers = await LiquidityPoolModel.find();
+
+        for (const pool of allPoolUsers) {
+          let sumFirstCoinPool = 0;
+          let sumSecondCoinPool = 0;
+          const usersArray = pool.poolUser;
+
+          for (const user of usersArray) {
+            sumFirstCoinPool += user.amountFirstCoin;
+            sumSecondCoinPool += user.amountSecondCoin;
+          };
+
+          if (sumFirstCoinPool <= 0 && sumSecondCoinPool <= 0) return
+          bot.sendMessage(userId, `Пул: ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}
+Количество монет в пуле: 
+${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
+${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
+        }
+
+        break;
+
       case 'create_liquidityPools':
         bot.deleteMessage(userId, messageId);
         const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
@@ -1443,7 +1466,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'my_liquidityPools':
         bot.deleteMessage(userId, messageId)
-        const allPool = await LiquidityPoolModel.find();
+        const allUserPool = await LiquidityPoolModel.find();
         const userInvestment = []; /* {
           id: Number,
           firstCoin: String,
@@ -1452,7 +1475,7 @@ bot.on('callbackQuery', async (msg) => {
           amountSecondCoin: Number,
         } */
 
-        for (const pool of allPool) {
+        for (const pool of allUserPool) {
           const user = pool.poolUser.find(user => user.id === userId);
 
           if (user && (+user.amountFirstCoin > 0 || +user.amountSecondCoin > 0)) userInvestment.push({
