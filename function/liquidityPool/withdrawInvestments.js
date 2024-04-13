@@ -3,7 +3,6 @@ const LiquidityPoolModel = require("../../model/modelLiquidityPool");
 const WithdrawInvestments = async (firstCoin, secondCoin, withdrawCoin, userId, amount) => {
   try {
     const findPool = await LiquidityPoolModel.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
-    console.log('start pool', findPool);
     
     if (!findPool) {
       throw new Error('Profit pool not found');
@@ -33,8 +32,6 @@ const WithdrawInvestments = async (firstCoin, secondCoin, withdrawCoin, userId, 
     // Метод markModified() указывает Mongoose, что поле было изменено
     findPool.markModified('poolUser');
     await findPool.save();
-
-    console.log("changes pool: ", findPool);
 
     return { status: true };
   } catch (error) {

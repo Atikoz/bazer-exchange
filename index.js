@@ -181,10 +181,10 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -201,7 +201,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       case 'Мой кабинет 📂':
@@ -733,7 +733,8 @@ bot.on('text', async (msg) => {
       case 26:
         setState(userId, 0);
         amount[userId] = text;
-        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId]);
+        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId])
+        const isValidPoolData = await poolDataValidation(userId, amount[userId], sellCoin[userId], comissionExchanger[userId]);
 
         if (!isValidPoolData.status) return bot.sendMessage(userId, isValidPoolData.errorMessage);
 
@@ -741,7 +742,8 @@ bot.on('text', async (msg) => {
 
         const createPoolMesg = `Торговля осуществляется по рыночной цене. Проскальзывание составляет 5%.
 Пара: ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()},
-Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.`;
+Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.
+Комиссия: ${comissionExchanger[userId]} CASHBACK.`;
         bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(acceptCancelPoolArr, 'createPool') });
         break;
 
@@ -790,12 +792,13 @@ bot.on('text', async (msg) => {
       case 16:
         setState(userId, 0);
         amount[userId] = +text;
-        const validationWithdrawPoolInv = await withdrawInvestmentsPoolValidator(sellCoin[userId], buyCoin[userId], coin[userId], amount[userId], userId);
+        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], coin[userId])
+
+        const validationWithdrawPoolInv = await withdrawInvestmentsPoolValidator(sellCoin[userId], buyCoin[userId], coin[userId], amount[userId], userId, comissionExchanger[userId]);
 
         if (!validationWithdrawPoolInv.status) return bot.sendMessage(userId, validationWithdrawPoolInv.message);
-        comissionExchanger[userId] =
 
-          bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
+          bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
         break;
 
       default:
@@ -1546,6 +1549,8 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         }
 
         await ControlUserBalance(userId, sellCoin[userId], -amount[userId]);
+        await ControlUserBalance(userId, 'cashback', -comissionExchanger[userId]);
+
         bot.sendMessage(userId, 'Инвестиция в пул прошла успешно ✔️');
         sendLog(`Пользователь ${userId} инвестировал в пул ликвидности ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()} ${amount[userId]} ${sellCoin[userId].toUpperCase()}.`);
         break;
@@ -1635,6 +1640,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         if (!withdrawResult.status) return bot.sendMessage(userId, 'Произошла ошибка, попробуйте попытку позже. В случае если ошибка останется, свяжитесь с администрацией.');
 
         await ControlUserBalance(userId, coin[userId], amount[userId]);
+        await ControlUserBalance(userId, 'cashback', -comissionExchanger[userId]);
 
         await bot.sendMessage(userId, `Вы успешно вывели ${amount[userId]} ${coin[userId].toUpperCase()} из пулов ликвидности. Средства успешно начислены на ваш баланс.`);
         await sendLog(`Пользователь ${userId} вывел сумму из пулов ликвидности в размере ${amount[userId]} ${coin[userId].toUpperCase()}.`)
@@ -2343,7 +2349,7 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
       const availableSum = await getBalanceCoin(userId, sellCoin[userId]);
-      await bot.sendMessage(userId, `Введите количество монет для инвестиции в пул ликвидности. Доступно ${availableSum} ${sellCoin[userId].toUpperCase()}: `);
+      await bot.sendMessage(userId, `Введите количество монет для инвестиции в пул ликвидности. Комиссия составляет 1% от суммы инвестиции, оплата осуществляется в монете CASHBACK. Доступно ${availableSum} ${sellCoin[userId].toUpperCase()}: `);
       setState(userId, 26);
     }
     else if (data.split('_')[0] === 'dataWithdrawInvestments') {
@@ -2372,11 +2378,11 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
       const userPool = selectedPools.poolUser.find(user => user.id === userId);
 
       if (selectedPools.firstCoin === coin[userId]) {
-        bot.sendMessage(userId, `Введите сумму вывода (<code>${userPool.amountFirstCoin}</code> ${selectedPools.firstCoin.toUpperCase()}): `, { parseMode: 'html' });
+        bot.sendMessage(userId, `Комиссия составляет 1% от суммы вывода, опалата осуществляется в монете CASHBACK. Введите сумму вывода (<code>${userPool.amountFirstCoin}</code> ${selectedPools.firstCoin.toUpperCase()}): `, { parseMode: 'html' });
         setState(userId, 16);
       }
       else if (selectedPools.secondCoin === coin[userId]) {
-        bot.sendMessage(userId, `Введите сумму вывода (<code>${userPool.amountSecondCoin}</code> ${selectedPools.secondCoin.toUpperCase()}): `, { parseMode: 'html' });
+        bot.sendMessage(userId, `Комиссия составляет 1% от суммы вывода, опалата осуществляется в монете CASHBACK. Введите сумму вывода (<code>${userPool.amountSecondCoin}</code> ${selectedPools.secondCoin.toUpperCase()}): `, { parseMode: 'html' });
         setState(userId, 16);
       } else {
         bot.sendMessage(userId, 'Произошла непредвиденная ошибка, попробуйте попытку позже. В случае если ошибка останется, свяжитесь с администрацией.', { parseMode: 'html' });

@@ -1,8 +1,19 @@
 const LiquidityPoolModel = require("../model/modelLiquidityPool");
+const userManagement = require('../service/userManagement.js');
 
-const withdrawInvestmentsPoolValidator = async (firstCoin, secondCoin, coinWithdraw, amount, userId) => {
+
+const withdrawInvestmentsPoolValidator = async (firstCoin, secondCoin, coinWithdraw, amount, userId, comission) => {
   try {
+    const infoUser = await userManagement.getInfoUser(userId);
+    const balanceCashback = infoUser.userBalance.main.cashback;
+
     if (isNaN(amount)) return { status: false, message: 'Введенно не коректное число.' };
+
+    if (isNaN(comission)) return { status: false, message: 'Произошла непредвиденная ошибка, попробуйте попытку позже. В случае если ошибка останется, свяжитесь с администрацией.' };
+
+    if (comission > balanceCashback) {
+      return { status: false, message: `На вашем балансе не достаточно средств для оплаты комиссии! Необходимо ${comission} CASHBACK. Доступно: ${balanceCashback} CASHBACK.` };
+    }
 
     const findPool = await LiquidityPoolModel.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
     if (!findPool) return { status: false, message: 'Произошла непредвиденная ошибка, попробуйте попытку позже. В случае если ошибка останется, свяжитесь с администрацией.' }
