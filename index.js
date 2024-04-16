@@ -29,6 +29,10 @@ const {
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
   stackingIK,
+  filterSpotOrdersIK,
+  filterCompleteSpotOrdersIK,
+  filterBuyP2PIK,
+  filterSellP2PIK,
 } = require('./keyboard.js');
 
 const {
@@ -201,7 +205,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    if (p2pCgithannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
 
     switch (text) {
       case 'Мой кабинет 📂':
@@ -822,6 +826,9 @@ bot.on('callbackQuery', async (msg) => {
 
     console.log(data);
 
+    const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
+
+
     const textBalance = [
       '💵 Балансы:',
       `USDT: ${circumcisionAmount(getInfoUser.userBalance.main.usdt)}`,
@@ -1099,33 +1106,53 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'completed_SpotOrders':
-        try {
-          bot.deleteMessage(userId, messageId);
-          const userOrder = (await CustomOrder.find({ id: userId })).filter(order => !(order.status === 'Selling'));
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterCompleteSpotOrdersIK});
+        break;
 
-          if (userOrder.length === 0) {
-            return bot.sendMessage(userId, 'У вас не сработал еще ни один ордер 😞');
-          }
+      case 'allCompleteList_SpotOrders':
+        bot.deleteMessage(userId, messageId);
+        const userOrder = (await CustomOrder.find({ id: userId })).filter(order => !(order.status === 'Selling'));
 
-          const messageUserOrder = userOrder
-            .map(order => {
-              return `Ордер №${order.orderNumber},
+        if (userOrder.length === 0) {
+          return bot.sendMessage(userId, 'У вас не сработал еще ни один ордер 😞');
+        }
+
+        const messageUserOrder = userOrder
+          .map(order => {
+            return `Ордер №${order.orderNumber},
 Статус: ${order.status},
 Продажа монеты: ${order.sellCoin.toUpperCase()},
 Покупка монеты: ${order.buyCoin.toUpperCase()},
 Сумма покупки: ${order.buyAmount} ${order.buyCoin.toUpperCase()},
 Сумма продажи: ${order.sellAmount} ${order.sellCoin.toUpperCase()},
 Курс осуществления операции: 1 ${order.sellCoin.toUpperCase()} = ${order.rate} ${order.buyCoin.toUpperCase()}.\n\n`;
-            })
-            .join('');
+          })
+          .join('');
 
-          await bot.sendMessage(userId, messageUserOrder);
-        } catch (error) {
-          console.error(error)
-        }
+        await bot.sendMessage(userId, messageUserOrder);
+        break;
+
+      case 'filterCompleteList_SpotOrders':
+        bot.deleteMessage(userId, messageId);
+        firstPage.push('Page2');
+        coinSellArray[userId] = Array.from(allCoin);
+        bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(firstPage, 'firstCoinFilterCompleteSpotOrders') })
         break;
 
       case 'list_SpotOrders':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterSpotOrdersIK });
+        break;
+
+      case 'filterList_SpotOrders':
+        bot.deleteMessage(userId, messageId);
+        firstPage.push('Page2');
+        coinSellArray[userId] = Array.from(allCoin);
+        bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(firstPage, 'firstCoinFilterSpotOrders') });
+        break;
+
+      case 'allList_SpotOrders':
         bot.deleteMessage(userId, messageId);
         const listOrder = await CustomOrder.find({});
         const filteredArray = listOrder.filter(order => !(order.status === 'Done' || (order.status === 'Deleted')));
@@ -1218,7 +1245,18 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'buyList_p2pOrders':
-        orderType[userId] = 'buy';
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterBuyP2PIK })
+        break;
+
+      case 'filterList_buyP2P':
+        bot.deleteMessage(userId, messageId);
+        firstPage.push('Page2');
+        coinSellArray[userId] = Array.from(allCoin);
+        bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(firstPage, 'coinFilterBuyP2P') });
+        break;
+
+      case 'allList_buyP2P':
         bot.deleteMessage(userId, messageId);
         const buyAllP2POrder = (await CustomP2POrder.find({ type: 'sell' })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
         if (buyAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
@@ -1230,7 +1268,7 @@ bot.on('callbackQuery', async (msg) => {
           ]);
 
           // если создатель ордера пользователь
-          if (Number(buyAllP2POrder[i].id) === userId) {
+          if (+buyAllP2POrder[i].id === userId) {
 
             const messageP2PBuyUserOrder = `Ордер №${buyAllP2POrder[i].orderNumber} (you),
 Покупка монеты: ${buyAllP2POrder[i].coin},
@@ -1256,8 +1294,18 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'sellList_p2pOrders':
-        setState(userId, 22);
-        orderType[userId] = 'sell';
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterSellP2PIK })
+        break;
+
+      case 'filterList_sellP2P':
+        bot.deleteMessage(userId, messageId);
+        firstPage.push('Page2');
+        coinSellArray[userId] = Array.from(allCoin);
+        bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(firstPage, 'coinFilterSellP2P') });
+        break;
+
+      case 'allList_sellP2P':
         bot.deleteMessage(userId, messageId);
         const sellAllP2POrder = (await CustomP2POrder.find({ type: 'buy' })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
         if (sellAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
@@ -1461,7 +1509,6 @@ ${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
 
       case 'create_liquidityPools':
         bot.deleteMessage(userId, messageId);
-        const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
         firstPage.push('Page2');
         coinSellArray[userId] = Array.from(allCoin);
         bot.sendMessage(userId, 'Вы перешли в раздел инвестиции в пул ликвидности. Доход начисляется в монете <b>CASHBACK</b>. Выберите первую монету:', { replyMarkup: generateButton(firstPage, 'firstCoinPool'), parseMode: 'html' })
@@ -2405,6 +2452,297 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
       bot.sendMessage(userId, `Курс 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId]}. Введите количество продажи ${sellCoin[userId].toUpperCase()} (доступно ${balanceSellCoin}):`);
       setState(userId, 17);
     }
+    else if (data === 'firstCoinFilterSpotOrders_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterSpotOrders_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterSpotOrders_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterSpotOrders_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterSpotOrders') });
+    }
+    else if (data.split('_')[0] === 'firstCoinFilterSpotOrders') {
+      bot.deleteMessage(userId, messageId);
+      sellCoin[userId] = data.split('_')[1];
+      deleteSelectedCoin(sellCoin[userId], coinSellArray[userId]);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterSpotOrders_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterSpotOrders_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterSpotOrders_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterSpotOrders_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterSpotOrders') });
+    }
+    else if (data.split('_')[0] === 'secondCoinFilterSpotOrders') {
+      bot.deleteMessage(userId, messageId);
+      buyCoin[userId] = data.split('_')[1];
+      const listFiltredOrders = await CustomOrder.find({ sellCoin: sellCoin[userId], buyCoin: buyCoin[userId]});      
+      const filteredArray = listFiltredOrders.filter(order => !(order.status === 'Done' || (order.status === 'Deleted')));
+
+      if (filteredArray.length === 0) return bot.sendMessage(userId, 'Сейчас на площадке нету ни 1 ордера с такой парой.')
+
+      filteredArray.forEach(order => {
+        const selectSpotOrder = bot.inlineKeyboard([
+          [bot.inlineButton('Создать встречный ордер ✅', { callback: `createCounterOrder_${order.orderNumber}` })]
+        ])
+
+        bot.sendMessage(userId,
+          `Ордер №${order.orderNumber},
+Статус: ${order.status},
+Продажа монеты: ${order.sellCoin.toUpperCase()},
+Покупка монеты: ${order.buyCoin.toUpperCase()},
+Сумма покупки: ${circumcisionAmount(order.buyAmount)} ${order.buyCoin.toUpperCase()},
+Сумма продажи: ${circumcisionAmount(order.sellAmount)} ${order.sellCoin.toUpperCase()},
+Курс осуществления операции: 1 ${order.sellCoin.toUpperCase()} = ${circumcisionAmount(order.rate)} ${order.buyCoin.toUpperCase()}.\n\n`,
+          { replyMarkup: selectSpotOrder });
+      });
+    }
+    else if (data === 'firstCoinFilterCompleteSpotOrders_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterCompleteSpotOrders_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterCompleteSpotOrders_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'firstCoinFilterCompleteSpotOrders_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для продажи: ', { replyMarkup: generateButton(list[userId], 'firstCoinFilterCompleteSpotOrders') });
+    }
+    else if (data.split('_')[0] === 'firstCoinFilterCompleteSpotOrders') {
+      bot.deleteMessage(userId, messageId);
+      sellCoin[userId] = data.split('_')[1];
+      deleteSelectedCoin(sellCoin[userId], coinSellArray[userId]);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterCompleteSpotOrders_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterCompleteSpotOrders_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterCompleteSpotOrders_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterCompleteSpotOrders') });
+    }
+    else if (data === 'secondCoinFilterCompleteSpotOrders_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'secondCoinFilterCompleteSpotOrders') });
+    }
+    else if (data.split('_')[0] === 'secondCoinFilterCompleteSpotOrders') {
+      bot.deleteMessage(userId, messageId);
+      buyCoin[userId] = data.split('_')[1];
+      const userOrder = (await CustomOrder.find({ id: userId, sellCoin: sellCoin[userId], buyCoin: buyCoin[userId] })).filter(order => !(order.status === 'Selling'));
+
+      if (userOrder.length === 0) {
+        return bot.sendMessage(userId, 'У вас не сработал еще ни один ордер 😞');
+      }
+
+      const messageUserOrder = userOrder
+        .map(order => {
+          return `Ордер №${order.orderNumber},
+Статус: ${order.status},
+Продажа монеты: ${order.sellCoin.toUpperCase()},
+Покупка монеты: ${order.buyCoin.toUpperCase()},
+Сумма покупки: ${order.buyAmount} ${order.buyCoin.toUpperCase()},
+Сумма продажи: ${order.sellAmount} ${order.sellCoin.toUpperCase()},
+Курс осуществления операции: 1 ${order.sellCoin.toUpperCase()} = ${order.rate} ${order.buyCoin.toUpperCase()}.\n\n`;
+        })
+        .join('');
+
+      await bot.sendMessage(userId, messageUserOrder);
+    }
+    else if (data === 'coinFilterBuyP2P_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterBuyP2P') });
+    }
+    else if (data === 'coinFilterBuyP2P_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterBuyP2P') });
+    }
+    else if (data === 'coinFilterBuyP2P_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterBuyP2P') });
+    }
+    else if (data === 'coinFilterBuyP2P_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterBuyP2P') });
+    }
+    else if (data.split('_')[0] === 'coinFilterBuyP2P') {
+      bot.deleteMessage(userId, messageId);
+      coin[userId] = data.split('_')[1];
+      await bot.sendMessage(userId, 'Выберите валюту фильтра для покупки: ', { replyMarkup: generateButton(currency, 'currencyFilterBuyP2P') });
+    }
+    else if (data.split('_')[0] === 'currencyFilterBuyP2P') {
+      bot.deleteMessage(userId, messageId);
+      currencyP2P[userId] = data.split('_')[1];
+      const buyAllP2POrder = (await CustomP2POrder.find({ type: 'sell', coin: coin[userId], currency: currencyP2P[userId] })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
+      if (buyAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
+
+      for (let i = 0; i < buyAllP2POrder.length; i++) {
+
+        const startTradingIK = bot.inlineKeyboard([
+          [bot.inlineButton('Купить', { callback: `p2pTrade_${buyAllP2POrder[i].orderNumber}` })]
+        ]);
+
+        // если создатель ордера пользователь
+        if (+buyAllP2POrder[i].id === userId) {
+
+          const messageP2PBuyUserOrder = `Ордер №${buyAllP2POrder[i].orderNumber} (you),
+Покупка монеты: ${buyAllP2POrder[i].coin},
+Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
+Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
+Валюта совершения сделки: ${buyAllP2POrder[i].currency},
+Способ оплаты: ${buyAllP2POrder[i].paymentSystem},
+Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.`;
+
+          bot.sendMessage(userId, messageP2PBuyUserOrder);
+        } else {
+          const messageP2PBuyOrder = `Ордер №${buyAllP2POrder[i].orderNumber},
+Покупка монеты: ${buyAllP2POrder[i].coin},
+Количество покупки: ${buyAllP2POrder[i].amount} ${buyAllP2POrder[i].coin},
+Минимальная сумма закупки монеты: ${buyAllP2POrder[i].minAmount} ${buyAllP2POrder[i].coin},
+Валюта совершения сделки: ${buyAllP2POrder[i].currency},
+Способ оплаты: ${buyAllP2POrder[i].paymentSystem},
+Курс покупки: ${buyAllP2POrder[i].rate} ${buyAllP2POrder[i].currency.toUpperCase()}.`;
+
+          await bot.sendMessage(userId, messageP2PBuyOrder, { replyMarkup: startTradingIK });
+        };
+      };
+    }
+    else if (data === 'coinFilterSellP2P_Page1') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 0, 20);
+      list[userId].push('Page2');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterSellP2P') });
+    }
+    else if (data === 'coinFilterSellP2P_Page2') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 20, 40);
+      list[userId].push('Page1', 'Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterSellP2P') });
+    }
+    else if (data === 'coinFilterSellP2P_Page3') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 40, 60);
+      list[userId].push('Page2', 'Page4');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterSellP2P') });
+    }
+    else if (data === 'coinFilterSellP2P_Page4') {
+      bot.deleteMessage(userId, messageId);
+      await pageNavigationButton(userId, coinSellArray[userId], 60, arrayCoinList.length);
+      list[userId].push('Page3');
+      await bot.sendMessage(userId, 'Выберите монету фильтра для покупки: ', { replyMarkup: generateButton(list[userId], 'coinFilterSellP2P') });
+    }
+    else if (data.split('_')[0] === 'coinFilterSellP2P') {
+      bot.deleteMessage(userId, messageId);
+      coin[userId] = data.split('_')[1];
+      await bot.sendMessage(userId, 'Выберите валюту фильтра для покупки: ', { replyMarkup: generateButton(currency, 'currencyFilterSellP2P') });
+    }
+    else if (data.split('_')[0] === 'currencyFilterSellP2P') {
+      bot.deleteMessage(userId, messageId);
+      currencyP2P[userId] = data.split('_')[1];
+
+      const sellAllP2POrder = (await CustomP2POrder.find({ type: 'buy', coin: coin[userId], currency: currencyP2P[userId] })).filter((orders) => !(orders.status === 'Done' || orders.status === 'Filling' || orders.status === 'Deleted'));
+      if (sellAllP2POrder.length === 0) return bot.sendMessage(userId, 'На данный момент на площадке нету ни 1 ордера такого типа 😞');
+
+      for (let i = 0; i < sellAllP2POrder.length; i++) {
+        const startSellTradingIK = bot.inlineKeyboard([
+          [bot.inlineButton('Продать', { callback: `p2pTrade_${sellAllP2POrder[i].orderNumber}` })]
+        ]);
+
+        // если создатель ордера пользователь
+        if (+sellAllP2POrder[i].id === userId) {
+          const messageP2PSellUserOrder = `Ордер №${sellAllP2POrder[i].orderNumber} (you),
+Продажа монеты: ${sellAllP2POrder[i].coin},
+Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
+Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
+Валюта совершения сделки: ${sellAllP2POrder[i].currency},
+Способ оплаты: ${sellAllP2POrder[i].paymentSystem},
+Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.`
+
+          bot.sendMessage(userId, messageP2PSellUserOrder)
+        } else {
+          const messageP2PSellOrder = `Ордер №${sellAllP2POrder[i].orderNumber},
+Продажа монеты: ${sellAllP2POrder[i].coin},
+Количество продажи: ${sellAllP2POrder[i].amount} ${sellAllP2POrder[i].coin},
+Минимальная сумма продажи монеты: ${sellAllP2POrder[i].minAmount} ${sellAllP2POrder[i].coin},
+Валюта совершения сделки: ${sellAllP2POrder[i].currency},
+Способ оплаты: ${sellAllP2POrder[i].paymentSystem},
+Курс продажи: ${sellAllP2POrder[i].rate} ${sellAllP2POrder[i].currency.toUpperCase()}.`
+
+          bot.sendMessage(userId, messageP2PSellOrder, { replyMarkup: startSellTradingIK })
+        };
+      };
+    }
+
 
   } catch (error) {
     console.error(error);

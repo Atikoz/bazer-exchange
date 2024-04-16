@@ -104,9 +104,26 @@ const exchangeIK = bot.inlineKeyboard([
   [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })]
 ]);
 
+const filterSpotOrdersIK = bot.inlineKeyboard([
+  [bot.inlineButton('Все ордера', { callback: 'allList_SpotOrders' }), bot.inlineButton('Фильтр', { callback: 'filterList_SpotOrders' })]
+]);
+
+const filterCompleteSpotOrdersIK = bot.inlineKeyboard([
+  [bot.inlineButton('Все ордера', { callback: 'allCompleteList_SpotOrders' }), bot.inlineButton('Фильтр', { callback: 'filterCompleteList_SpotOrders' })]
+]);
+
+const filterSellP2PIK = bot.inlineKeyboard([
+  [bot.inlineButton('Все ордера', { callback: 'allList_sellP2P' }), bot.inlineButton('Фильтр', { callback: 'filterList_sellP2P' })]
+]);
+
+const filterBuyP2PIK = bot.inlineKeyboard([
+  [bot.inlineButton('Все ордера', { callback: 'allList_buyP2P' }), bot.inlineButton('Фильтр', { callback: 'filterList_buyP2P' })]
+]);
+
 const adminPanelIK = bot.inlineKeyboard([
   [bot.inlineButton('Удалить найденую транзакцию', { callback: 'deleteUserHash' })]
 ]);
+
 
 
 module.exports = {
@@ -124,13 +141,17 @@ module.exports = {
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
+  filterBuyP2PIK,
+  filterSellP2PIK,
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
   liquidityPoolsIK,
   balanceStartPageIK,
+  filterSpotOrdersIK,
   acceptCancelOrderIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
+  filterCompleteSpotOrdersIK
   
 }

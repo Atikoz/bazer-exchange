@@ -1,6 +1,6 @@
 const axios = require('axios');
 const CoinGecko = require('coingecko-api');
-const { getPriceCoinInBip } = require('./minterTransaction');
+const { apiKeyCoinMarketCap } = require('../config');
 
 const CoinGeckoClient = new CoinGecko();
 
@@ -35,7 +35,7 @@ const getMinterCoinRate = async () => {
         method: 'get',
         url: `https://pro-api.coinmarketcap.com/v1/cryptocurrency/category?id=604f2762ebccdd50cd175fcc&convert_id=${convertId[currency]}`,
         headers: {
-          'X-CMC_PRO_API_KEY': 'b5e3ae62-2e9c-42fd-9471-777582509a1e'
+          'X-CMC_PRO_API_KEY': apiKeyCoinMarketCap
         }
       };
 

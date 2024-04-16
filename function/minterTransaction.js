@@ -155,22 +155,6 @@ class MinterTransaction {
     }
   };
 
-  getPriceCoinInBip = async (coin) => {
-    try {
-      const responce = await minter.estimateCoinBuy({
-        coinToBuy: coin.toUpperCase(),
-        valueToBuy: 1,
-        coinToSell: 'BIP',
-      });
-
-      const price = +responce.will_pay;
-
-      return price
-    } catch (error) {
-      console.error(error)
-    }
-  };
-
   getBalance = async (address) => {
     const config = {
       method: 'get',
