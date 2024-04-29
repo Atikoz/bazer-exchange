@@ -234,7 +234,21 @@ bot.on('text', async (msg) => {
       case getTranslation(selectedLang, "referrals"):
         setState(userId, 0);
         bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
+        break;
 
+      case getTranslation(selectedLang, "converting"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'convertingMenuText'), { replyMarkup: exchangeIK })
+        break;
+
+      case getTranslation(selectedLang, "staking"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: stackingIK(selectedLang) });
+        break;
+
+      case '/admin':
+        bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
+        break;
+
+      case '/update':
         async function startTe() {
           try {
             console.log('Inside startTe function');
@@ -267,20 +281,8 @@ bot.on('text', async (msg) => {
           }
         };
 
-        startTe();
-        break;
-
-      case getTranslation(selectedLang, "converting"):
-        bot.sendMessage(userId, getTranslation(selectedLang, 'convertingMenuText'), { replyMarkup: exchangeIK })
-        break;
-
-      case getTranslation(selectedLang, "staking"):
-        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: stackingIK(selectedLang) });
-        break;
-
-      case '/admin':
-        bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
-        break;
+        await startTe();
+        bot.sendMessage(userId, 'Изменения применены...')ж
 
       case getTranslation(selectedLang, "settings"):
         bot.sendMessage(userId, getTranslation(selectedLang, "settingsMenu"), { replyMarkup: settingsIK(selectedLang) });
