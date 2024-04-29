@@ -33,6 +33,8 @@ const {
   filterCompleteSpotOrdersIK,
   filterBuyP2PIK,
   filterSellP2PIK,
+  settingsIK,
+  languageIK,
 } = require('./keyboard.js');
 
 const {
@@ -81,6 +83,9 @@ const poolProfitManagement = require('./helpers/poolProfitManagement.js');
 const LiquidityPoolModel = require('./model/modelLiquidityPool.js');
 const withdrawInvestmentsPoolValidator = require('./validator/withdrawInvestmentsPool.js');
 const WithdrawInvestments = require('./function/liquidityPool/withdrawInvestments.js');
+const saveUserLanguage = require('./helpers/lang/saveUserLanguage.js');
+const getUserLanguage = require('./helpers/lang/getUserLanguage.js');
+const getTranslation = require('./translations/index.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -177,7 +182,6 @@ const minimalSum = {
 
 const choice = ['accept', 'cancel'];
 
-
 //text
 bot.on('text', async (msg) => {
   try {
@@ -185,10 +189,11 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const selectedLang = getInfoUser.user.lang;
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -196,84 +201,93 @@ bot.on('text', async (msg) => {
       if (getInfoUser === "not user") {
         setState(userId, 0);
         await AuthenticationService.Authentication(userId);
-        bot.sendMessage(userId, `${userName}, добро пожаловать!\nДля того чтобы продолжить работу с ботом, установите в профиль юзернейм и подпишитесь на каналы ниже:\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss`, { replyMarkup: RM_Home });
+        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'startAlertFolowChannel')}`, { replyMarkup: RM_Home() });
       } else {
         setState(userId, 0);
-        bot.sendMessage(userId, `Привет, ${userName}!`, { replyMarkup: RM_Home });
+        bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
       }
     }
 
-    if (!msg.from.username) return bot.sendMessage(userId, 'Что-бы продолжить работу укажите юзернейм на аккаунте ❗️');
+    if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, 'Кажется вы не подписаны на наши каналы. Подпишитесь и повторите попытку снова...\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss');
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
+
 
     switch (text) {
-      case 'Мой кабинет 📂':
+      case getTranslation(selectedLang, "myAccount"):
         setState(userId, 0);
         const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({ id: userId })).main)).length;
-        await bot.sendMessage(userId, 'Вы перейшли в свой кабинет!')
-          .then(() => bot.sendMessage(userId, `👤 Имя: ${userName}\n🆔 ID: ${userId}\n🏦 Статус:...\n💲 Количество монет в боте: ${quantytyCoin}`, { replyMarkup: cabinetIK }));
+        await bot.sendMessage(userId, getTranslation(selectedLang, 'myAccountText'))
+          .then(() => bot.sendMessage(userId, `${getTranslation(selectedLang, 'name')} ${userName}\n🆔 ID: ${userId}\n${getTranslation(selectedLang, 'status')}...\n${getTranslation(selectedLang, 'quantytyCoin')} ${quantytyCoin}`, { replyMarkup: cabinetIK(selectedLang) }));
         break;
 
-      case 'Спотовая торговля 📒':
+      case getTranslation(selectedLang, "spotTrading"):
         setState(userId, 0);
-        bot.sendMessage(userId, 'Выбирете раздел:', { replyMarkup: spotOrderMenu });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: spotOrderMenu(selectedLang) });
         break;
 
       case 'P2P':
         setState(userId, 0);
-        bot.sendMessage(userId, 'Вы перешли в раздел Р2Р', { replyMarkup: p2pMenuIK });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pChapterText'), { replyMarkup: p2pMenuIK(selectedLang) });
         break;
 
-      case 'Рефералы 👥':
+      case getTranslation(selectedLang, "referrals"):
         setState(userId, 0);
-        bot.sendMessage(userId, 'Раздел в разработке');
+        bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
 
-        // async function startTe() {
-        //   try {
-        //     console.log('Inside startTe function');
-        //     const users = await WalletUserModel.find({});
-        //     users.map(async (u) => {
-        //       // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+        async function startTe() {
+          try {
+            console.log('Inside startTe function');
+            const users = await WalletUserModel.find({});
+            users.map(async (u) => {
+              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 
-        //       // await WalletUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   { $unset: { "del.mnemonics": "" } },
-        //       // );
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   { $unset: { "del.mnemonics": "" } },
+              // );
 
-        //       // await WalletUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-        //       // );
+              await UserModel.updateOne(
+                { id: u.id },
+                JSON.parse(`{ "$set": { "lang": "eng"} }`)
+              )
 
-        //       // await BalanceUserModel.updateOne(
-        //       //   { id: u.id },
-        //       //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
-        //       // );
-        //     });
-        //   } catch (error) {
-        //     console.error(error)
-        //   }
-        // };
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
+              // );
 
-        // startTe();
+              // await BalanceUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
+              // );
+            });
+          } catch (error) {
+            console.error(error)
+          }
+        };
+
+        startTe();
         break;
 
-      case 'Конвертация 🔄':
-        bot.sendMessage(userId, 'Выберите блокчейн монеты которого хотите конвертировать: ', { replyMarkup: exchangeIK })
+      case getTranslation(selectedLang, "converting"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'convertingMenuText'), { replyMarkup: exchangeIK })
         break;
 
-      case '💲 Стейкинг':
-        bot.sendMessage(userId, 'Вы выбрали Стейкинг. Выбирете раздел:', { replyMarkup: stackingIK });
+      case getTranslation(selectedLang, "staking"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: stackingIK(selectedLang) });
         break;
 
       case '/admin':
         bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
         break;
 
+      case getTranslation(selectedLang, "settings"):
+        bot.sendMessage(userId, getTranslation(selectedLang, "settingsMenu"), { replyMarkup: settingsIK(selectedLang) });
+        break;
+
+
       default:
-        const state = getInfoUser.user.status;
-        if (!state) return bot.sendMessage(userId, 'Я не знаю что вам ответить.')
         break;
     };
 
@@ -286,7 +300,7 @@ bot.on('text', async (msg) => {
 
         if (isNaN(amount[userId])) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'Введено не коректное число!');
+          return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"));
         }
 
         const comission = (await TransferCommission(decimalMnemonics, decimalWallet, coin[userId], amount[userId])).data.result.result.amount / 1e18;
@@ -294,24 +308,20 @@ bot.on('text', async (msg) => {
 
         if (amount[userId] < minimalWithdrawAmount[userId]) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'belowMinimumWithdrawalAlert'), { replyMarkup: RM_Home(selectedLang) });
         };
 
         if (sum[userId] > balanceUserCoin[userId]) {
           setState(userId, 0);
-          return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода с комиссией составляет ${sum[userId]} ${coin[userId].toUpperCase()}`, { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, `${getTranslation(selectedLang, "insufficientFundsAlert")} ${sum[userId]} ${coin[userId].toUpperCase()}`, { replyMarkup: RM_Home(selectedLang) });
         };
-        bot.sendMessage(userId, 'Введите адресс кошелька на который хотите вывести деньги: ');
+        bot.sendMessage(userId, getTranslation(selectedLang, 'walletAddressPrompt'));
         break;
 
       case 11:
-        try {
           setState(userId, 0);
           wallet[userId] = text;
-          await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${sum[userId]} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
-        } catch (error) {
-          console.error(error)
-        }
+          await bot.sendMessage(userId, `${getTranslation(selectedLang, 'withdrawalAmountWithFeePrompt')} ${sum[userId]} ${coin[userId].toUpperCase()}\n${getTranslation(selectedLang, 'walletAddress')} ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
         break;
 
       case 12:
@@ -320,12 +330,12 @@ bot.on('text', async (msg) => {
 
         if (isNaN(exchangeSellAmount[userId])) {
           setState(userId, 0)
-          return bot.sendMessage(userId, 'Введено не коректное число!', { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"), { replyMarkup: RM_Home });
         }
 
         if (balanceUserCoin[userId] < exchangeSellAmount[userId]) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для обмена!', { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'exchangeInsufficientFundsAlert'), { replyMarkup: RM_Home });
         };
 
         exchangeBuyAmount[userId] = (rateExchange[userId] * exchangeSellAmount[userId]) + 0.0001;
@@ -339,12 +349,12 @@ bot.on('text', async (msg) => {
         )).data.result.result.amount / 1e18;
         comissionExchanger[userId] = result;
         const textExchange = [
-          `Курс: 1 ${sellCoin[userId].toUpperCase()} = ${(rateExchange[userId] + 0.0001).toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
-          `Количество продаваемой монеты: ${(exchangeSellAmount[userId]).toFixed(4)} ${sellCoin[userId].toUpperCase()}`,
-          `Количество покупаемой монеты: ${exchangeBuyAmount[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
-          `Комиссия составляет ${comissionExchanger[userId]} DEL`
+          `${getTranslation(selectedLang, 'rate')}: 1 ${sellCoin[userId].toUpperCase()} = ${(rateExchange[userId] + 0.0001).toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
+          `${getTranslation(selectedLang, 'amountToSellData')}: ${(exchangeSellAmount[userId]).toFixed(4)} ${sellCoin[userId].toUpperCase()}`,
+          `${getTranslation(selectedLang, 'amountToBuyData')}: ${exchangeBuyAmount[userId].toFixed(4)} ${buyCoin[userId].toUpperCase()}`,
+          `${getTranslation(selectedLang, 'commissionMessage')} ${comissionExchanger[userId]} DEL`
         ].join('\n');
-        await bot.sendMessage(userId, textExchange, { replyMarkup: acceptCancelExchangeIK });
+        await bot.sendMessage(userId, textExchange, { replyMarkup: acceptCancelExchangeIK(selectedLang) });
         break;
 
       case 13:
@@ -352,10 +362,10 @@ bot.on('text', async (msg) => {
         userRate[userId] = circumcisionAmount(Number(text));
         if (isNaN(userRate[userId])) {
           await setState(userId, 0);
-          return bot.sendMessage(userId, 'Введенно не коректное число!\nВведите курс по которому будет осуществлена торговля в стиле: <i>0.0001</i>', { parseMode: "html" });
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectRateMessage'), { parseMode: "html" });
         }
         balanceUserCoin[userId] = getInfoUser.userBalance.main[sellCoin[userId]];
-        bot.sendMessage(userId, `Доступно ${balanceUserCoin[userId]} ${sellCoin[userId].toUpperCase()} \nВведите количество продажи монет:`);
+        bot.sendMessage(userId, `${getTranslation(selectedLang, 'available')} ${balanceUserCoin[userId]} ${sellCoin[userId].toUpperCase()}.\n${getTranslation(selectedLang, 'coinSaleAmountPrompt')}`);
         break;
 
       case 14:
@@ -364,7 +374,7 @@ bot.on('text', async (msg) => {
 
         if (isNaN(amount[userId])) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'Введено не коректное число!', { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"), { replyMarkup: RM_Home(selectedLang) });
         };
 
         const feePaymentCurrencyBalance = getInfoUser.userBalance.main.cashback;
@@ -372,45 +382,45 @@ bot.on('text', async (msg) => {
 
         if (comissionExchanger[userId] > feePaymentCurrencyBalance) {
           setState(userId, 0);
-          return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
+          return await bot.sendMessage(userId, `${getTranslation(selectedLang, 'insufficientFundsForCommissionAlert')} ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home(selectedLang) });
         }
 
         if (amount[userId] > balanceUserCoin[userId]) {
           setState(userId, 0);
-          return await bot.sendMessage(userId, 'На вашем балансе не достаточно средств!', { replyMarkup: RM_Home });
+          return await bot.sendMessage(userId, getTranslation(selectedLang, 'alertInsufficientFundsWithoutCommission'), { replyMarkup: RM_Home });
         }
 
         sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
-        bot.sendMessage(userId, `Продажа монеты: ${sellCoin[userId].toUpperCase()},
-Покупка монеты: ${buyCoin[userId].toUpperCase()},
-Курс продажи: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
-Количество продажи: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
-Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
-Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'spotTrade') });
+        bot.sendMessage(userId, `${getTranslation(selectedLang, 'sellCoin')}: ${sellCoin[userId].toUpperCase()},
+${getTranslation(selectedLang, 'buyCoin')}: ${buyCoin[userId].toUpperCase()},
+${getTranslation(selectedLang, 'sellingRate')}: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
+${getTranslation(selectedLang, 'amountToSellData')}: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
+${getTranslation(selectedLang, 'amountToBuyData')}: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
+${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'spotTrade') });
         break;
 
       case 18:
         setState(userId, 19);
         requisites[userId] = Number(text);
-        bot.sendMessage(userId, 'Введите количество продажи монеты:');
+        bot.sendMessage(userId, getTranslation(selectedLang, 'coinSaleAmountPrompt'));
         break;
 
       case 19:
         amount[userId] = Number(text);
         if (isNaN(text)) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'Введено не коректное число');
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
         }
 
         if (orderType[userId] === 'buy') {
-          bot.sendMessage(userId, 'Введите минимальную сумму закупки монеты:');
+          bot.sendMessage(userId, getTranslation(selectedLang, 'minimumPurchaseAmountBuyPrompt'));
         } else {
           if (text > getInfoUser.userBalance.main[coin[userId]]) {
             setState(userId, 0);
-            return bot.sendMessage(userId, 'На вашем балансе не достаточно средств.');
+            return bot.sendMessage(userId, getTranslation(selectedLang, 'alertInsufficientFundsWithoutCommission'));
           }
 
-          bot.sendMessage(userId, 'Введите минимальную сумму продажи монеты:');
+          bot.sendMessage(userId, getTranslation(selectedLang, 'minimumPurchaseAmountSellPrompt'));
         }
 
         setState(userId, 20);
@@ -420,7 +430,7 @@ bot.on('text', async (msg) => {
         setState(userId, 21);
         if (isNaN(text)) {
           setState(userId, 0);
-          return bot.sendMessage(userId, 'Введено не коректное число');
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
         };
         sum[userId] = Number(text);
 
@@ -1698,6 +1708,11 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
         break;
 
+      case 'change_lang':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Выберите язык:', { replyMarkup: languageIK });
+        break;
+
       default:
         break;
     }
@@ -2742,6 +2757,14 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
         };
       };
     }
+    else if (data.split('_')[0] === 'selectLang') {
+      bot.deleteMessage(userId, messageId);
+      const selectedLang = data.split('_')[1];
+
+      await saveUserLanguage(userId, selectedLang);
+
+      bot.sendMessage(userId, getTranslation(selectedLang, 'doneChange'), { replyMarkup: RM_Home(selectedLang) });
+    }
 
 
   } catch (error) {
@@ -2775,4 +2798,3 @@ let minimalWithdrawAmount = []; // минимальная сумма вывод�
 
 bot.start();
 // bot.stop();
-

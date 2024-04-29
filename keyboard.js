@@ -1,24 +1,35 @@
 const TeleBot = require('telebot');
 const config = require('./config.js');
+const getTranslation = require('./translations/index.js');
+
 
 const bot = new TeleBot (config.token);
 
-const RM_Home = bot.keyboard([
-  ['Мой кабинет 📂', 'Спотовая торговля 📒'],
-  ['Конвертация 🔄', '💲 Стейкинг'],
-  ['P2P','Рефералы 👥']
+const RM_Home = (lang = "eng") => bot.keyboard([
+  [getTranslation(lang, "myAccount"), getTranslation(lang, "spotTrading")],
+  [getTranslation(lang, "converting"), getTranslation(lang, "staking")],
+  ['P2P', getTranslation(lang, "referrals")],
+  [getTranslation(lang, "settings")]
 ], { resize: true });
 
-const spotOrderMenu = bot.inlineKeyboard([
-  [bot.inlineButton('Текущие ордера ✔️', { callback: 'created_SpotOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_SpotOrders' })],
-  [bot.inlineButton('Ордера на площадке', { callback: 'list_SpotOrders' }), bot.inlineButton('Выполненные ордера ✔️', { callback: 'completed_SpotOrders' })],
-  [bot.inlineButton('Пулы ликвидности', { callback: 'liquidity_pools' })]
-
+const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, "currentOrders"), { callback: 'created_SpotOrders' }), bot.inlineButton(getTranslation(lang, "createOrder"), { callback: 'new_SpotOrders' })],
+  [bot.inlineButton(getTranslation(lang, "listOrders"), { callback: 'list_SpotOrders' }), bot.inlineButton(getTranslation(lang, "completeOrders"), { callback: 'completed_SpotOrders' })],
+  [bot.inlineButton(getTranslation(lang, "liquidityPools"), { callback: 'liquidity_pools' })]
 ]);
 
-const p2pMenuIK = bot.inlineKeyboard([
-  [bot.inlineButton('Мои ордера ✔️', { callback: 'created_p2pOrders' }), bot.inlineButton('Создать ордер ➕', { callback: 'new_p2pOrders' })],
-  [bot.inlineButton('Купить', { callback: 'buyList_p2pOrders' }), bot.inlineButton('Продать', { callback: 'sellList_p2pOrders' })]
+const settingsIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'changeLang'), { callback: 'change_lang' })]
+]);
+
+const languageIK = bot.inlineKeyboard([
+  [bot.inlineButton('English 🇬🇧', { callback: 'selectLang_eng' })],
+  [bot.inlineButton('Русский 🇷🇺', { callback: 'selectLang_ru' })]
+]);
+
+const p2pMenuIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'myOrders'), { callback: 'created_p2pOrders' }), bot.inlineButton(getTranslation(lang, 'createOrder'), { callback: 'new_p2pOrders' })],
+  [bot.inlineButton(getTranslation(lang, 'buy'), { callback: 'buyList_p2pOrders' }), bot.inlineButton(getTranslation(lang, 'sell'), { callback: 'sellList_p2pOrders' })]
 ]);
 
 const typeP2POrder = bot.inlineKeyboard([
@@ -26,9 +37,9 @@ const typeP2POrder = bot.inlineKeyboard([
   [bot.inlineButton('Назад 🔙', { callback: 'p2p_back' })]
 ]);
 
-const cabinetIK = bot.inlineKeyboard([
-  [bot.inlineButton('Пополнить ➕', { callback: 'user_replenishment' }), bot.inlineButton('Вывести ➖', {callback: 'user_withdrawal' })],
-  [bot.inlineButton('Балансы', { callback: 'balance' })]
+const cabinetIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'deposit'), { callback: 'user_replenishment' }), bot.inlineButton(getTranslation(lang, 'withdraw'), {callback: 'user_withdrawal' })],
+  [bot.inlineButton(getTranslation(lang, 'balance'), { callback: 'balance' })]
 ]);
 
 const balanceStartPageIK = bot.inlineKeyboard([
@@ -51,12 +62,12 @@ const balancePage4IK = bot.inlineKeyboard([
   [bot.inlineButton('Главное меню', { callback: 'main_menu' })]
 ]);
 
-const acceptCancelWithdrawalIK = bot.inlineKeyboard([
-  [bot.inlineButton('Подтвердить ✅', { callback: 'accept_withdrawal' }), bot.inlineButton('Отменить ❌', { callback: 'cancel' })]
+const acceptCancelWithdrawalIK = (lang = "eng") => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'confirmText'), { callback: 'accept_withdrawal' }), bot.inlineButton(getTranslation(lang, 'cancelText'), { callback: 'cancel' })]
 ]);
 
-const acceptCancelExchangeIK = bot.inlineKeyboard([
-  [bot.inlineButton('Подтвердить ✅', { callback: 'accept_exchange' }), bot.inlineButton('Отменить ❌', { callback: 'cancel' })]
+const acceptCancelExchangeIK = (lang = "eng") => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'confirmText'), { callback: 'accept_exchange' }), bot.inlineButton(getTranslation(lang, 'cancelText'), { callback: 'cancel' })]
 ]);
 
 const acceptCancelOrderIK = [
@@ -91,8 +102,8 @@ const buyerPayOrder = [
   'Done', 'Cancel'
 ];
 
-const stackingIK = bot.inlineKeyboard([
-  [bot.inlineButton('Перейти к стейкингу 💲', { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
+const stackingIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'stakingAddText'), { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([
@@ -131,6 +142,8 @@ module.exports = {
   payOrder,
   stackingIK,
   currency,
+  settingsIK,
+  languageIK,
   p2pMenuIK,
   cabinetIK,
   exchangeIK,

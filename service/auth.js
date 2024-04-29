@@ -22,7 +22,8 @@ class AuthenticationService {
   
         await UserModel.create({
           id: userId,
-          status: 0
+          status: 0,
+          lang: 'eng'
         });
 
         await ProfitPoolModel.create({
