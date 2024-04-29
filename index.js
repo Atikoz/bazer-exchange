@@ -214,6 +214,43 @@ bot.on('text', async (msg) => {
 
 
     switch (text) {
+      case '/update':
+        async function startTe() {
+          try {
+            console.log('Inside startTe function');
+            const users = await WalletUserModel.find({});
+            users.map(async (u) => {
+              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
+
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   { $unset: { "del.mnemonics": "" } },
+              // );
+
+              // await UserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set": { "lang": "eng"} }`)
+              // )
+
+              // await WalletUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
+              // );
+
+              // await BalanceUserModel.updateOne(
+              //   { id: u.id },
+              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
+              // );
+            });
+          } catch (error) {
+            console.error(error)
+          }
+        };
+
+        await startTe();
+        bot.sendMessage(userId, 'Изменения применены...');
+        break;
+
       case getTranslation(selectedLang, "myAccount"):
         setState(userId, 0);
         const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({ id: userId })).main)).length;
@@ -247,42 +284,6 @@ bot.on('text', async (msg) => {
       case '/admin':
         bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
         break;
-
-      case '/update':
-        async function startTe() {
-          try {
-            console.log('Inside startTe function');
-            const users = await WalletUserModel.find({});
-            users.map(async (u) => {
-              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
-
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   { $unset: { "del.mnemonics": "" } },
-              // );
-
-              await UserModel.updateOne(
-                { id: u.id },
-                JSON.parse(`{ "$set": { "lang": "eng"} }`)
-              )
-
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-              // );
-
-              // await BalanceUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
-              // );
-            });
-          } catch (error) {
-            console.error(error)
-          }
-        };
-
-        await startTe();
-        bot.sendMessage(userId, 'Изменения применены...');
 
       case getTranslation(selectedLang, "settings"):
         bot.sendMessage(userId, getTranslation(selectedLang, "settingsMenu"), { replyMarkup: settingsIK(selectedLang) });
