@@ -25,6 +25,9 @@
   "listOrders": "Orders on the platform",
   "completeOrders": "Orders on the platform",
   "liquidityPools": "Liquidity pools",
+  "existingPools": "Existing pools",
+  "createPool": "Create pool",
+  "investInPoolButton": "Invest in a pool",
   "p2pChapterText": "You have entered the P2P section:",
   "referralsText": "Section under development...",
   "myOrders": "My orders ✔️",
@@ -56,7 +59,22 @@
   "transactionFee": "Transaction fee",
   "coinSaleAmountPrompt": "Enter the amount of coins to sell:",
   "minimumPurchaseAmountBuyPrompt": "Enter the minimum amount to purchase the coin:",
-  "minimumPurchaseAmountSellPrompt": "Enter the minimum amount to sell the coin:"
+  "minimumPurchaseAmountSellPrompt": "Enter the minimum amount to sell the coin:",
+  "p2pTradeButton":"P2P Trade",
+  "p2pDealButton": "P2P Deal",
+  "p2pTypeText": "Select the type to use P2P:",
+  "p2pDealMenuText": "Select deal type:",
+  "p2pParcels": "Р2Р parcels",
+  "p2pLoans": "Р2Р loans",
+  "exchangeRate": "Exchange rate:",
+  "purchaseBuyCoinRate": "Enter the coin purchase rate, the rate must be in the style",
+  "purchaseSellCoinRate": "Enter the coin sales rate, the rate must be in the style",
+  "orderNumber": "Order №",
+  "orderType": "Order type:",
+  "buyingCoin": "Buying a coin:",
+  "purchaseQuantity": "Purchase Quantity:"
+
+
 
 
 }

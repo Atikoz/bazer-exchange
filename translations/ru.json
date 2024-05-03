@@ -25,6 +25,9 @@
   "listOrders": "Ордера на площадке",
   "completeOrders": "Выполненные ордера ✔️",
   "liquidityPools": "Пулы ликвидности",
+  "existingPools": "Существующие пулы",
+  "createPool": "Создать пул",
+  "investInPoolButton": "Инвестировать в пул",
   "p2pChapterText": "Вы перешли в раздел Р2Р:",
   "referralsText": "Раздел в разработке...",
   "myOrders": "Мои ордера ✔️",
@@ -42,7 +45,7 @@
   "confirmText": "Подтвердить ✅",
   "cancelText": "Отменить ❌",
   "exchangeInsufficientFundsAlert": "На вашем балансе не достаточно средств для обмена!",
-  "rate" : "Курс",
+  "rate": "Курс",
   "amountToSellData": "Количество продажи монеты",
   "amountToBuyData": "Количество покупки монеты",
   "commissionMessage": "Комиссия составляет",
@@ -56,6 +59,21 @@
   "transactionFee": "Комиссия сделки",
   "coinSaleAmountPrompt": "Введите количество продажи монеты:",
   "minimumPurchaseAmountBuyPrompt": "Введите минимальную сумму закупки монеты:",
-  "minimumPurchaseAmountSellPrompt": "Введите минимальную сумму продажи монеты:"
+  "minimumPurchaseAmountSellPrompt": "Введите минимальную сумму продажи монеты:",
+  "p2pTradeButton": "Р2Р Торговля",
+  "p2pDealButton": "P2P Сделки",
+  "p2pTypeText": "Выберите тип для использования P2P:",
+  "p2pDealMenuText": "Выберите тип сделки:",
+  "p2pParcels": "Р2Р посылки",
+  "p2pLoans": "Р2Р кредиты",
+  "exchangeRate": "Курс на биржах:",
+  "purchaseBuyCoinRate": "Введите курс закупки монет, курс должен быть в стиле",
+  "purchaseSellCoinRate": "Введите курс продажи монет, курс должен быть в стиле",
+  "orderNumber": "Ордер №",
+  "orderType": "Тип ордера:",
+  "buyingCoin": "Покупка монеты:",
+  "purchaseQuantity": "Количество покупки:"
+
+
 
 }

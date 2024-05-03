@@ -9,7 +9,7 @@ const {
   RM_Home,
   payOrder,
   currency,
-  p2pMenuIK,
+  tradeP2PMenuIK,
   cabinetIK,
   exchangeIK,
   adminPanelIK,
@@ -35,6 +35,10 @@ const {
   filterSellP2PIK,
   settingsIK,
   languageIK,
+  typeP2P,
+  p2pBetType,
+  investInPoolIK,
+  investInPoolButtonIK,
 } = require('./keyboard.js');
 
 const {
@@ -190,10 +194,10 @@ bot.on('text', async (msg) => {
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -210,7 +214,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
 
 
     switch (text) {
@@ -265,7 +269,7 @@ bot.on('text', async (msg) => {
 
       case 'P2P':
         setState(userId, 0);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pChapterText'), { replyMarkup: p2pMenuIK(selectedLang) });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pTypeText'), { replyMarkup: typeP2P(selectedLang) });
         break;
 
       case getTranslation(selectedLang, "referrals"):
@@ -440,25 +444,25 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
         const rateStockExchange = await getCurrencyRate(coin[userId], currencyP2P[userId]);
 
         if (orderType[userId] === 'buy') {
-          bot.sendMessage(userId, `Курс на биржах: 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. Введите курс закупки монет, курс должен быть в стиле <i>0.0001</i>:`, { parseMode: "html" });
+          bot.sendMessage(userId, `${getTranslation(selectedLang, 'exchangeRate')} 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. ${getTranslation(selectedLang, 'purchaseBuyCoinRate')} <i>0.0001</i>:`, { parseMode: "html" });
         } else {
-          bot.sendMessage(userId, `Курс на биржах: 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. Введите курс продажи монет, курс должен быть в стиле <i>0.0001</i>:`, { parseMode: "html" });
+          bot.sendMessage(userId, `${getTranslation(selectedLang, 'exchangeRate')} 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. ${getTranslation(selectedLang, 'purchaseSellCoinRate')} <i>0.0001</i>:`, { parseMode: "html" });
         }
         break;
 
       case 21:
         setState(userId, 0);
 
-        if (isNaN(text)) return bot.sendMessage(userId, 'Введено не коректное число!');
+        if (isNaN(text)) return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
 
         userRate[userId] = Number(text);
         orderNumber[userId] = (await CustomP2POrder.countDocuments()) + 1;
         if (orderType[userId] === 'buy') {
-          bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
-Тип ордера: ${orderType[userId]},
-Покупка монеты: ${coin[userId]},
-Количество покупки: ${amount[userId]} ${coin[userId].toUpperCase()},
-Минимальная сумма закупки монеты: ${sum[userId]} ${coin[userId].toUpperCase()},
+          bot.sendMessage(userId, `${getTranslation(selectedLang, 'orderNumber')} ${orderNumber[userId]},
+${getTranslation(selectedLang, 'orderType')} ${orderType[userId]},
+${getTranslation(selectedLang, 'buyingCoin')} ${coin[userId]},
+${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[userId].toUpperCase()},
+ ${sum[userId]} ${coin[userId].toUpperCase()},
 Валюта совершения сделки: ${currencyP2P[userId]},
 Способ облаты: ${paymentSystem[userId]},
 Курс покупки: ${userRate[userId]} ${currencyP2P[userId]}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'p2p') });
@@ -834,6 +838,7 @@ bot.on('callbackQuery', async (msg) => {
     const userId = msg.from.id;
     const messageId = msg.message.message_id;
     const getInfoUser = await UserManagement.getInfoUser(userId);
+    const selectedLang = getInfoUser.user.lang;
     const arrayCoinList = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
     const firstPage = arrayCoinList.slice(0, 20);
 
@@ -1227,7 +1232,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'p2p_back':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Вы перешли в раздел Р2Р:', { replyMarkup: p2pMenuIK });
+        bot.sendMessage(userId, 'Вы перешли в раздел Р2Р:', { replyMarkup: tradeP2PMenuIK(selectedLang) });
         break;
 
       case 'new_p2pOrders':
@@ -1354,6 +1359,17 @@ bot.on('callbackQuery', async (msg) => {
         };
         break;
 
+      case 'trade_p2p':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pChapterText'), { replyMarkup: tradeP2PMenuIK(selectedLang) });
+        break;
+
+      case 'deal_p2p':
+      bot.deleteMessage(userId, messageId);
+      bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
+      // bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)})
+      break;
+
       case 'p2pBuy':
         bot.deleteMessage(userId, messageId);
         orderType[userId] = 'buy';
@@ -1416,7 +1432,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'backP2Pmenu':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Вы перешли в раздел Р2Р:', { replyMarkup: p2pMenuIK });
+        bot.sendMessage(userId, 'Вы перешли в раздел Р2Р:', { replyMarkup: tradeP2PMenuIK(selectedLang) });
         break;
 
       case 'p2pTradeBuy_accept':
@@ -1494,10 +1510,10 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'liquidity_pools':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Выберите действие:', { replyMarkup: liquidityPoolsIK })
+        bot.sendMessage(userId, 'Доход начисляется в монете <b>CASHBACK</b>. Выберите действие:', { replyMarkup: liquidityPoolsIK, parseMode: 'html' })
         break;
 
-      case 'all_liquidityPools':
+      case 'info_liquidityPools':
         bot.deleteMessage(userId, messageId)
         const allPoolUsers = await LiquidityPoolModel.find();
 
@@ -1517,14 +1533,43 @@ bot.on('callbackQuery', async (msg) => {
 ${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
 ${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
         }
+        break;
 
+      case 'invest_in_pool':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: investInPoolIK(selectedLang) })
+        break;
+
+      case 'existingPools':
+        bot.deleteMessage(userId, messageId);
+        const availablePools = await LiquidityPoolModel.find();
+
+        for (const pool of availablePools) {
+          let sumFirstCoinPool = 0;
+          let sumSecondCoinPool = 0;
+          let quantityInvestors = 0;
+          const usersArray = pool.poolUser;
+
+          for (const user of usersArray) {
+            sumFirstCoinPool += user.amountFirstCoin;
+            sumSecondCoinPool += user.amountSecondCoin;
+            quantityInvestors++
+          };
+
+          if (sumFirstCoinPool <= 0 && sumSecondCoinPool <= 0) return
+          bot.sendMessage(userId, `Пул: ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}
+Количество монет в пуле: 
+${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
+${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.
+Количество инвесторов: ${quantityInvestors}`, { replyMarkup: investInPoolButtonIK(pool.firstCoin, pool.secondCoin, selectedLang)})
+        }
         break;
 
       case 'create_liquidityPools':
         bot.deleteMessage(userId, messageId);
         firstPage.push('Page2');
         coinSellArray[userId] = Array.from(allCoin);
-        bot.sendMessage(userId, 'Вы перешли в раздел инвестиции в пул ликвидности. Доход начисляется в монете <b>CASHBACK</b>. Выберите первую монету:', { replyMarkup: generateButton(firstPage, 'firstCoinPool'), parseMode: 'html' })
+        bot.sendMessage(userId, 'Вы перешли в раздел инвестиции в пул ликвидности. В случае если выбраная пара для создания существует, будет выполнена обычная инвестиция в пул. Выберите первую монету:', { replyMarkup: generateButton(firstPage, 'firstCoinPool') })
         break;
 
       case 'my_liquidityPools':
@@ -1714,6 +1759,10 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
       case 'change_lang':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, 'Выберите язык:', { replyMarkup: languageIK });
+        break;
+
+      case 'parcels_p2p':
+        bot.deleteMessage(userId, messageId);
         break;
 
       default:
@@ -2413,6 +2462,14 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'secondCoinPool') {
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
+      const availableSum = await getBalanceCoin(userId, sellCoin[userId]);
+      await bot.sendMessage(userId, `Введите количество монет для инвестиции в пул ликвидности. Комиссия составляет 1% от суммы инвестиции, оплата осуществляется в монете CASHBACK. Доступно ${availableSum} ${sellCoin[userId].toUpperCase()}: `);
+      setState(userId, 26);
+    }
+    else if (data.split('_')[0] === 'investInSelectPool') {
+      bot.deleteMessage(userId, messageId);
+      sellCoin[userId] = data.split('_')[1]; // монета которую инвестировал пользователь
+      buyCoin[userId] = data.split('_')[2]; // монета которую получает пользователь
       const availableSum = await getBalanceCoin(userId, sellCoin[userId]);
       await bot.sendMessage(userId, `Введите количество монет для инвестиции в пул ликвидности. Комиссия составляет 1% от суммы инвестиции, оплата осуществляется в монете CASHBACK. Доступно ${availableSum} ${sellCoin[userId].toUpperCase()}: `);
       setState(userId, 26);

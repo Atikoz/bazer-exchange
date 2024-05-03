@@ -27,9 +27,17 @@ const languageIK = bot.inlineKeyboard([
   [bot.inlineButton('Русский 🇷🇺', { callback: 'selectLang_ru' })]
 ]);
 
-const p2pMenuIK = (lang = 'eng') => bot.inlineKeyboard([
+const typeP2P = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'p2pTradeButton'), { callback: 'trade_p2p' }), bot.inlineButton(getTranslation(lang, 'p2pDealButton'), { callback: 'deal_p2p' })]
+]);
+
+const tradeP2PMenuIK = (lang = 'eng') => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'myOrders'), { callback: 'created_p2pOrders' }), bot.inlineButton(getTranslation(lang, 'createOrder'), { callback: 'new_p2pOrders' })],
   [bot.inlineButton(getTranslation(lang, 'buy'), { callback: 'buyList_p2pOrders' }), bot.inlineButton(getTranslation(lang, 'sell'), { callback: 'sellList_p2pOrders' })]
+]);
+
+const p2pBetType = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'p2pParcels'), { callback: 'parcels_p2p' }), bot.inlineButton(getTranslation(lang, 'p2pLoans'), { callback: 'loans_p2p' })]
 ]);
 
 const typeP2POrder = bot.inlineKeyboard([
@@ -107,8 +115,16 @@ const stackingIK = (lang = 'eng') => bot.inlineKeyboard([
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([
-  [bot.inlineButton('Инвестировать в пул', { callback: 'create_liquidityPools' }), bot.inlineButton('Мои инвестиции', { callback: 'my_liquidityPools' })],
-  [bot.inlineButton('Снять прибыль с пулов', { callback: 'profit_liquidityPools' }), bot.inlineButton('Доступные пулы', { callback: 'all_liquidityPools' })]
+  [bot.inlineButton('Инвестировать в пул', { callback: 'invest_in_pool' }), bot.inlineButton('Мои инвестиции', { callback: 'my_liquidityPools' })],
+  [bot.inlineButton('Снять прибыль с пулов', { callback: 'profit_liquidityPools' }), bot.inlineButton('Информация о пулах', { callback: 'info_liquidityPools' })]
+]);
+
+const investInPoolIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'createPool'), { callback: 'create_liquidityPools' }), bot.inlineButton(getTranslation(lang, 'existingPools'), { callback: 'existingPools' })]
+]);
+
+const investInPoolButtonIK = (firstCoin, secondCoin, lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'investInPoolButton'), { callback: `investInSelectPool_${firstCoin}_${secondCoin}` })]
 ]);
 
 const exchangeIK = bot.inlineKeyboard([
@@ -139,18 +155,21 @@ const adminPanelIK = bot.inlineKeyboard([
 
 module.exports = {
   RM_Home,
+  typeP2P,
   payOrder,
   stackingIK,
   currency,
   settingsIK,
   languageIK,
-  p2pMenuIK,
+  tradeP2PMenuIK,
+  p2pBetType,
   cabinetIK,
   exchangeIK,
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
   spotOrderMenu,
+  investInPoolIK,
   balancePage2IK,
   balancePage3IK,
   balancePage4IK,
@@ -163,6 +182,7 @@ module.exports = {
   balanceStartPageIK,
   filterSpotOrdersIK,
   acceptCancelOrderIK,
+  investInPoolButtonIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
   filterCompleteSpotOrdersIK
