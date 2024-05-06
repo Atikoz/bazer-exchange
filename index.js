@@ -181,7 +181,10 @@ const minimalSum = {
   bnb: 0.0001,
   hub: 0.01,
   monsterhub: 0.01,
-  usdtbsc: 2
+  usdtbsc: 2,
+  delkakaxa: 15,
+  converter: 500,
+  bipkakaxa: 30
 };
 
 const choice = ['accept', 'cancel'];
@@ -194,10 +197,10 @@ bot.on('text', async (msg) => {
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -205,7 +208,7 @@ bot.on('text', async (msg) => {
       if (getInfoUser === "not user") {
         setState(userId, 0);
         await AuthenticationService.Authentication(userId);
-        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'startAlertFolowChannel')}`, { replyMarkup: RM_Home() });
+        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'startAlertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
       } else {
         setState(userId, 0);
         bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
@@ -214,7 +217,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
 
 
     switch (text) {
@@ -241,10 +244,10 @@ bot.on('text', async (msg) => {
               //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
               // );
 
-              // await BalanceUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set" : { "main.hub": "0", "hold.hub": "0", "main.monsterhub": "0", "hold.monsterhub": "0", "main.usdtbsc": "0", "hold.usdtbsc": "0", "main.bnb": "0", "hold.bnb": "0" } }`)
-              // );
+              await BalanceUserModel.updateOne(
+                { id: u.id },
+                JSON.parse(`{ "$set" : { "main.delkakaxa": "0", "hold.delkakaxa": "0", "main.converter": "0", "hold.converter": "0", "main.bipkakaxa": "0", "hold.bipkakaxa": "0" } }`)
+              );
             });
           } catch (error) {
             console.error(error)
@@ -337,12 +340,12 @@ bot.on('text', async (msg) => {
 
         if (isNaN(exchangeSellAmount[userId])) {
           setState(userId, 0)
-          return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"), { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"), { replyMarkup: RM_Home(selectedLang) });
         }
 
         if (balanceUserCoin[userId] < exchangeSellAmount[userId]) {
           setState(userId, 0);
-          return bot.sendMessage(userId, getTranslation(selectedLang, 'exchangeInsufficientFundsAlert'), { replyMarkup: RM_Home });
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'exchangeInsufficientFundsAlert'), { replyMarkup: RM_Home(selectedLang) });
         };
 
         exchangeBuyAmount[userId] = (rateExchange[userId] * exchangeSellAmount[userId]) + 0.0001;
@@ -394,7 +397,7 @@ bot.on('text', async (msg) => {
 
         if (amount[userId] > balanceUserCoin[userId]) {
           setState(userId, 0);
-          return await bot.sendMessage(userId, getTranslation(selectedLang, 'alertInsufficientFundsWithoutCommission'), { replyMarkup: RM_Home });
+          return await bot.sendMessage(userId, getTranslation(selectedLang, 'alertInsufficientFundsWithoutCommission'), { replyMarkup: RM_Home(selectedLang) });
         }
 
         sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
@@ -641,20 +644,20 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
           if (!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
             setState(userId, 0);
-            return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home(selectedLang) });
           }
 
           if ((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
             setState(userId, 0);
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE з уплату комиссии`, { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
           if (coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId]) {
             setState(userId, 0);
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} USDT + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} USDT + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
           if ((coin[userId] === 'xfi' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mpx < 2) || (coin[userId] === 'mpx' && (amount[userId] + 2) > balanceUserCoin[userId])) {
             setState(userId, 0);
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX з уплату комиссии`, { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
           if ((coin[userId] === 'bip' && (amount[userId] + 70) > balanceUserCoin[userId]) ||
             (coin[userId] === 'hub' && getInfoUser.userBalance.main.bip < 70) ||
@@ -662,7 +665,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             (coin[userId] === 'bnb' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'usdtbsc' && getInfoUser.userBalance.main.bip < 70)) {
             setState(userId, 0);
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP з уплату комиссии`, { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
           if (coin[userId] === 'artery' && (amount[userId] + 2) > balanceUserCoin[userId]) {
             setState(userId, 0);
@@ -670,7 +673,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             if (commission < 1) {
               commission = 1;
             }
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ARTERY + ${circumcisionAmount(commission)} ARTERY з уплату комиссии`, { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ARTERY + ${circumcisionAmount(commission)} ARTERY з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           }
 
           bot.sendMessage(userId, 'Введите адресс кошелька на который хотите вывести деньги: ');
@@ -734,7 +737,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
           if (comissionExchanger[userId] > balanceCashback) {
             setState(userId, 0);
-            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home });
+            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home(selectedLang) });
           };
 
           sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
@@ -855,6 +858,7 @@ bot.on('callbackQuery', async (msg) => {
       `MONSTERHUB: ${circumcisionAmount(getInfoUser.userBalance.main.monsterhub)}`,
       `BNB: ${circumcisionAmount(getInfoUser.userBalance.main.bnb)}`,
       `USDTBSC: ${circumcisionAmount(getInfoUser.userBalance.main.usdtbsc)}`,
+      `BIPKAKAXA: ${circumcisionAmount(getInfoUser.userBalance.main.bipkakaxa)}`,
       `MINE: ${circumcisionAmount(getInfoUser.userBalance.main.mine)}`,
       `PLEX: ${circumcisionAmount(getInfoUser.userBalance.main.plex)}`,
       `MPX: ${circumcisionAmount(getInfoUser.userBalance.main.mpx)}`,
@@ -865,6 +869,8 @@ bot.on('callbackQuery', async (msg) => {
       `DDAO: ${circumcisionAmount(getInfoUser.userBalance.main.ddao)}`,
       `BAZERCOIN: ${circumcisionAmount(getInfoUser.userBalance.main.bazercoin)}`,
       `BAZERUSD: ${circumcisionAmount(getInfoUser.userBalance.main.bazerusd)}`,
+      `DELKAKAXA: ${circumcisionAmount(getInfoUser.userBalance.main.delkakaxa)}`,
+      `CONVERTER: ${circumcisionAmount(getInfoUser.userBalance.main.converter)}`,
       `PRO: ${circumcisionAmount(getInfoUser.userBalance.main.pro)}`,
       `DAR: ${circumcisionAmount(getInfoUser.userBalance.main.dar)}`,
       `SBT: ${circumcisionAmount(getInfoUser.userBalance.main.sbt)}`,
@@ -961,7 +967,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'main_menu':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'accept_withdrawal':
@@ -970,7 +976,7 @@ bot.on('callbackQuery', async (msg) => {
             try {
               bot.deleteMessage(userId, messageId);
               const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
-              if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home });
+              if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
               coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
                 (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', -2))
               await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
@@ -990,7 +996,7 @@ bot.on('callbackQuery', async (msg) => {
               return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMpxXfi}</code>`)
             } catch (error) {
               console.error(error);
-              bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home });
+              bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
             }
           }
           if (coin[userId] === 'usdt') {
@@ -1024,6 +1030,7 @@ bot.on('callbackQuery', async (msg) => {
             coin[userId] === 'hub' ||
             coin[userId] === 'monsterhub' ||
             coin[userId] === 'bnb' ||
+            coin[userId] === 'bipkakaxa' ||
             coin[userId] === 'usdtbsc') {
             bot.deleteMessage(userId, messageId);
             const sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, coin[userId]);
@@ -1046,7 +1053,7 @@ bot.on('callbackQuery', async (msg) => {
           } else {
             bot.deleteMessage(userId, messageId);
             const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
-            if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home });
+            if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
             await ControlUserBalance(userId, coin[userId], -sum[userId]);
             await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>`)
@@ -1059,7 +1066,7 @@ bot.on('callbackQuery', async (msg) => {
       case 'cancel':
         setState(userId, 0);
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'accept_exchange':
@@ -1068,7 +1075,7 @@ bot.on('callbackQuery', async (msg) => {
           await bot.sendMessage(userId, 'Идет процесс обмена... Ожидайте');
 
           if (comissionExchanger[userId] > getInfoUser.userBalance.main.del) {
-            return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для оплаты комисси!', { replyMarkup: RM_Home });
+            return bot.sendMessage(userId, 'На вашем балансе не достаточно средств для оплаты комисси!', { replyMarkup: RM_Home(selectedLang) });
           };
 
           const exchangeTransaction = (await ExchangeCoinTransaction.exchangeTransaction(
@@ -1079,7 +1086,7 @@ bot.on('callbackQuery', async (msg) => {
             exchangeSellAmount[userId]
           )).data.result.result;
 
-          if (exchangeTransaction.tx_response.code != 0) return bot.sendMessage(userId, 'При обмене возникла ошибка!', { replyMarkup: RM_Home });
+          if (exchangeTransaction.tx_response.code != 0) return bot.sendMessage(userId, 'При обмене возникла ошибка!', { replyMarkup: RM_Home(selectedLang) });
 
           await ExchangeStatus.create({
             id: userId,
@@ -1219,7 +1226,7 @@ bot.on('callbackQuery', async (msg) => {
 
         await freezeBalance(userId, amount[userId], sellCoin[userId]);
         await freezeBalance(userId, comissionExchanger[userId], 'cashback');
-        await bot.sendMessage(userId, `Ордер №${spotTradeOrderNumber} успешно создан ✅`, { replyMarkup: RM_Home });
+        await bot.sendMessage(userId, `Ордер №${spotTradeOrderNumber} успешно создан ✅`, { replyMarkup: RM_Home(selectedLang) });
         await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${spotTradeOrderNumber}`)
 
         break;
@@ -1227,7 +1234,7 @@ bot.on('callbackQuery', async (msg) => {
       case 'spotTrade_cancel':
         setState(userId, 0);
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Вы в главном меню!', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'p2p_back':
@@ -1420,14 +1427,14 @@ bot.on('callbackQuery', async (msg) => {
             requisites: 0
           });
         };
-        await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home });
+        await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home(selectedLang) });
         await sendLog(`Пользователь ${userId} создал P2P ордер типа ${orderType[userId]} №${orderNumber[userId]}`)
         break;
 
       case 'p2p_cancel':
         setState(userId, 0);
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Отменено ❌ Вы в главном меню!', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Отменено ❌ Вы в главном меню!', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'backP2Pmenu':
@@ -1505,7 +1512,7 @@ bot.on('callbackQuery', async (msg) => {
           { $set: { status: "Selling" } }
         );
 
-        bot.sendMessage(userId, 'Торговля отменена!', { replyMarkup: RM_Home })
+        bot.sendMessage(userId, 'Торговля отменена!', { replyMarkup: RM_Home(selectedLang) })
         break;
 
       case 'liquidity_pools':
@@ -1662,7 +1669,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'createPool_cancel':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'decimalExchange':
@@ -1720,7 +1727,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'minterExchange_cancel':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'withdrawPoolProfit_accept':
@@ -1735,7 +1742,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'withdrawPoolProfit_cancel':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'withdrawInvestPool_accept':
@@ -1753,7 +1760,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'withdrawInvestPool_cancel':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home });
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home(selectedLang) });
         break;
 
       case 'change_lang':
@@ -1793,6 +1800,7 @@ bot.on('callbackQuery', async (msg) => {
         element === 'xfi')
     );
     const getInfoUser = await UserManagement.getInfoUser(userId);
+    const selectedLang = getInfoUser.user.lang;
 
     if (data === 'sell_Page1') {
       bot.deleteMessage(userId, messageId);
@@ -1933,27 +1941,27 @@ bot.on('callbackQuery', async (msg) => {
         `<b>Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}. В случает пополнения суммы меньшей минимальной деньги не будут зачислены на счет!</b>`,
         'Для пополнение баланса переведите средства на свой адрес ниже:'
       ].join('\n');
-      await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home, parseMode: 'html' });
+      await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
 
       // if (data.split('_')[1] === 'usdt') {
       //   return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!');
       // }
       if (data.split('_')[1] === 'usdt') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
       else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
       else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.mpxXfi.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.mpxXfi.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
       else if (data.split('_')[1] === 'artery') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.artery.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.artery.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
-      else if (data.split('_')[1] === 'bip' || data.split('_')[1] === 'hub' || data.split('_')[1] === 'monsterhub' || data.split('_')[1] === 'bnb' || data.split('_')[1] === 'usdtbsc') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minter.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+      else if (data.split('_')[1] === 'bip' || data.split('_')[1] === 'hub' || data.split('_')[1] === 'monsterhub' || data.split('_')[1] === 'bnb' || data.split('_')[1] === 'usdtbsc' || data.split('_')[1] === 'bipkakaxa') {
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minter.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       } else {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home, parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       };
     }
 
@@ -1994,14 +2002,15 @@ bot.on('callbackQuery', async (msg) => {
         (data.split('_')[1] === 'monsterhub') ||
         (data.split('_')[1] === 'bnb') ||
         (data.split('_')[1] === 'usdtbsc') ||
-        (data.split('_')[1] === 'hub') ?
+        (data.split('_')[1] === 'hub') ||
+        (data.split('_')[1] === 'bipkakaxa') ?
         delCoin = false : delCoin = true;
 
       if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
         coin[userId] = data.split('_')[1];
         balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
         minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 MINE! Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nВведите сумму вывода:`, { replyMarkup: RM_Home });
+        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 MINE! Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
         setState(userId, 27);
       };
       if (data.split('_')[1] === 'usdt') {
@@ -2009,7 +2018,7 @@ bot.on('callbackQuery', async (msg) => {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}. Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, { replyMarkup: RM_Home });
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}. Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
           setState(userId, 27);
         } catch (error) {
           console.error(error);
@@ -2021,7 +2030,7 @@ bot.on('callbackQuery', async (msg) => {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия вывода составляет 2 MPX!\nВведите сумму вывода:`, { replyMarkup: RM_Home });
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия вывода составляет 2 MPX!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
           setState(userId, 27);
         } catch (error) {
           console.error(error);
@@ -2033,19 +2042,19 @@ bot.on('callbackQuery', async (msg) => {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home });
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
           setState(userId, 27);
         } catch (error) {
           console.error(error);
           bot.sendMessage(userId, 'Возникла ошибка');
         }
       }
-      else if (data.split('_')[1] === 'bip' || data.split('_')[1] === 'hub' || data.split('_')[1] === 'monsterhub' || data.split('_')[1] === 'bnb' || data.split('_')[1] === 'usdtbsc') {
+      else if (data.split('_')[1] === 'bip' || data.split('_')[1] === 'hub' || data.split('_')[1] === 'monsterhub' || data.split('_')[1] === 'bnb' || data.split('_')[1] === 'usdtbsc' || data.split('_')[1] === 'bipkakaxa') {
         try {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет 70 BIP!\nВведите сумму вывода:`, { replyMarkup: RM_Home });
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет 70 BIP!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
           setState(userId, 27);
         } catch (error) {
           console.error(error);
@@ -2057,7 +2066,7 @@ bot.on('callbackQuery', async (msg) => {
         coin[userId] = data.split('_')[1];
         balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
         minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home });
+        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
         setState(userId, 10);
       }
     }

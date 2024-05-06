@@ -75,7 +75,9 @@ const minimalWithdrawal = {
   bazercoin: 20,
   bazerusd: 20000,
   ddao: 5,
-  cashback: 50
+  cashback: 50,
+  delkakaxa: 15,
+  converter: 500
 };
 
 class ReplenishmentDecimal {

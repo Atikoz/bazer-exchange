@@ -14,9 +14,12 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     monsterhub: Number,
     bnb: Number,
     usdtbsc: Number,
+    bipkakaxa: Number,
     cashback: Number,
     del: Number,
     ddao: Number,
+    delkakaxa: Number,
+    converter: Number,
     pro: Number,
     dar: Number,
     sbt: Number,
@@ -75,7 +78,8 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     crypton: Number,
     iloveyou: Number,
     bazercoin: Number,
-    bazerusd: Number
+    bazerusd: Number,
+
   },
   hold:{
     usdt: Number,
@@ -88,10 +92,13 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     monsterhub: Number,
     bnb: Number,
     usdtbsc: Number,
+    bipkakaxa: Number,
     del: Number,
     cashback: Number,
     artery: Number,
     ddao: Number,
+    delkakaxa: Number,
+    converter: Number,
     pro: Number,
     dar: Number,
     sbt: Number,
@@ -150,7 +157,8 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     crypton: Number,
     iloveyou: Number,
     bazercoin: Number,
-    bazerusd: Number
+    bazerusd: Number,
+    
   }
 });
 

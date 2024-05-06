@@ -15,7 +15,9 @@ const checkUserUsdtTransaction = new CronJob('0 */1 * * * *', async () => {
         sleep(15000).then(async () => await ReplenishmentUserWalletUSDT(wallets[i].id));
       }
   } catch (error) {
-    console.error(error)
+    console.error(error.message);
+    return
+
   }
 });
 
@@ -27,7 +29,8 @@ const chechAdminUsdtTransaction = new CronJob('0 */2 * * * *', async () => {
       sleep(10000).then(async () => await CheckUsdtTransactionAmin(allTransactions[i]));
     };
   } catch (error) {
-    console.error(error)
+    console.error(error.message);
+    return
   }
 })
 

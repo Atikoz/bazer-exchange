@@ -33,7 +33,7 @@ class ReplenishmentMinter {
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
-          (coin === 'BIP' || coin === 'HUB' || coin === 'MONSTERHUB' || coin === 'BNB' || coin === 'USDTBSC') &&
+          (coin === 'BIP' || coin === 'HUB' || coin === 'MONSTERHUB' || coin === 'BNB' || coin === 'USDTBSC'|| coin === 'BIPKAKAXA') &&
           transaction.data.to === userAddress &&
           +transaction.data.value >= minimumAmount;
 
@@ -91,6 +91,7 @@ class ReplenishmentMinter {
       });
     } catch (error) {
       // console.error(error)
+      return
     }
   };
 

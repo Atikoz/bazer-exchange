@@ -43,7 +43,8 @@ class MinterTransaction {
       const feeData = await minter.estimateTxCommission(txParams);
       const amountFee = new Decimal(feeData.commission);
 
-      return amountFee * 1.001
+      // return amountFee * 1.001
+      return 35
     } catch (error) {
       console.error(error)
     }
