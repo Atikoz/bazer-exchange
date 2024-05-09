@@ -82,5 +82,5 @@
   "emailChangeSuccessMessage": "Адрес электронной почты успешно изменён.",
   "changeEmail": "Изменить электронную почту",
   "emailRequiredMessage": "Для продолжения пользования ботом необходимо указать адрес электронной почты в настройках вашего аккаунта.",
-  "notSpecified": "Not specified"
+  "notSpecified": "Не указан"
 }
