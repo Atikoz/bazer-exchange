@@ -25,7 +25,6 @@ const {
   paymentSystemTUR,
   liquidityPoolsIK,
   balanceStartPageIK,
-  acceptCancelOrderIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
   stackingIK,
@@ -88,8 +87,10 @@ const LiquidityPoolModel = require('./model/modelLiquidityPool.js');
 const withdrawInvestmentsPoolValidator = require('./validator/withdrawInvestmentsPool.js');
 const WithdrawInvestments = require('./function/liquidityPool/withdrawInvestments.js');
 const saveUserLanguage = require('./helpers/lang/saveUserLanguage.js');
-const getUserLanguage = require('./helpers/lang/getUserLanguage.js');
 const getTranslation = require('./translations/index.js');
+const MailService = require('./function/mail/serviceMail.js');
+const isValidEmail = require('./validator/isValidEmail.js');
+
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -100,12 +101,6 @@ async function setState(id, status) { UserModel.findOneAndUpdate({ id: id }, { s
 async function pageNavigationButton(id, array, startEl, finishEl) {
   const arr = array.slice(startEl, finishEl)
   list[id] = Array.from(arr);
-};
-
-async function updateInfo(nameDocument, searchField, parametr) {
-  const a = await nameDocument.findOne(
-    { searchField: parametr })
-  return a
 };
 
 const minimalSum = {
@@ -197,6 +192,7 @@ bot.on('text', async (msg) => {
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
+    const selectedMail = getInfoUser.user.mail;
     // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
     // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
     // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
@@ -204,11 +200,13 @@ bot.on('text', async (msg) => {
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
+
     if (text === '/start') {
       if (getInfoUser === "not user") {
-        setState(userId, 0);
+        setState(userId, 31);
+        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
+        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
         await AuthenticationService.Authentication(userId);
-        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'startAlertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
       } else {
         setState(userId, 0);
         bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
@@ -234,10 +232,10 @@ bot.on('text', async (msg) => {
               //   { $unset: { "del.mnemonics": "" } },
               // );
 
-              // await UserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set": { "lang": "eng"} }`)
-              // )
+              await UserModel.updateOne(
+                { id: u.id },
+                JSON.parse(`{ "$set": { "mail": ${null}} }`)
+              )
 
               // await WalletUserModel.updateOne(
               //   { id: u.id },
@@ -260,9 +258,15 @@ bot.on('text', async (msg) => {
 
       case getTranslation(selectedLang, "myAccount"):
         setState(userId, 0);
+        let userMail = '';
+        if (selectedMail) {
+          userMail = `<code>${selectedMail}</code>`;
+        } else {
+          userMail = getTranslation(selectedLang, 'notSpecified');
+        }
         const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({ id: userId })).main)).length;
         await bot.sendMessage(userId, getTranslation(selectedLang, 'myAccountText'))
-          .then(() => bot.sendMessage(userId, `${getTranslation(selectedLang, 'name')} ${userName}\n🆔 ID: ${userId}\n${getTranslation(selectedLang, 'status')}...\n${getTranslation(selectedLang, 'quantytyCoin')} ${quantytyCoin}`, { replyMarkup: cabinetIK(selectedLang) }));
+          .then(() => bot.sendMessage(userId, `${getTranslation(selectedLang, 'name')} ${userName}\n🆔 ID: ${userId}\n✉️ Email: ${userMail}\n${getTranslation(selectedLang, 'status')}...\n${getTranslation(selectedLang, 'quantytyCoin')} ${quantytyCoin}`, { replyMarkup: cabinetIK(selectedLang), parseMode: 'html' }));
         break;
 
       case getTranslation(selectedLang, "spotTrading"):
@@ -329,9 +333,9 @@ bot.on('text', async (msg) => {
         break;
 
       case 11:
-          setState(userId, 0);
-          wallet[userId] = text;
-          await bot.sendMessage(userId, `${getTranslation(selectedLang, 'withdrawalAmountWithFeePrompt')} ${sum[userId]} ${coin[userId].toUpperCase()}\n${getTranslation(selectedLang, 'walletAddress')} ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
+        setState(userId, 0);
+        wallet[userId] = text;
+        await bot.sendMessage(userId, `${getTranslation(selectedLang, 'withdrawalAmountWithFeePrompt')} ${sum[userId]} ${coin[userId].toUpperCase()}\n${getTranslation(selectedLang, 'walletAddress')} ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang)(selectedLang) });
         break;
 
       case 12:
@@ -406,7 +410,7 @@ ${getTranslation(selectedLang, 'buyCoin')}: ${buyCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'sellingRate')}: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'amountToSellData')}: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'amountToBuyData')}: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
-${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(acceptCancelOrderIK, 'spotTrade') });
+${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'spotTrade') });
         break;
 
       case 18:
@@ -468,7 +472,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
  ${sum[userId]} ${coin[userId].toUpperCase()},
 Валюта совершения сделки: ${currencyP2P[userId]},
 Способ облаты: ${paymentSystem[userId]},
-Курс покупки: ${userRate[userId]} ${currencyP2P[userId]}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'p2p') });
+Курс покупки: ${userRate[userId]} ${currencyP2P[userId]}`, { replyMarkup: generateButton(choice, 'p2p') });
         } else {
           bot.sendMessage(userId, `Ордер № ${orderNumber[userId]},
 Тип ордера: ${orderType[userId]},
@@ -478,11 +482,8 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 Валюта совершения сделки: ${currencyP2P[userId]},
 Способ облаты: ${paymentSystem[userId]},
 Курс продажи: ${userRate[userId]} ${currencyP2P[userId]}
-Реквизиты: ${requisites[userId]}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'p2p') });
+Реквизиты: ${requisites[userId]}`, { replyMarkup: generateButton(choice, 'p2p') });
         }
-        break;
-
-      case 22:
         break;
 
       case 23:
@@ -571,7 +572,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 Количество продажи монеты: ${amount[userId]} ${selectedOrder[userId].coin.toUpperCase()},
 Курс совершения операции: ${selectedOrder[userId].rate} ${selectedOrder[userId].currency.toUpperCase()},
 Способ оплаты: ${selectedOrder[userId].paymentSystem},
-Реквизиты: ${requisites[userId]}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'p2pTradeSell') })
+Реквизиты: ${requisites[userId]}`, { replyMarkup: generateButton(choice, 'p2pTradeSell') })
         break;
 
       case 25:
@@ -630,7 +631,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 Количество покупки: ${amount[userId]} ${selectedOrder[userId].coin.toUpperCase()},
 Курс совершения операции: ${selectedOrder[userId].rate} ${selectedOrder[userId].currency.toUpperCase()},
 Способ оплаты: ${selectedOrder[userId].paymentSystem},
-Реквизиты для оплаты: ${selectedOrder[userId].requisites}`, { replyMarkup: generateButton(acceptCancelOrderIK, 'p2pTradeBuy') });
+Реквизиты для оплаты: ${selectedOrder[userId].requisites}`, { replyMarkup: generateButton(choice, 'p2pTradeBuy') });
         break;
 
       case 27:
@@ -688,36 +689,36 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
           setState(userId, 0);
           wallet[userId] = text;
           if (coin[userId] === 'mine') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
           }
           else if (coin[userId] === 'plex') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (coin[userId] === 'usdt') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
           }
           else if (coin[userId] === 'mpx') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK });
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
           }
           else if (coin[userId] === 'xfi') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (coin[userId] === 'bip') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId] + 70} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId] + 70} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (
             coin[userId] === 'hub' ||
             coin[userId] === 'monsterhub' ||
             coin[userId] === 'bnb' ||
             coin[userId] === 'usdtbsc') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (coin[userId] === 'artery') {
             let commission = amount[userId] * 0.10;
             if (commission < 1) {
               commission = 1;
             }
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ARTERY + ${circumcisionAmount(commission)} ARTERY\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ARTERY + ${circumcisionAmount(commission)} ARTERY\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
         } catch (error) {
           console.error(error)
@@ -748,7 +749,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 Количество покупки: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
 Комиссия сделки: ${comissionExchanger[userId]} CASHBACK.`;
 
-          await bot.sendMessage(userId, mesg, { replyMarkup: generateButton(acceptCancelOrderIK, 'spotTrade') });
+          await bot.sendMessage(userId, mesg, { replyMarkup: generateButton(choice, 'spotTrade') });
         } else {
           await bot.sendMessage(userId, validationSellResult.errorMessage);
         }
@@ -822,7 +823,196 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (!validationWithdrawPoolInv.status) return bot.sendMessage(userId, validationWithdrawPoolInv.message);
 
-          bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
+        bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
+        break;
+
+      case 22:
+        setState(userId, 0);
+        const userCode = +text;
+
+        if (!isNaN(userCode) && MailService.verificationCode === userCode) {
+          if (coin[userId] === 'mine' || coin[userId] === 'plex') {
+            bot.deleteMessage(userId, messageId);
+            const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
+            if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
+            coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
+              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', -2))
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>`)
+          }
+          if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
+            bot.deleteMessage(userId, messageId);
+            const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
+            coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
+              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMpxXfi}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMpxXfi}</code>`)
+          }
+          if (coin[userId] === 'usdt') {
+            bot.deleteMessage(userId, messageId);
+            const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
+            await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdtHash}</code>`)
+          }
+          if (coin[userId] === 'artery') {
+            bot.deleteMessage(userId, messageId);
+            const sendArteryHash = await ReplenishmentArtery.sendArtery(config.adminArteryMnemonic, wallet[userId], amount[userId]);
+
+            let commission = amount[userId] * 0.10;
+            if (commission < 1) {
+              commission = 1;
+            }
+            await ControlUserBalance(userId, coin[userId], -(amount[userId] + commission));
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendArteryHash.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendArteryHash}</code>`);
+          }
+          if (coin[userId] === 'bip' ||
+            coin[userId] === 'hub' ||
+            coin[userId] === 'monsterhub' ||
+            coin[userId] === 'bnb' ||
+            coin[userId] === 'bipkakaxa' ||
+            coin[userId] === 'usdtbsc') {
+            bot.deleteMessage(userId, messageId);
+            const sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, coin[userId]);
+
+            if (sendBipResult.status) {
+              if (coin[userId] === 'bip') {
+                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BIP\nTxHash: <code>${sendBipResult.hash}</code>`);
+                await ControlUserBalance(userId, coin[userId], -(amount[userId] + 70));
+              } else {
+                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${(coin[userId]).toUpperCase()}\nTxHash: <code>${sendBipResult.hash}</code>`);
+                await ControlUserBalance(userId, coin[userId], -amount[userId]);
+                await ControlUserBalance(userId, 'bip', -70);
+              }
+            } else {
+              bot.sendMessage(userId, 'Возникла ошибка при выводе, попробуйте попытку позже. Если проблема не исчезнет обратитесь в техподдержку.')
+            }
+
+          } else {
+            bot.deleteMessage(userId, messageId);
+            const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
+            if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
+            await ControlUserBalance(userId, coin[userId], -sum[userId]);
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>`)
+          }
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+        break;
+
+      case 30:
+        setState(userId, 0);
+        const codeUser = +text;
+
+        if (!isNaN(codeUser) && MailService.verificationCode === codeUser) {
+          CustomP2POrder.create({
+            id: userId,
+            orderNumber: orderNumber[userId],
+            typeOrder: 'p2p',
+            type: orderType[userId],
+            status: 'Selling',
+            coin: coin[userId],
+            currency: currencyP2P[userId],
+            amount: amount[userId],
+            rate: userRate[userId],
+            minAmount: sum[userId],
+            paymentSystem: paymentSystem[userId],
+            requisites: requisites[userId]
+          });
+
+          await freezeBalance(userId, amount[userId], coin[userId]);
+
+          const logMsgCreateP2PSellOrder =
+            `Пользователь ${userId} создал P2P ордер на продажу №${orderNumber[userId]}.
+Данные ордера:
+Ордер № ${orderNumber[userId]},
+Тип ордера: Продать,
+Продажа монеты: ${coin[userId].toUpperCase()},
+Количество продажи: ${amount[userId]} ${coin[userId].toUpperCase()},
+Минимальная сумма продажи монеты: ${sum[userId]} ${coin[userId].toUpperCase()},
+Валюта совершения сделки: ${currencyP2P[userId].toUpperCase()},
+Способ оплаты: ${paymentSystem[userId]},
+Курс продажи: ${orderType[userId]} ${orderType[userId]}.`;
+
+          await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home(selectedLang) });
+          await sendLog(logMsgCreateP2PSellOrder);
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+        break;
+
+      case 31:
+        email[userId] = text;
+
+        if (isValidEmail(email[userId])) {
+          setState(userId, 32);
+          MailService.sendConfirmationEmail(email[userId]);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+        } else {
+          setState(userId, 0);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidEmailErrorMessage'), { parseMode: 'html' })
+        }
+        break;
+
+      case 32:
+        setState(userId, 0);
+        const emailCode = +text;
+
+        if (!isNaN(emailCode) && MailService.verificationCode === emailCode) {
+          await UserModel.updateOne(
+            { id: userId },
+            JSON.parse(`{ "$set": { "mail": "${email[userId]}"} }`)
+          );
+          bot.sendMessage(userId, getTranslation(selectedLang, 'emailChangeSuccessMessage'));
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+        break;
+
+      case 33:
+        const confirmationСode = +text;
+
+        if (!isNaN(confirmationСode) && MailService.verificationCode === confirmationСode) {
+          setState(userId, 31);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'updateMailPrompt'));
+        } else {
+          setState(userId, 0);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+        break;
+
+      case 34:
+        setState(userId, 0);
+        const codeConfirmation = +text;
+        const SellOrderData = await OrderFilling.findOne({ orderNumber: selectedOrder[userId].orderNumber });
+
+        if (!isNaN(codeConfirmation) && MailService.verificationCode === codeConfirmation) {
+          await OrderFilling.updateOne(
+            { orderNumber: selectedOrder[userId].orderNumber },
+            { $set: { status: "Approve" } }
+          );
+
+          await freezeBalance(SellOrderData.client, SellOrderData.coinAmount, SellOrderData.coin);
+
+          bot.sendMessage(SellOrderData.client, 'Заявка принята, ожидате зачисления денег на карту...');
+          bot.sendMessage(SellOrderData.creatorOrder, `Сработал ордер №${SellOrderData.orderNumber}.
+  Сумма покупки ${SellOrderData.coinAmount} ${SellOrderData.coin} по курсу ${SellOrderData.rate} ${SellOrderData.currency}.
+  Переведите ${SellOrderData.currencyAmount} ${SellOrderData.currency} на <i><code>${SellOrderData.requisites}</code></i> и нажмите кнопку <b>«Done»</b> после перевода`, { replyMarkup: generateButton(buyerPayOrder, `buyerPayOrder_${SellOrderData.orderNumber}`), parseMode: 'html' });
+        } else {
+          await OrderFilling.deleteOne(
+            { orderNumber: selectedOrder[userId].orderNumber }
+          );
+
+          await CustomP2POrder.updateOne(
+            { orderNumber: selectedOrder[userId].orderNumber },
+            { $set: { status: 'Selling' } }
+          );
+          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
         break;
 
       default:
@@ -842,6 +1032,7 @@ bot.on('callbackQuery', async (msg) => {
     const messageId = msg.message.message_id;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
+    const userMail = getInfoUser.user.mail;
     const arrayCoinList = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
     const firstPage = arrayCoinList.slice(0, 20);
 
@@ -961,6 +1152,9 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'user_withdrawal':
         bot.deleteMessage(userId, messageId);
+        if (!userMail) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'emailRequiredMessage'))
+        }
         firstPage.push('Page2');
         bot.sendMessage(userId, 'Выберите валюту вывода:', { replyMarkup: generateButton(firstPage, 'withdrawal') });
         break;
@@ -971,96 +1165,10 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'accept_withdrawal':
-        try {
-          if (coin[userId] === 'mine' || coin[userId] === 'plex') {
-            try {
-              bot.deleteMessage(userId, messageId);
-              const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
-              if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
-              coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
-                (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', -2))
-              await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-              return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>`)
-
-            } catch (error) {
-              console.error(error)
-            };
-          }
-          if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
-            try {
-              bot.deleteMessage(userId, messageId);
-              const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
-              coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
-                (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
-              await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMpxXfi}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-              return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMpxXfi}</code>`)
-            } catch (error) {
-              console.error(error);
-              bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
-            }
-          }
-          if (coin[userId] === 'usdt') {
-            try {
-              bot.deleteMessage(userId, messageId);
-              const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
-              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
-              await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-              return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdtHash}</code>`)
-            } catch (error) {
-              console.error(error)
-            };
-          }
-          if (coin[userId] === 'artery') {
-            try {
-              bot.deleteMessage(userId, messageId);
-              const sendArteryHash = await ReplenishmentArtery.sendArtery(config.adminArteryMnemonic, wallet[userId], amount[userId]);
-
-              let commission = amount[userId] * 0.10;
-              if (commission < 1) {
-                commission = 1;
-              }
-              await ControlUserBalance(userId, coin[userId], -(amount[userId] + commission));
-              await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendArteryHash.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-              return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendArteryHash}</code>`);
-            } catch (error) {
-              console.error(error)
-            }
-          }
-          if (coin[userId] === 'bip' ||
-            coin[userId] === 'hub' ||
-            coin[userId] === 'monsterhub' ||
-            coin[userId] === 'bnb' ||
-            coin[userId] === 'bipkakaxa' ||
-            coin[userId] === 'usdtbsc') {
-            bot.deleteMessage(userId, messageId);
-            const sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, coin[userId]);
-
-            if (sendBipResult.status) {
-              if (coin[userId] === 'bip') {
-                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BIP\nTxHash: <code>${sendBipResult.hash}</code>`);
-                await ControlUserBalance(userId, coin[userId], -(amount[userId] + 70));
-              } else {
-                bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-                await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${(coin[userId]).toUpperCase()}\nTxHash: <code>${sendBipResult.hash}</code>`);
-                await ControlUserBalance(userId, coin[userId], -amount[userId]);
-                await ControlUserBalance(userId, 'bip', -70);
-              }
-            } else {
-              bot.sendMessage(userId, 'Возникла ошибка при выводе, попробуйте попытку позже. Если проблема не исчезнет обратитесь в техподдержку.')
-            }
-
-          } else {
-            bot.deleteMessage(userId, messageId);
-            const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
-            if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
-            await ControlUserBalance(userId, coin[userId], -sum[userId]);
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>`)
-          }
-        } catch (error) {
-          console.error(error)
-        }
+        bot.deleteMessage(userId, messageId);
+        setState(userId, 22);
+        MailService.sendConfirmationEmail('vidosyr@gmail.com');
+        bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
         break;
 
       case 'cancel':
@@ -1132,7 +1240,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'completed_SpotOrders':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterCompleteSpotOrdersIK});
+        bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterCompleteSpotOrdersIK });
         break;
 
       case 'allCompleteList_SpotOrders':
@@ -1320,6 +1428,9 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'sellList_p2pOrders':
         bot.deleteMessage(userId, messageId);
+        if (!userMail) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'emailRequiredMessage'))
+        }
         bot.sendMessage(userId, 'Выберите раздел: ', { replyMarkup: filterSellP2PIK })
         break;
 
@@ -1372,10 +1483,10 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'deal_p2p':
-      bot.deleteMessage(userId, messageId);
-      bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
-      // bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)})
-      break;
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
+        // bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)})
+        break;
 
       case 'p2pBuy':
         bot.deleteMessage(userId, messageId);
@@ -1386,6 +1497,10 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'p2pSell':
         bot.deleteMessage(userId, messageId);
+        if (!userMail) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'emailRequiredMessage'))
+        }
+
         firstPage.push('Page2')
         orderType[userId] = 'sell';
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(firstPage, 'sellP2P') });
@@ -1394,23 +1509,9 @@ bot.on('callbackQuery', async (msg) => {
       case 'p2p_accept':
         bot.deleteMessage(userId, messageId);
         if (orderType[userId] === 'sell') {
-          CustomP2POrder.create({
-            id: userId,
-            orderNumber: orderNumber[userId],
-            typeOrder: 'p2p',
-            type: orderType[userId],
-            status: 'Selling',
-            coin: coin[userId],
-            currency: currencyP2P[userId],
-            amount: amount[userId],
-            rate: userRate[userId],
-            minAmount: sum[userId],
-            paymentSystem: paymentSystem[userId],
-            requisites: requisites[userId]
-          });
-
-          await freezeBalance(userId, amount[userId], coin[userId]);
-
+          setState(userId, 30);
+          MailService.sendConfirmationEmail(userMail);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
         } else {
           CustomP2POrder.create({
             id: userId,
@@ -1426,9 +1527,21 @@ bot.on('callbackQuery', async (msg) => {
             paymentSystem: paymentSystem[userId],
             requisites: 0
           });
+
+          const logMsgCreateP2PBuyOrder = `Пользователь ${userId} создал P2P ордер на покупку №${orderNumber[userId]}.
+Данные ордера:
+Ордер № ${orderNumber[userId]},
+Тип ордера: Купить,
+Покупка монеты: ${coin[userId].toUpperCase()},
+Количество покупки: ${amount[userId]} ${coin[userId].toUpperCase()},
+Минимальная сумма закупки монеты: ${sum[userId]} ${coin[userId].toUpperCase()},
+Валюта совершения сделки: ${currencyP2P[userId].toUpperCase()},
+Способ оплаты: ${paymentSystem[userId]},
+Курс покупки: ${orderType[userId]} ${orderType[userId]}.`;
+
+          await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home(selectedLang) });
+          await sendLog(logMsgCreateP2PBuyOrder);
         };
-        await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home(selectedLang) });
-        await sendLog(`Пользователь ${userId} создал P2P ордер типа ${orderType[userId]} №${orderNumber[userId]}`)
         break;
 
       case 'p2p_cancel':
@@ -1489,19 +1602,11 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'p2pTradeSell_accept':
+        setState(userId, 34);
         bot.deleteMessage(userId, messageId);
-        const SellOrderData = await OrderFilling.findOne({ orderNumber: selectedOrder[userId].orderNumber });
-        await OrderFilling.updateOne(
-          { orderNumber: selectedOrder[userId].orderNumber },
-          { $set: { status: "Approve" } }
-        );
 
-        await freezeBalance(SellOrderData.client, SellOrderData.coinAmount, SellOrderData.coin);
-
-        bot.sendMessage(SellOrderData.client, 'Заявка принята, ожидате зачисления денег на карту...');
-        bot.sendMessage(SellOrderData.creatorOrder, `Сработал ордер №${SellOrderData.orderNumber}.
-Сумма покупки ${SellOrderData.coinAmount} ${SellOrderData.coin} по курсу ${SellOrderData.rate} ${SellOrderData.currency}.
-Переведите ${SellOrderData.currencyAmount} ${SellOrderData.currency} на <i><code>${SellOrderData.requisites}</code></i> и нажмите кнопку <b>«Done»</b> после перевода`, { replyMarkup: generateButton(buyerPayOrder, `buyerPayOrder_${SellOrderData.orderNumber}`), parseMode: 'html' });
+        MailService.sendConfirmationEmail(userMail);
+        bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
         break;
 
       case 'p2pTradeSell_cancel':
@@ -1568,7 +1673,7 @@ ${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
 Количество монет в пуле: 
 ${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
 ${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.
-Количество инвесторов: ${quantityInvestors}`, { replyMarkup: investInPoolButtonIK(pool.firstCoin, pool.secondCoin, selectedLang)})
+Количество инвесторов: ${quantityInvestors}`, { replyMarkup: investInPoolButtonIK(pool.firstCoin, pool.secondCoin, selectedLang) })
         }
         break;
 
@@ -1770,6 +1875,18 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'parcels_p2p':
         bot.deleteMessage(userId, messageId);
+        break;
+
+      case 'change_Email':
+        bot.deleteMessage(userId, messageId);
+        if (!userMail) {
+          setState(userId, 31);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'updateMailPrompt'));
+        } else {
+          setState(userId, 33);
+          MailService.sendConfirmationEmail(userMail);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
+        }
         break;
 
       default:
@@ -2395,6 +2512,7 @@ bot.on('callbackQuery', async (msg) => {
       const orderNumber = data.split('_')[1];
       selectedOrder[userId] = await CustomP2POrder.findOne({ orderNumber: orderNumber });
       coin[userId] = selectedOrder[userId].coin;
+      orderType[userId] = selectedOrder[userId].type;
       if (selectedOrder[userId].status !== 'Selling') return bot.sendMessage(userId, `Простите, но ордер №${orderNumber} нуже не доступен.`);
 
       await CustomP2POrder.updateOne(
@@ -2402,7 +2520,7 @@ bot.on('callbackQuery', async (msg) => {
         { $set: { status: 'Filling' } }
       );
 
-      if (orderType[userId] === 'sell') {
+      if (orderType[userId] === 'buy') {
         setState(userId, 23);
         bot.sendMessage(userId, `Выбран ордер №${orderNumber}. Введите реквизиты на которые желаете получить деньги:`);
       } else {
@@ -2595,7 +2713,7 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
     else if (data.split('_')[0] === 'secondCoinFilterSpotOrders') {
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const listFiltredOrders = await CustomOrder.find({ sellCoin: sellCoin[userId], buyCoin: buyCoin[userId]});      
+      const listFiltredOrders = await CustomOrder.find({ sellCoin: sellCoin[userId], buyCoin: buyCoin[userId] });
       const filteredArray = listFiltredOrders.filter(order => !(order.status === 'Done' || (order.status === 'Deleted')));
 
       if (filteredArray.length === 0) return bot.sendMessage(userId, 'Сейчас на площадке нету ни 1 ордера с такой парой.')
@@ -2842,6 +2960,7 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
 });
 
 let sum = [];
+let email = [];
 let list = []; // страница с кнопками
 let coin = [];
 let number = [];

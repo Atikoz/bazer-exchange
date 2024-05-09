@@ -19,7 +19,8 @@ const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
 ]);
 
 const settingsIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'changeLang'), { callback: 'change_lang' })]
+  [bot.inlineButton(getTranslation(lang, 'changeLang'), { callback: 'change_lang' })],
+  [bot.inlineButton(getTranslation(lang, 'changeEmail'), { callback: 'change_Email' })]
 ]);
 
 const languageIK = bot.inlineKeyboard([
@@ -78,9 +79,6 @@ const acceptCancelExchangeIK = (lang = "eng") => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'confirmText'), { callback: 'accept_exchange' }), bot.inlineButton(getTranslation(lang, 'cancelText'), { callback: 'cancel' })]
 ]);
 
-const acceptCancelOrderIK = [
-  'accept', 'cancel'
-];
 const currency = [
   'UAH', 'RUB',
   'TRY'
@@ -181,7 +179,6 @@ module.exports = {
   liquidityPoolsIK,
   balanceStartPageIK,
   filterSpotOrdersIK,
-  acceptCancelOrderIK,
   investInPoolButtonIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,

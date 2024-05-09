@@ -23,6 +23,7 @@ class AuthenticationService {
         await UserModel.create({
           id: userId,
           status: 0,
+          mail: null,
           lang: 'eng'
         });
 
