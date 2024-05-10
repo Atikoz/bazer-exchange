@@ -47,7 +47,7 @@ const createArteryManyWallet = async (arr) => {
   const accData = await axios(nodeUrl + '/cosmos/auth/v1beta1/accounts/' + wallet.address);
 
   // Текущая версия сети Artery Blockchain
-  wallet.setChainId('artery_network-9')
+  wallet.setChainId('artery_network-10')
 
   // Номер аккаунта в БЧ (получается запросом выше)
   wallet.setAccNo(accData.data.account.account_number + '');
@@ -98,7 +98,7 @@ const createUserArteryWallet = async (mnemonic) => {
     console.log(accData);
     
     // Текущая версия сети Artery Blockchain
-    wallet.setChainId('artery_network-9')
+    wallet.setChainId('artery_network-10')
 
     // Номер аккаунта в БЧ (получается запросом выше)
     wallet.setAccNo(accData.account.account_number + '');

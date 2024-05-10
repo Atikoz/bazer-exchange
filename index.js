@@ -215,7 +215,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, alertUnfolowChanel));
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -248,7 +248,7 @@ bot.on('text', async (msg) => {
               // );
             });
           } catch (error) {
-            console.error(error)
+            console.error(error);
           }
         };
 
@@ -259,11 +259,13 @@ bot.on('text', async (msg) => {
       case getTranslation(selectedLang, "myAccount"):
         setState(userId, 0);
         let userMail = '';
+
         if (selectedMail) {
           userMail = `<code>${selectedMail}</code>`;
         } else {
           userMail = getTranslation(selectedLang, 'notSpecified');
         }
+
         const quantytyCoin = (Object.keys((await BalanceUserModel.findOne({ id: userId })).main)).length;
         await bot.sendMessage(userId, getTranslation(selectedLang, 'myAccountText'))
           .then(() => bot.sendMessage(userId, `${getTranslation(selectedLang, 'name')} ${userName}\n🆔 ID: ${userId}\n✉️ Email: ${userMail}\n${getTranslation(selectedLang, 'status')}...\n${getTranslation(selectedLang, 'quantytyCoin')} ${quantytyCoin}`, { replyMarkup: cabinetIK(selectedLang), parseMode: 'html' }));

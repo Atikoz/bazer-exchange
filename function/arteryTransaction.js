@@ -18,7 +18,7 @@ class ReplenishmentArtery {
       });
 
       //текущая версия сети Artery Blockchain
-      wallet.setChainId('artery_network-9');
+      wallet.setChainId('artery_network-10');
 
       // Homep. akkayhta B 54 (nonyuaetca 3anpocoM више)
       wallet.setAccNo(accData.data.account.account_number + '');
