@@ -191,8 +191,17 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const selectedLang = getInfoUser.user.lang;
-    const selectedMail = getInfoUser.user.mail;
+    let selectedLang;
+    let selectedMail;
+
+    if (getInfoUser === "not user") {
+      selectedLang = 'eng';
+      selectedMail = null;
+    } else {
+      selectedLang = getInfoUser.user.lang;
+      selectedMail = getInfoUser.user.mail;
+    }
+
     const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
     const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
     const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');

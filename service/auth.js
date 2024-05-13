@@ -6,7 +6,7 @@ const createDecimalWallet = require('../function/createDecimalWallet.js');
 const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
 const createMpxXfiWallet = require('../function/createMpxXfiWallet.js');
 const { createUserArteryWallet } = require('../function/createArteryWallet.js');
-const ProfitPoolModel = require('../model/modelLiquidityPool.js');
+const ProfitPoolModel = require('../model/modelProfitPool.js');
 
 class AuthenticationService {
   async Authentication(userId) { 
