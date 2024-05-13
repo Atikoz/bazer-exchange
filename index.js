@@ -193,20 +193,20 @@ bot.on('text', async (msg) => {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
     const selectedMail = getInfoUser.user.mail;
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
 
     if (text === '/start') {
       if (getInfoUser === "not user") {
+        await AuthenticationService.Authentication(userId);
         setState(userId, 31);
         bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
         bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
-        await AuthenticationService.Authentication(userId);
       } else {
         setState(userId, 0);
         bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
@@ -215,7 +215,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
