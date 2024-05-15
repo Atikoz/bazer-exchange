@@ -7,6 +7,7 @@ const CreateMinePlexWallet = require('../function/createMinePlexWallet.js');
 const createMpxXfiWallet = require('../function/createMpxXfiWallet.js');
 const { createUserArteryWallet } = require('../function/createArteryWallet.js');
 const ProfitPoolModel = require('../model/modelProfitPool.js');
+const createMinterWallet = require('../function/createMinterWallet.js');
 
 class AuthenticationService {
   async Authentication(userId) {
@@ -17,7 +18,7 @@ class AuthenticationService {
         const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
         const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
         const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
-
+        const createMinter = await createMinterWallet(createDelWallet.del.mnemonics)
         if (createDelWallet.status != 'ok') return this.Authentication(userId);
 
         await UserModel.create({
@@ -52,6 +53,10 @@ class AuthenticationService {
           },
           artery: {
             address: createArtery
+          },
+          minter: {
+            address: createMinter.address,
+            privateKey: createMinter.privateKeyHex
           }
         });
 
