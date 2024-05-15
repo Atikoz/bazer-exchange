@@ -81,7 +81,9 @@
   "emailChangeSuccessMessage": "The email address has been successfully changed.",
   "changeEmail": "Change email",
   "emailRequiredMessage": "To continue using the bot, you must specify your email address in your account settings.",
-  "notSpecified": "Not specified"
+  "notSpecified": "Not specified",
+  "support": "Support",
+  "supportText": "For feedback write to support @proofreader987 or @perchilk"
 
 
 

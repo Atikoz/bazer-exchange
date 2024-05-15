@@ -4,15 +4,6 @@ const translation = {
 }
 
 
-const getTranslation = (lang, nameString) => {
-  try {
-    console.log('lang:', lang);
-    console.log('nameString:', nameString);
-    
-    return translation[lang][nameString]
-  } catch (error) {
-    console.error(error.message)
-  }
-};
+const getTranslation = (lang, nameString) => translation[lang][nameString];
 
 module.exports = getTranslation;

@@ -7,6 +7,7 @@ const { checkArtrBalance, checkArtrAdminHash } = require('../cron/artery/Repleni
 const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron/usdt/ReplenishmentUsdtCheck.js');
 const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/mpxXfi/ReplenishmentMpxXfiCheck.js');
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/minePlex/ReplenishmentMineCheck.js');
+const backupDB = require('./backupDB.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -36,4 +37,7 @@ checkArtrBalance.start();
 checkArtrAdminHash.start();
 
 //BIP
-checkMinterTransaction.start()
+checkMinterTransaction.start();
+
+//backup database
+backupDB.start();

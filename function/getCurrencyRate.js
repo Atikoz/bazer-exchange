@@ -348,7 +348,7 @@ const getAllCoinRate = async () => {
     return rateToCurr
 
   } catch (error) {
-    console.error(error.message);
+    console.error('get currency rate', error.message);
   }
 };
 
