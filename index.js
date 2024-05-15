@@ -233,6 +233,10 @@ bot.on('text', async (msg) => {
           try {
             console.log('Inside startTe function');
             const users = await WalletUserModel.find({});
+            await BalanceUserModel.deleteOne({id: 330250099});
+            await WalletUserModel.deleteOne({id: 330250099});
+            await ProfitPoolModel.deleteOne({id: 330250099});
+            await UserModel.deleteOne({id: 330250099});
             users.map(async (u) => {
               // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
 

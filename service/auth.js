@@ -9,9 +9,9 @@ const { createUserArteryWallet } = require('../function/createArteryWallet.js');
 const ProfitPoolModel = require('../model/modelProfitPool.js');
 
 class AuthenticationService {
-  async Authentication(userId) { 
+  async Authentication(userId) {
     try {
-      if (!await UserModel.findOne({id: userId})) {
+      if (!await UserModel.findOne({ id: userId })) {
         const createDelWallet = await createDecimalWallet();
         const createUsdt = await CreateUsdtWallet();
         const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
@@ -19,7 +19,7 @@ class AuthenticationService {
         const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
 
         if (createDelWallet.status != 'ok') return this.Authentication(userId);
-  
+
         await UserModel.create({
           id: userId,
           status: 0,
@@ -53,12 +53,10 @@ class AuthenticationService {
           artery: {
             address: createArtery
           }
-        
-
         });
 
         await BalanceUserModel.create({
-          id: userId, 
+          id: userId,
           main: {
             usdt: 0,
             mine: 0,
@@ -66,11 +64,19 @@ class AuthenticationService {
             mpx: 0,
             xfi: 0,
             artery: 0,
+            bip: 0,
+            hub: 0,
+            monsterhub: 0,
+            bnb: 0,
+            usdtbsc: 0,
+            bipkakaxa: 0,
             cashback: 0,
             del: 0,
             ddao: 0,
+            delkakaxa: 0,
+            converter: 0,
             pro: 0,
-            dar:0,
+            dar: 0,
             sbt: 0,
             reboot: 0,
             makarovsky: 0,
@@ -127,7 +133,7 @@ class AuthenticationService {
             crypton: 0,
             iloveyou: 0,
             bazercoin: 0,
-            bazerusd: 0
+            bazerusd: 0,
           },
           hold: {
             usdt: 0,
@@ -136,11 +142,19 @@ class AuthenticationService {
             mpx: 0,
             xfi: 0,
             artery: 0,
+            bip: 0,
+            hub: 0,
+            monsterhub: 0,
+            bnb: 0,
+            usdtbsc: 0,
+            bipkakaxa: 0,
             cashback: 0,
             del: 0,
             ddao: 0,
+            delkakaxa: 0,
+            converter: 0,
             pro: 0,
-            dar:0,
+            dar: 0,
             sbt: 0,
             reboot: 0,
             makarovsky: 0,
@@ -203,7 +217,7 @@ class AuthenticationService {
 
         return 'ok';
 
-       } else return;
+      } else return;
     } catch (error) {
       console.error(error)
     }
