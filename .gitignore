@@ -1,4 +1,4 @@
-.node_modules
+node_modules/
 config.js
 decimalConfig.js
-backup_bp
+backup_bp/
