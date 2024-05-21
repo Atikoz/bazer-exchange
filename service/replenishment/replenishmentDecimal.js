@@ -113,16 +113,16 @@ class ReplenishmentDecimal {
               tx.data.amount / 1e18 - comission
             ));
 
-            const codeTransfer = moneyTransfer.result.tx_response.code;
+            const resultTransfer = moneyTransfer.result;
 
             console.log(tx.data.coin);
             console.log('-------------');
             console.log(tx.data.amount / 1e18 - comission);
             console.log('Coins send admin wallet');
             console.log(moneyTransfer.result);
-            console.log(codeTransfer);
+            console.log(!!resultTransfer);
 
-            if (codeTransfer !== 0) return;
+            if (!resultTransfer) return;
 
             await HashReplenishment.create({ id: tx.hash, coin: tx.data.coin });
             console.log('model user send created');

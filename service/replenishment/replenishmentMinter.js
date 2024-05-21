@@ -21,7 +21,11 @@ class ReplenishmentMinter {
         HUB: 0.01,
         MONSTERHUB: 0.01,
         BNB: 0.0001,
-        USDTBSC: 2
+        USDTBSC: 2,
+        BIPKAKAXA: 30,
+        CASHBSC: 500,
+        BAZERCOIN: 50,
+        RUBLE: 5
       };
 
       const userTransactionArr = await sleep(5000).then(async () => await getTransaction(userAddress));
@@ -33,7 +37,15 @@ class ReplenishmentMinter {
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
-          (coin === 'BIP' || coin === 'HUB' || coin === 'MONSTERHUB' || coin === 'BNB' || coin === 'USDTBSC'|| coin === 'BIPKAKAXA') &&
+           (coin === 'BIP' ||
+            coin === 'HUB' ||
+            coin === 'MONSTERHUB' ||
+            coin === 'BNB' ||
+            coin === 'USDTBSC' ||
+            coin === 'BIPKAKAXA' ||
+            coin === 'CASHBSC' ||
+            coin === 'BAZERCOIN' ||
+            coin === 'RUBLE') &&
           transaction.data.to === userAddress &&
           +transaction.data.value >= minimumAmount;
 
@@ -102,21 +114,31 @@ class ReplenishmentMinter {
       
       adminTransactions.forEach(async (transaction) => {
         const resultTx = await sleep(5000).then(async () => await checkMinterHash(transaction.hash));
-        const coin = transaction.coin;
+        let coin = transaction.coin;
   
         if (resultTx.code === "0") {
           await TransactionMinterStatus.updateOne(
             { hash: transaction.hash },
             { status: 'Done' }
           );
-  
-          await BalanceUserModel.updateOne(
-            { id: transaction.id },
-            { $inc: { [`main.${coin.toLowerCase()}`]: transaction.amount } }
-          );
-  
-          sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} ${coin.toUpperCase()}`);
-          sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} ${coin.toUpperCase()}`);
+
+          if (coin === 'BAZERCOIN') {
+            await BalanceUserModel.updateOne(
+              { id: transaction.id },
+              { $inc: { ['main.minterBazercoin']: transaction.amount } }
+            );
+
+            sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} BAZERCOIN (Minter)`);
+            sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} BAZERCOIN (Minter)`);
+          } else {
+            await BalanceUserModel.updateOne(
+              { id: transaction.id },
+              { $inc: { [`main.${coin.toLowerCase()}`]: transaction.amount } }
+            );
+    
+            sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} ${coin.toUpperCase()}`);
+            sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} ${coin.toUpperCase()}`);
+          }
         } else {
           console.log(resultTx);
           sendMessage(transaction.id, `При пополнении возникла ошибка, обратитесь в техподдержку`);

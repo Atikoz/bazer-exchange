@@ -127,7 +127,8 @@ const investInPoolButtonIK = (firstCoin, secondCoin, lang = 'eng') => bot.inline
 ]);
 
 const exchangeIK = bot.inlineKeyboard([
-  [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })]
+  [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })],
+  [bot.inlineButton('Bazer', { callback: 'bazerExchange' })]
 ]);
 
 const filterSpotOrdersIK = bot.inlineKeyboard([

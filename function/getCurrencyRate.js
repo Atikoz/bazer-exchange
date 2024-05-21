@@ -18,6 +18,30 @@ const getMinterCoinRate = async () => {
       rub: 542.15
     };
 
+    const rateBipkakxa = {
+      uah: 0.026,
+      try: 0.022,
+      rub: 0.061
+    };
+
+    const rateCashbsc = {
+      uah: 0.00057,
+      try: 0.00046,
+      rub: 0.0013
+    };
+
+    const rateRuble = {
+      uah: 0.11,
+      try: 0.094,
+      rub: 0.26
+    };
+
+    const rateMinterBazerCoin = {
+      uah: 0.0099,
+      try: 0.0081,
+      rub: 0.023
+    };
+
     const convertId = {
       uah: 2824,
       try: 2810,
@@ -29,6 +53,7 @@ const getMinterCoinRate = async () => {
       try: null,
       rub: null
     };
+
 
     for (const currency of Object.keys(convertId)) {
       const config = {
@@ -62,6 +87,30 @@ const getMinterCoinRate = async () => {
         try: rateMonsterHub.try,
         uah: rateMonsterHub.uah,
       },
+
+      bipkakaxa: {
+        rub: rateBipkakxa.rub,
+        try: rateBipkakxa.try,
+        uah: rateBipkakxa.uah,
+      },
+
+      cashbsc: {
+        rub: rateCashbsc.rub,
+        try: rateCashbsc.try,
+        uah: rateCashbsc.uah,
+      },
+
+      minterBazercoin: {
+        rub: rateMinterBazerCoin.rub,
+        try: rateMinterBazerCoin.try,
+        uah: rateMinterBazerCoin.uah,
+      },
+
+      ruble: {
+        rub: rateRuble.rub,
+        try: rateRuble.try,
+        uah: rateRuble.uah,
+      },
     }
 
     return priceAllCoin
@@ -85,7 +134,31 @@ const getMinterCoinRate = async () => {
         rub: 0,
         try: 0,
         uah: 0,
-      }
+      },
+
+      bipkakaxa: {
+        rub: 0,
+        try: 0,
+        uah: 0,
+      },
+
+      cashbsc: {
+        rub: 0,
+        try: 0,
+        uah: 0,
+      },
+
+      minterBazercoin: {
+        rub: 0,
+        try: 0,
+        uah: 0,
+      },
+
+      ruble: {
+        rub: 0,
+        try: 0,
+        uah: 0,
+      },
     }
   }
 };
@@ -108,6 +181,8 @@ const getAllCoinRate = async () => {
         cashback: null,
         ddao: null,
         del: coinGecRate.decimal.rub,
+        delkakaxa: null,
+        converter: null,
         dar: null,
         pro: null,
         sbt: null,
@@ -177,12 +252,18 @@ const getAllCoinRate = async () => {
         usdtbsc: coinGecRate.tether.rub,
         monsterhub: priceMinterCoin.monsterhub.rub,
         bnb: coinGecRate.binancecoin.rub,
-        hub: priceMinterCoin.hub.rub
+        hub: priceMinterCoin.hub.rub,
+        bipkakaxa: priceMinterCoin.bipkakaxa.rub,
+        cashbsc: priceMinterCoin.cashbsc.rub,
+        minterBazercoin: priceMinterCoin.minterBazercoin.rub,
+        ruble: priceMinterCoin.ruble.rub
       },
       uah: {
         cashback: null,
         ddao: null,
         del: coinGecRate.decimal.uah,
+        delkakaxa: null,
+        converter: null,
         dar: null,
         pro: null,
         sbt: null,
@@ -252,12 +333,18 @@ const getAllCoinRate = async () => {
         usdtbsc: coinGecRate.tether.uah,
         monsterhub: priceMinterCoin.monsterhub.uah,
         bnb: coinGecRate.binancecoin.uah,
-        hub: priceMinterCoin.hub.uah
+        hub: priceMinterCoin.hub.uah,
+        bipkakaxa: priceMinterCoin.bipkakaxa.uah,
+        cashbsc: priceMinterCoin.cashbsc.uah,
+        minterBazercoin: priceMinterCoin.minterBazercoin.uah,
+        ruble: priceMinterCoin.ruble.uah
       },
       try: {
         cashback: null,
         ddao: null,
         del: coinGecRate.decimal.try,
+        delkakaxa: null,
+        converter: null,
         dar: null,
         pro: null,
         sbt: null,
@@ -327,7 +414,11 @@ const getAllCoinRate = async () => {
         usdtbsc: coinGecRate.tether.try,
         monsterhub: priceMinterCoin.monsterhub.try,
         bnb: coinGecRate.binancecoin.try,
-        hub: priceMinterCoin.hub.try
+        hub: priceMinterCoin.hub.try,
+        bipkakaxa: priceMinterCoin.bipkakaxa.try,
+        cashbsc: priceMinterCoin.cashbsc.try,
+        minterBazercoin: priceMinterCoin.minterBazercoin.try,
+        ruble: priceMinterCoin.ruble.try
       }
     };
 
