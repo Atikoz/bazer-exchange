@@ -1888,6 +1888,11 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         sendLog(`Пользователь ${userId} успешно обменял ${amount[userId]} ${sellCoin[userId].toUpperCase()} = ${amount[userId]} ${buyCoin[userId].toUpperCase()}`);
         break;
 
+      case 'bazerExchange_cancel':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'Операция отменена ❌\nВы в главном меню.', { replyMarkup: RM_Home(selectedLang) });
+        break;
+
       case 'minterExchange_accept':
         bot.deleteMessage(userId, messageId);
 
