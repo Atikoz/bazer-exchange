@@ -1878,7 +1878,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(bazerCoinList, 'sellBazerExchange') });
         break;
 
-      case 'accept_bazerExchange':
+      case 'bazerExchange_accept':
         bot.deleteMessage(userId, messageId);
 
         await ControlUserBalance(userId, sellCoin[userId], -amount[userId]);
