@@ -21,7 +21,6 @@ class MinterTransaction {
       const sendRequest = await minter.postTx(txParams, { seedPhrase: seed });
 
       return { status: true, hash: sendRequest.hash };
-
     } catch (error) {
       console.error(error.response.data);
       return { status: false, error: error.response.data.error.message };
@@ -102,6 +101,8 @@ class MinterTransaction {
 
       return routeExchange
     } catch (error) {
+      console.error(error);
+
       console.error('request error: ', error.message);
     }
   };

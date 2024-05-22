@@ -195,20 +195,20 @@ bot.on('text', async (msg) => {
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     let selectedLang;
-    let selectedMail;
+    let userMail;
 
     if (getInfoUser === "not user") {
       selectedLang = 'eng';
-      selectedMail = null;
+      userMail = null;
     } else {
       selectedLang = getInfoUser.user.lang;
-      selectedMail = getInfoUser.user.mail;
+      userMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -227,7 +227,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -272,8 +272,8 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         let userMail = '';
 
-        if (selectedMail) {
-          userMail = `<code>${selectedMail}</code>`;
+        if (userMail) {
+          userMail = `<code>${userMail}</code>`;
         } else {
           userMail = getTranslation(selectedLang, 'notSpecified');
         }
@@ -732,7 +732,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             coin[userId] === 'bipkakaxa' ||
             coin[userId] === 'cashbsc' ||
             coin[userId] === 'ruble' ||
-            coin[userId] === 'bazercoinMinter') {
+            coin[userId] === 'minterBazercoin') {
             await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (coin[userId] === 'artery') {
@@ -798,8 +798,11 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         setState(userId, 0);
         if (isNaN(text)) return bot.sendMessage(userId, 'Введено не корректное число!');
         exchangeSellAmount[userId] = +text;
-        const sellCoinId = await getCoinId(sellCoin[userId]);
-        const buyCoinId = await getCoinId(buyCoin[userId]);
+
+        let sellCoinId = sellCoin[userId] === 'minterBazercoin' ? await getCoinId('bazercoin') : await getCoinId(sellCoin[userId]);
+        let buyCoinId = buyCoin[userId] === 'minterBazercoin' ? await getCoinId('bazercoin') : await getCoinId(buyCoin[userId]);
+
+
         const audit = Number.isInteger(exchangeSellAmount[userId]);
 
         if (!audit) return bot.sendMessage(userId, 'Введенное число не является целым!');
@@ -854,7 +857,6 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (!isNaN(userCode) && MailService.verificationCode === userCode) {
           if (coin[userId] === 'mine' || coin[userId] === 'plex') {
-            bot.deleteMessage(userId, messageId);
             const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
             if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
             coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
@@ -863,7 +865,6 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>`)
           }
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
-            bot.deleteMessage(userId, messageId);
             const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
             coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
               (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
@@ -871,14 +872,12 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMpxXfi}</code>`)
           }
           if (coin[userId] === 'usdt') {
-            bot.deleteMessage(userId, messageId);
             const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
             await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
             await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdtHash}</code>`)
           }
           if (coin[userId] === 'artery') {
-            bot.deleteMessage(userId, messageId);
             const sendArteryHash = await ReplenishmentArtery.sendArtery(config.adminArteryMnemonic, wallet[userId], amount[userId]);
 
             let commission = amount[userId] * 0.10;
@@ -897,11 +896,10 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             coin[userId] === 'usdtbsc' ||
             coin[userId] === 'cashbsc' ||
             coin[userId] === 'ruble' ||
-            coin[userId] === 'bazercoinMinter') {
-            bot.deleteMessage(userId, messageId);
+            coin[userId] === 'minterBazercoin') {
             let sendBipResult;
 
-            if (coin[userId] === 'bazercoinMinter') {
+            if (coin[userId] === 'minterBazercoin') {
               sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, 'bazercoin');
             } else {
               sendBipResult = await sendMinter(wallet[userId], amount[userId], config.adminMinterMnemonic, coin[userId]);
@@ -913,7 +911,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
                 await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BIP\nTxHash: <code>${sendBipResult.hash}</code>`);
                 await ControlUserBalance(userId, coin[userId], -(amount[userId] + 70));
               }
-              else if(coin[userId] === 'bazercoinMinter') {
+              else if (coin[userId] === 'minterBazercoin') {
                 bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendBipResult.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
                 await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} BAZERCOIN (Minter)\nTxHash: <code>${sendBipResult.hash}</code>`);
                 await ControlUserBalance(userId, coin[userId], -amount[userId]);
@@ -929,7 +927,6 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             }
 
           } else {
-            bot.deleteMessage(userId, messageId);
             const sendCoinUser = await SendCoin(decimalMnemonics, wallet[userId], coin[userId], amount[userId]);
             if (sendCoinUser.data.result.result.tx_response.code != 0) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
             await ControlUserBalance(userId, coin[userId], -sum[userId]);
@@ -1050,6 +1047,16 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
           );
           bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
         }
+        break;
+
+      case 35:
+        setState(userId, 0);
+        amount[userId] = +text;
+        const valid = await dataValidation(userId, amount[userId], sellCoin[userId]);
+
+        if (!valid.success) return bot.sendMessage(userId, valid.errorMessage);
+
+        bot.sendMessage(userId, `Вы действительно хотите конвертировать ${amount[userId]} ${sellCoin[userId].toUpperCase()} = ${amount[userId]} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: generateButton(choice, 'bazerExchange') });
         break;
 
       default:
@@ -1207,7 +1214,7 @@ bot.on('callbackQuery', async (msg) => {
       case 'accept_withdrawal':
         bot.deleteMessage(userId, messageId);
         setState(userId, 22);
-        MailService.sendConfirmationEmail('vidosyr@gmail.com');
+        MailService.sendConfirmationEmail(userMail);
         bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
         break;
 
@@ -1830,7 +1837,10 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
             element === 'mine' ||
             element === 'plex' ||
             element === 'mpx' ||
-            element === 'xfi')
+            element === 'xfi' ||
+            element === 'cashbsc' ||
+            element === 'minterBazercoin' ||
+            element === 'ruble')
         );
 
         const firstDecimalPage = decimalCoinList.slice(0, 20);
@@ -1846,8 +1856,10 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
           element === 'hub' ||
           element === 'usdtbsc' ||
           element === 'bnb' ||
-          element === 'monsterhub'
-        );
+          element === 'monsterhub' ||
+          element === 'cashbsc' ||
+          element === 'minterBazercoin' ||
+          element === 'ruble');
         coinSellArray[userId] = Array.from(minterCoinList);
 
         await bot.sendMessage(userId, 'Вы перейшли в раздел конвертации в сети <b>Minter</>.\n<b>Для обмена доступны только целые суммы!</b>. Оплата комисии производится в монете <b>BIP</b>.', { parseMode: 'html' });
@@ -1866,8 +1878,19 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(bazerCoinList, 'sellBazerExchange') });
         break;
 
+      case 'accept_bazerExchange':
+        bot.deleteMessage(userId, messageId);
+
+        await ControlUserBalance(userId, sellCoin[userId], -amount[userId]);
+        await ControlUserBalance(userId, buyCoin[userId], amount[userId]);
+
+        bot.sendMessage(userId, `Вы успешно обменяли ${amount[userId]} ${sellCoin[userId].toUpperCase()} = ${amount[userId]} ${buyCoin[userId].toUpperCase()}`);
+        sendLog(`Пользователь ${userId} успешно обменял ${amount[userId]} ${sellCoin[userId].toUpperCase()} = ${amount[userId]} ${buyCoin[userId].toUpperCase()}`);
+        break;
+
       case 'minterExchange_accept':
         bot.deleteMessage(userId, messageId);
+
         const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic);
 
         if (!exchange.status) return await bot.sendMessage(userId, `Возникла непредвиденная ошибка! Сообщите администрации.`, { parseMode: 'html' });
@@ -2361,13 +2384,16 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'sellBazerExchange') {
       bot.deleteMessage(userId, messageId);
       sellCoin[userId] = data.split('_')[1];
+      balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
       deleteSelectedCoin(sellCoin[userId], coinSellArray[userId]);
       await bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(coinSellArray[userId], 'buyBazerExchange') });
     }
     else if (data.split('_')[0] === 'buyBazerExchange') {
       bot.deleteMessage(userId, messageId);
-       buyCoin[userId] = data.split('_')[1];
-      await bot.sendMessage(userId, 'Выберите монету которую хотите купить:', { replyMarkup: generateButton(coinSellArray[userId], 'buyBazerExchange') });
+      setState(userId, 35);
+      buyCoin[userId] = data.split('_')[1];
+      bot.sendMessage(userId, `Курс пары обмена 1 ${sellCoin[userId].toUpperCase()} = 1 ${buyCoin[userId].toUpperCase()}\nДоступно для обмена: ${balanceUserCoin[userId]}`);
+      await bot.sendMessage(userId, 'Введите количество конвертации монет:');
     }
     else if (data === 'buyP2P_Page1') {
       bot.deleteMessage(userId, messageId);
