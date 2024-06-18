@@ -205,10 +205,10 @@ bot.on('text', async (msg) => {
       userMail = getInfoUser.user.mail;
     }
 
-    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -227,7 +227,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -254,10 +254,10 @@ bot.on('text', async (msg) => {
               //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
               // );
 
-              await BalanceUserModel.updateOne(
-                { id: u.id },
-                JSON.parse(`{ "$set" : { "main.cashbsc": "0", "hold.cashbsc": "0", "main.minterBazercoin": "0", "hold.minterBazercoin": "0", "main.ruble": "0", "hold.ruble": "0" } }`)
-              );
+            //   await BalanceUserModel.updateOne(
+            //     { id: u.id },
+            //     JSON.parse(`{ "$set" : { "main.cashbsc": "0", "hold.cashbsc": "0", "main.minterBazercoin": "0", "hold.minterBazercoin": "0", "main.ruble": "0", "hold.ruble": "0" } }`)
+            //   );
             });
           } catch (error) {
             console.error(error);
