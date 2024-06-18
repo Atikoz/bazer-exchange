@@ -83,8 +83,8 @@
   "emailRequiredMessage": "To continue using the bot, you must specify your email address in your account settings.",
   "notSpecified": "Not specified",
   "support": "Support",
-  "supportText": "For feedback write to support @proofreader987 or @perchilk"
-
+  "supportText": "For feedback write to support @proofreader987 or @perchilk",
+  "showMnemonic": "Get seed phrase"
 
 
 }

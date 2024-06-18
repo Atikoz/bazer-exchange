@@ -205,10 +205,10 @@ bot.on('text', async (msg) => {
       userMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -227,7 +227,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -331,7 +331,7 @@ bot.on('text', async (msg) => {
           return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"));
         }
 
-        const comission = (await TransferCommission(decimalMnemonics, decimalWallet, coin[userId], amount[userId])).data.result.result.amount / 1e18;
+        const comission = await TransferCommission(decimalMnemonics, decimalWallet, coin[userId], amount[userId]);
         sum[userId] = amount[userId] + (comission * 2);
 
         if (amount[userId] < minimalWithdrawAmount[userId]) {
@@ -349,7 +349,7 @@ bot.on('text', async (msg) => {
       case 11:
         setState(userId, 0);
         wallet[userId] = text;
-        await bot.sendMessage(userId, `${getTranslation(selectedLang, 'withdrawalAmountWithFeePrompt')} ${sum[userId]} ${coin[userId].toUpperCase()}\n${getTranslation(selectedLang, 'walletAddress')} ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang)(selectedLang) });
+        await bot.sendMessage(userId, `${getTranslation(selectedLang, 'withdrawalAmountWithFeePrompt')} ${sum[userId]} ${coin[userId].toUpperCase()}\n${getTranslation(selectedLang, 'walletAddress')} ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
         break;
 
       case 12:
@@ -462,7 +462,7 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
         };
         sum[userId] = Number(text);
 
-        const rateStockExchange = await getCurrencyRate(coin[userId], currencyP2P[userId]);
+        const rateStockExchange = getCurrencyRate(coin[userId], currencyP2P[userId]);
 
         if (orderType[userId] === 'buy') {
           bot.sendMessage(userId, `${getTranslation(selectedLang, 'exchangeRate')} 1 ${coin[userId]} ≈ <code>${rateStockExchange}</code> ${currencyP2P[userId]}. ${getTranslation(selectedLang, 'purchaseBuyCoinRate')} <i>0.0001</i>:`, { parseMode: "html" });
@@ -1077,6 +1077,7 @@ bot.on('callbackQuery', async (msg) => {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
     const userMail = getInfoUser.user.mail;
+    const userMnemonic = getInfoUser.userWallet.mnemonics;
     const arrayCoinList = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
     const firstPage = arrayCoinList.slice(0, 20);
 
@@ -1970,6 +1971,12 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
       case 'support':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, getTranslation(selectedLang, 'supportText'));
+        break;
+
+      case 'showMnemonic':
+        bot.deleteMessage(userId, messageId);
+        MailService.sendMnemonicEmail(userMail, userMnemonic);
+        bot.sendMessage(userId, 'Ваша seed фраза отправлена вам на почту.');
         break;
 
       default:

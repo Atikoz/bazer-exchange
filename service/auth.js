@@ -18,7 +18,7 @@ class AuthenticationService {
         const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
         const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
         const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
-        const createMinter = await createMinterWallet(createDelWallet.del.mnemonics)
+        const createMinter = createMinterWallet(createDelWallet.del.mnemonics)
         if (createDelWallet.status != 'ok') return this.Authentication(userId);
 
         await UserModel.create({
@@ -56,7 +56,7 @@ class AuthenticationService {
           },
           minter: {
             address: createMinter.address,
-            privateKey: createMinter.privateKeyHex
+            privateKey: createMinter.privateKey
           }
         });
 
@@ -75,6 +75,9 @@ class AuthenticationService {
             bnb: 0,
             usdtbsc: 0,
             bipkakaxa: 0,
+            cashbsc: 0,
+            minterBazercoin: 0,
+            ruble: 0,
             cashback: 0,
             del: 0,
             ddao: 0,
@@ -153,6 +156,9 @@ class AuthenticationService {
             bnb: 0,
             usdtbsc: 0,
             bipkakaxa: 0,
+            cashbsc: 0,
+            minterBazercoin: 0,
+            ruble: 0,
             cashback: 0,
             del: 0,
             ddao: 0,

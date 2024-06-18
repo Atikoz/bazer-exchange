@@ -3,7 +3,7 @@ const getAllCoinRate = require("../function/getCurrencyRate");
 class GetRate {
   constructor() {
     this.rateObj = null;  // Зберігаємо останні дані getAllCoinRate
-    this.updateInterval = 15 * 60 * 1000;  // Оновлюємо кожні 15 хвилин
+    this.updateInterval = 30 * 60 * 1000;  // Оновлюємо кожні 30 хвилин
     this.updateRateObj();  // Викликаємо один раз при створенні об'єкту
     setInterval(() => this.updateRateObj(), this.updateInterval);  // Оновлюємо по інтервалу
   }
@@ -28,7 +28,7 @@ class GetRate {
     }
   };
 
-  getCurrencyRate = async (coin, currency) => {
+  getCurrencyRate = (coin, currency) => {
     try {
       const currObj = this.rateObj[currency.toLowerCase()];
 

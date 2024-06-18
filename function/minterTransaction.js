@@ -24,7 +24,6 @@ class MinterTransaction {
     } catch (error) {
       console.error(error.response.data);
       return { status: false, error: error.response.data.error.message };
-
     }
   };
 

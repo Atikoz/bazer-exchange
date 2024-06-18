@@ -17,8 +17,6 @@ const generateCounterOrderLiqPool = async () => {
 
   for (const pool of liquidityPools) {
     for (const order of ordersSpotTrade) {
-      console.log(pool);
-      console.log(order);
       const poolMarketRate = await getCoinRate(pool.firstCoin, pool.secondCoin);
       const roundedRateClosing = 1 / poolMarketRate;
       const spreadPercentage = 5; // % разброса

@@ -27,6 +27,7 @@ class ExchangeRateCoin {
       console.error();
     }
   }
+  
 }
 
 module.exports = new ExchangeRateCoin;

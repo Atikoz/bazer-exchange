@@ -19,7 +19,7 @@ const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
 ]);
 
 const settingsIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'changeLang'), { callback: 'change_lang' })],
+  [bot.inlineButton(getTranslation(lang, 'changeLang'), { callback: 'change_lang' }), bot.inlineButton(getTranslation(lang, 'showMnemonic'), { callback: 'showMnemonic' })],
   [bot.inlineButton(getTranslation(lang, 'changeEmail'), { callback: 'change_Email' })],
   [bot.inlineButton(getTranslation(lang, 'support'), { callback: 'support' })]
 ]);

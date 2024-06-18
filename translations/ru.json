@@ -84,5 +84,6 @@
   "emailRequiredMessage": "Для продолжения пользования ботом необходимо указать адрес электронной почты в настройках вашего аккаунта.",
   "notSpecified": "Не указан",
   "support": "Поддержка",
-  "supportText": "Для обратной связи пишите в поддержку @proofreader987 или @perchilk"
+  "supportText": "Для обратной связи пишите в поддержку @proofreader987 или @perchilk",
+  "showMnemonic": "Получть seed фразу"
 }

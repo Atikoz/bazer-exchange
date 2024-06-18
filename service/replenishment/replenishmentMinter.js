@@ -104,7 +104,7 @@ class ReplenishmentMinter {
     } catch (error) {
       // console.error(error)
       return
-    }
+    }   
   };
 
   balanceCheckAdminWallet = async () => {

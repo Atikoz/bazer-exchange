@@ -1,7 +1,7 @@
 const config = require('../../config.js');
 const UserManagement = require('../userManagement.js');
 const BalanceUserModel = require('../../model/modelBalance.js');
-const { getMpxXfiTransactions, CheckBalance, SendCoin, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
+const { getMpxXfiTransactions, CheckBalance, SendMpxXfi, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
 const MpxXfiReplenishment = require('../../model/modelMpxXfiReplenishment.js');
 const HashSendAdminComission = require('../../model/modelHashSendAdminComission.js');
 const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions.js');
@@ -51,7 +51,7 @@ class ReplenishmentMpxXfi {
           console.log('BLANCE MPX:', balanceMpx);
 
           if (coin === 'xfi' && balanceMpx < 1) {
-            const hashTransferComission = await sleep(5000).then(async () => await SendCoin(config.adminMnemonicMinePlex, userWallet, 'mpx', 1));
+            const hashTransferComission = await sleep(5000).then(async () => await SendMpxXfi(config.adminMnemonicMinePlex, userWallet, 'mpx', 1));
 
             await HashSendAdminComission.create({
               id: userId,
@@ -70,10 +70,10 @@ class ReplenishmentMpxXfi {
           let hashTransactionAdminWallet;
 
           if (coin === 'mpx') {
-            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount - 1));
+            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendMpxXfi(userMnemonic, config.adminWalletMpxXfi, coin, amount - 1));
             console.log('mpx send admin wallet');
           } else {
-            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendCoin(userMnemonic, config.adminWalletMpxXfi, coin, amount));
+            hashTransactionAdminWallet = await sleep(5000).then(async () => await SendMpxXfi(userMnemonic, config.adminWalletMpxXfi, coin, amount));
             console.log('xfi send admin wallet');
           }
 
@@ -111,7 +111,7 @@ class ReplenishmentMpxXfi {
   //         {status: 'Done'}
   //       );
 
-  //       const hashTransactionAdminWallet = await SendCoin(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
+  //       const hashTransactionAdminWallet = await SendMpxXfi(userMnemonic, config.adminWalletMpxXfi, transaction.coin, transaction.amount);
 
   //       await TransactionMpxXfiStatus.create({
   //         id: transaction.id,
