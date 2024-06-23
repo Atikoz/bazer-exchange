@@ -91,7 +91,6 @@ const getTranslation = require('./translations/index.js');
 const MailService = require('./function/mail/serviceMail.js');
 const isValidEmail = require('./validator/isValidEmail.js');
 
-
 mongoose.connect('mongodb://127.0.0.1/test');
 
 const bot = new TeleBot(config.token);
@@ -182,7 +181,8 @@ const minimalSum = {
   bipkakaxa: 30,
   cashbsc: 500,
   minterBazercoin: 50,
-  ruble: 5
+  ruble: 5,
+  bazerhub: 0.5
 };
 
 const choice = ['accept', 'cancel'];
@@ -195,20 +195,20 @@ bot.on('text', async (msg) => {
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
     let selectedLang;
-    let userMail;
+    let selectedMail;
 
     if (getInfoUser === "not user") {
       selectedLang = 'eng';
-      userMail = null;
+      selectedMail = null;
     } else {
       selectedLang = getInfoUser.user.lang;
-      userMail = getInfoUser.user.mail;
+      selectedMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -227,7 +227,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -254,10 +254,10 @@ bot.on('text', async (msg) => {
               //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
               // );
 
-              //   await BalanceUserModel.updateOne(
-              //     { id: u.id },
-              //     JSON.parse(`{ "$set" : { "main.cashbsc": "0", "hold.cashbsc": "0", "main.minterBazercoin": "0", "hold.minterBazercoin": "0", "main.ruble": "0", "hold.ruble": "0" } }`)
-              //   );
+                await BalanceUserModel.updateOne(
+                  { id: u.id },
+                  JSON.parse(`{ "$set" : { "main.bazerhub": "0", "hold.bazerhub": "0" } }`)
+                );
             });
           } catch (error) {
             console.error(error);
@@ -272,8 +272,8 @@ bot.on('text', async (msg) => {
         setState(userId, 0);
         let userMail = '';
 
-        if (userMail) {
-          userMail = `<code>${userMail}</code>`;
+        if (selectedMail) {
+          userMail = `<code>${selectedMail}</code>`;
         } else {
           userMail = getTranslation(selectedLang, 'notSpecified');
         }
@@ -682,6 +682,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             (coin[userId] === 'bipkakaxa' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'cashbsc' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'ruble' && getInfoUser.userBalance.main.bip < 70) ||
+            (coin[userId] === 'bazerhub' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'minterBazercoin' && getInfoUser.userBalance.main.bip < 70)) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
@@ -732,6 +733,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             coin[userId] === 'bipkakaxa' ||
             coin[userId] === 'cashbsc' ||
             coin[userId] === 'ruble' ||
+            coin[userId] === 'bazerhub' ||
             coin[userId] === 'minterBazercoin') {
             await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 70 BIP\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
@@ -896,6 +898,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             coin[userId] === 'usdtbsc' ||
             coin[userId] === 'cashbsc' ||
             coin[userId] === 'ruble' ||
+            coin[userId] === 'bazerhub' ||
             coin[userId] === 'minterBazercoin') {
             let sendBipResult;
 
@@ -1098,6 +1101,7 @@ bot.on('callbackQuery', async (msg) => {
       `CASHBSC: ${circumcisionAmount(getInfoUser.userBalance.main.cashbsc)}`,
       `BAZERCOIN (Minter): ${circumcisionAmount(getInfoUser.userBalance.main.minterBazercoin)}`,
       `RUBLE: ${circumcisionAmount(getInfoUser.userBalance.main.ruble)}`,
+      `BAZERHUB: ${circumcisionAmount(getInfoUser.userBalance.main.bazerhub)}`,
       `MINE: ${circumcisionAmount(getInfoUser.userBalance.main.mine)}`,
       `PLEX: ${circumcisionAmount(getInfoUser.userBalance.main.plex)}`,
       `MPX: ${circumcisionAmount(getInfoUser.userBalance.main.mpx)}`,
@@ -1841,6 +1845,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
             element === 'xfi' ||
             element === 'cashbsc' ||
             element === 'minterBazercoin' ||
+            element === 'bazerhub' ||
             element === 'ruble')
         );
 
@@ -1977,7 +1982,6 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         bot.deleteMessage(userId, messageId);
 
         if (!userMail) return bot.sendMessage(userId, 'У вас не указаная электронная почта, пожалуйста укажите её перейдя в настройки.');
-
 
         MailService.sendMnemonicEmail(userMail, userMnemonic);
         bot.sendMessage(userId, 'Ваша seed фраза отправлена вам на почту.');
@@ -2177,6 +2181,7 @@ bot.on('callbackQuery', async (msg) => {
         data.split('_')[1] === 'bipkakaxa' ||
         data.split('_')[1] === 'cashbsc' ||
         data.split('_')[1] === 'minterBazercoin' ||
+        data.split('_')[1] === 'bazerhub' ||
         data.split('_')[1] === 'ruble') {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minter.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       } else {
@@ -2224,6 +2229,7 @@ bot.on('callbackQuery', async (msg) => {
         (data.split('_')[1] === 'hub') ||
         (data.split('_')[1] === 'bipkakaxa') ||
         (data.split('_')[1] === 'cashbsc') ||
+        (data.split('_')[1] === 'bazerhub') ||
         (data.split('_')[1] === 'ruble') ||
         (data.split('_')[1] === 'minterBazercoin') ?
         delCoin = false : delCoin = true;
@@ -2278,6 +2284,7 @@ bot.on('callbackQuery', async (msg) => {
         data.split('_')[1] === 'usdtbsc' ||
         data.split('_')[1] === 'bipkakaxa' ||
         data.split('_')[1] === 'cashbsc' ||
+        data.split('_')[1] === 'bazerhub' ||
         data.split('_')[1] === 'ruble' ||
         data.split('_')[1] === 'minterBazercoin') {
         try {

@@ -67,13 +67,15 @@ class MinterTransaction {
 
   getTransaction = async (address) => {
     try {
+      if (!address) return []
+
       const request = await axios.get(`https://explorer-api.minter.network/api/v2/addresses/${address}/transactions`);
 
       const arrayTx = request.data.data;
 
       return arrayTx
     } catch (error) {
-      console.error(error)
+      console.error('get transaction minter', error.message)
     }
   };
 

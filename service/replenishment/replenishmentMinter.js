@@ -25,7 +25,8 @@ class ReplenishmentMinter {
         BIPKAKAXA: 30,
         CASHBSC: 500,
         BAZERCOIN: 50,
-        RUBLE: 5
+        RUBLE: 5,
+        BAZERHUB: 0.5
       };
 
       const userTransactionArr = await sleep(5000).then(async () => await getTransaction(userAddress));
@@ -34,6 +35,8 @@ class ReplenishmentMinter {
 
         const coin = transaction.data.coin.symbol;
         const minimumAmount = minimumAmounts[coin];
+        console.log('coin', coin)
+
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
@@ -45,7 +48,8 @@ class ReplenishmentMinter {
             coin === 'BIPKAKAXA' ||
             coin === 'CASHBSC' ||
             coin === 'BAZERCOIN' ||
-            coin === 'RUBLE') &&
+            coin === 'RUBLE' ||
+            coin === 'BAZERHUB') &&
           transaction.data.to === userAddress &&
           +transaction.data.value >= minimumAmount;
 
