@@ -28,6 +28,7 @@ const generateCounterOrderLiqPool = async () => {
         order.rate <= roundedRateClosing * (1 + spreadPercentage / 100)
       ) {
         let sumPool = 0;
+        const logMessage = [];
         pool.poolUser.forEach(el => sumPool += el.amountFirstCoin );
 
 
@@ -36,11 +37,17 @@ const generateCounterOrderLiqPool = async () => {
           const profitAdmin = (order.comission / 100) * 15;
           const profitInvestors = order.comission - profitAdmin;
           await PoolProfitManagement(1511153147, profitAdmin);
+          logMessage.push(` Пользователю 1511153147 начислено ${profitAdmin} CASHBACK за вознаграждение в пуле,`);
+          sendMessage(1511153147, `Вам начислено ${profitAdmin} CASHBACK за вознаграждение в пуле`)
 
           for (let i = 0; i < pool.poolUser.length; i++) {
             const investorPercent = PercentInvestor(sumPool, pool.poolUser[i].amountFirstCoin);
             const investorProfit = ProfitInvestor(investorPercent, profitInvestors);
             await PoolProfitManagement(pool.poolUser[i].id, investorProfit);
+            logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} CASHBACK за вознаграждение в пуле,`);
+            sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} CASHBACK за вознаграждение в пуле`)
+
+
   
             await SubtractFirstCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, order.buyAmount);
             await DistributeSecondCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, order.sellAmount);
@@ -68,7 +75,9 @@ const generateCounterOrderLiqPool = async () => {
 
           sendMessage(order.id, `Ордер №${order.orderNumber} был выполнен ✅.`);
           sendLogs(`Ордер №${order.orderNumber} был выполнен ✅.`);
-          sendLogs(`Была выполнена торговля через пул ликвидности ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}.`)
+          sendLogs(`Была выполнена торговля через пул ликвидности ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}.`);
+          sendLogs(logMessage.join('\n'));
+
 
         } else {
           const buySum = sumPool / order.rate;
