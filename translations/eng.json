@@ -84,7 +84,10 @@
   "notSpecified": "Not specified",
   "support": "Support",
   "supportText": "For feedback write to support @proofreader987 or @perchilk",
-  "showMnemonic": "Get seed phrase"
-
+  "showMnemonic": "Get seed phrase",
+  "instructions": "Instructions 📄",
+  "instructionsMenu": "Select the desired section:",
+  "instructionsInvestInLiqPool": "Investing in a liquidity pool",
+  "textSendingInstructions": "Video instructions are being sent, please wait..."
 
 }

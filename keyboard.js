@@ -3,13 +3,13 @@ const config = require('./config.js');
 const getTranslation = require('./translations/index.js');
 
 
-const bot = new TeleBot (config.token);
+const bot = new TeleBot(config.token);
 
 const RM_Home = (lang = "eng") => bot.keyboard([
   [getTranslation(lang, "myAccount"), getTranslation(lang, "spotTrading")],
   [getTranslation(lang, "converting"), getTranslation(lang, "staking")],
   ['P2P', getTranslation(lang, "referrals")],
-  [getTranslation(lang, "settings")]
+  [getTranslation(lang, "settings"), getTranslation(lang, "instructions")]
 ], { resize: true });
 
 const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
@@ -48,17 +48,17 @@ const typeP2POrder = bot.inlineKeyboard([
 ]);
 
 const cabinetIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'deposit'), { callback: 'user_replenishment' }), bot.inlineButton(getTranslation(lang, 'withdraw'), {callback: 'user_withdrawal' })],
+  [bot.inlineButton(getTranslation(lang, 'deposit'), { callback: 'user_replenishment' }), bot.inlineButton(getTranslation(lang, 'withdraw'), { callback: 'user_withdrawal' })],
   [bot.inlineButton(getTranslation(lang, 'balance'), { callback: 'balance' })]
 ]);
 
 const balanceStartPageIK = bot.inlineKeyboard([
-  [bot.inlineButton('Далее 🔜', {callback: 'balance_page2' })],
+  [bot.inlineButton('Далее 🔜', { callback: 'balance_page2' })],
   [bot.inlineButton('Главное меню', { callback: 'main_menu' })]
 ]);
 
 const balancePage2IK = bot.inlineKeyboard([
-  [bot.inlineButton('Назад 🔙', { callback: 'balance' }), bot.inlineButton('Далее 🔜', {callback: 'balance_page3' })],
+  [bot.inlineButton('Назад 🔙', { callback: 'balance' }), bot.inlineButton('Далее 🔜', { callback: 'balance_page3' })],
   [bot.inlineButton('Главное меню', { callback: 'main_menu' })]
 ]);
 
@@ -151,6 +151,13 @@ const adminPanelIK = bot.inlineKeyboard([
   [bot.inlineButton('Удалить найденую транзакцию', { callback: 'deleteUserHash' })]
 ]);
 
+const instructionsMenuIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'liquidityPools'), { callback: 'instructions_liquidityPools' }), bot.inlineButton('P2P', { callback: 'instructions_p2p' })]
+]);
+
+const instructionsLiuidityPoolMenuIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'instructionsInvestInLiqPool'), { callback: 'instructions_investIn_LiqPool' })]
+]);
 
 
 module.exports = {
@@ -181,9 +188,11 @@ module.exports = {
   liquidityPoolsIK,
   balanceStartPageIK,
   filterSpotOrdersIK,
+  instructionsMenuIK,
   investInPoolButtonIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
-  filterCompleteSpotOrdersIK
-  
+  filterCompleteSpotOrdersIK,
+  instructionsLiuidityPoolMenuIK
+
 }

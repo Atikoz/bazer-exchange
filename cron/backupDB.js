@@ -1,4 +1,4 @@
-const backupDatabase = require('../function/backupDataBase');
+const backupDatabase = require('../function/backupDatabase');
 const CronJob = require('cron').CronJob;
 
 const backupDB = new CronJob('0 0 * * *', () => {
