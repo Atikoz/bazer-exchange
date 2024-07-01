@@ -209,10 +209,10 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -231,7 +231,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -436,12 +436,12 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
 
       case 18:
         setState(userId, 19);
-        requisites[userId] = Number(text);
+        requisites[userId] = +text;
         bot.sendMessage(userId, getTranslation(selectedLang, 'coinSaleAmountPrompt'));
         break;
 
       case 19:
-        amount[userId] = Number(text);
+        amount[userId] = +text;
         if (isNaN(text)) {
           setState(userId, 0);
           return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
@@ -450,9 +450,13 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
         if (orderType[userId] === 'buy') {
           bot.sendMessage(userId, getTranslation(selectedLang, 'minimumPurchaseAmountBuyPrompt'));
         } else {
-          if (text > getInfoUser.userBalance.main[coin[userId]]) {
+          if (amount[userId] > getInfoUser.userBalance.main[coin[userId]]) {
             setState(userId, 0);
             return bot.sendMessage(userId, getTranslation(selectedLang, 'alertInsufficientFundsWithoutCommission'));
+          }
+          else if (amount[userId] <= 0) {
+            setState(userId, 0);
+            return bot.sendMessage(userId, getTranslation(selectedLang, 'textErrorAmountGreaterThan0'));
           }
 
           bot.sendMessage(userId, getTranslation(selectedLang, 'minimumPurchaseAmountSellPrompt'));
@@ -466,7 +470,11 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
         if (isNaN(text)) {
           setState(userId, 0);
           return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
-        };
+        }
+        else if (+text <= 0) {
+          setState(userId, 0);
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'textErrorAmountGreaterThan0'));
+        }
         sum[userId] = Number(text);
 
         const rateStockExchange = getCurrencyRate(coin[userId], currencyP2P[userId]);
@@ -482,6 +490,11 @@ ${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]}
         setState(userId, 0);
 
         if (isNaN(text)) return bot.sendMessage(userId, getTranslation(selectedLang, 'incorrectNumberAlert'));
+
+        else if (+text <= 0) {
+          setState(userId, 0);
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'textErrorAmountGreaterThan0'));
+        }
 
         userRate[userId] = Number(text);
         orderNumber[userId] = (await CustomP2POrder.countDocuments()) + 1;
