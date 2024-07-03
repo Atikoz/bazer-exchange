@@ -209,10 +209,10 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -231,7 +231,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -1571,8 +1571,8 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'deal_p2p':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
-        // bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)})
+        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)});
+        
         break;
 
       case 'p2pBuy':
@@ -1998,6 +1998,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'parcels_p2p':
         bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, 'посилка');
         break;
 
       case 'change_Email':

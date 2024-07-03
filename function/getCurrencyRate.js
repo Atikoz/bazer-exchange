@@ -7,9 +7,9 @@ const CoinGeckoClient = new CoinGecko();
 const getMinterCoinRate = async () => {
   try {
     const rateHub = {
-      uah: 229.06,
-      try: 189.67,
-      rub: 542.15
+      uah: 140.28,
+      try: 112.40,
+      rub: 303.94
     };
 
     const rateMonsterHub = {
@@ -111,6 +111,12 @@ const getMinterCoinRate = async () => {
         try: rateRuble.try,
         uah: rateRuble.uah,
       },
+
+      bazerhub: {
+        rub: rateHub.rub,
+        try: rateHub.try,
+        uah: rateHub.uah,
+      }
     }
 
     return priceAllCoin
@@ -159,6 +165,12 @@ const getMinterCoinRate = async () => {
         try: 0,
         uah: 0,
       },
+
+      bazerhub: {
+        rub: 0,
+        try: 0,
+        uah: 0,
+      }
     }
   }
 };
@@ -256,7 +268,9 @@ const getAllCoinRate = async () => {
         bipkakaxa: priceMinterCoin.bipkakaxa.rub,
         cashbsc: priceMinterCoin.cashbsc.rub,
         minterBazercoin: priceMinterCoin.minterBazercoin.rub,
-        ruble: priceMinterCoin.ruble.rub
+        ruble: priceMinterCoin.ruble.rub,
+        bazerhub: priceMinterCoin.hub.rub,
+
       },
       uah: {
         cashback: null,
@@ -337,7 +351,8 @@ const getAllCoinRate = async () => {
         bipkakaxa: priceMinterCoin.bipkakaxa.uah,
         cashbsc: priceMinterCoin.cashbsc.uah,
         minterBazercoin: priceMinterCoin.minterBazercoin.uah,
-        ruble: priceMinterCoin.ruble.uah
+        ruble: priceMinterCoin.ruble.uah,
+        bazerhub: priceMinterCoin.hub.uah
       },
       try: {
         cashback: null,
@@ -418,7 +433,9 @@ const getAllCoinRate = async () => {
         bipkakaxa: priceMinterCoin.bipkakaxa.try,
         cashbsc: priceMinterCoin.cashbsc.try,
         minterBazercoin: priceMinterCoin.minterBazercoin.try,
-        ruble: priceMinterCoin.ruble.try
+        ruble: priceMinterCoin.ruble.try,
+        bazerhub: priceMinterCoin.hub.try,
+
       }
     };
 
