@@ -7,9 +7,9 @@ const CoinGeckoClient = new CoinGecko();
 const getMinterCoinRate = async () => {
   try {
     const rateHub = {
-      uah: 140.28,
-      try: 112.40,
-      rub: 303.94
+      uah: 135.40,
+      try: 109.54,
+      rub: 285.16
     };
 
     const rateMonsterHub = {
@@ -25,9 +25,9 @@ const getMinterCoinRate = async () => {
     };
 
     const rateCashbsc = {
-      uah: 0.00057,
-      try: 0.00046,
-      rub: 0.0013
+      uah: 0.0035,
+      try: 0.0028,
+      rub: 0.0075
     };
 
     const rateRuble = {

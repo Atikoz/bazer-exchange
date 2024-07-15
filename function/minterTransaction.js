@@ -3,7 +3,7 @@ const Decimal = require('decimal.js');
 const valueToNumber = require('../helpers/valueToNumber.js');
 const { Minter, TX_TYPE } = require("minter-js-sdk");
 
-const minter = new Minter({ apiType: 'node', baseURL: 'http://api-minter.mnst.club:8843/v2/' });
+const minter = new Minter({ apiType: 'node', baseURL: 'https://api-minter.mnst.club/v2/' });
 
 class MinterTransaction {
   sendMinter = async (address, amount, seed, coin) => {
@@ -81,6 +81,7 @@ class MinterTransaction {
 
   getCoinId = async (coinName) => {
     try {
+      
       const coinId = await minter.getCoinId(coinName.toUpperCase());
 
       return +coinId

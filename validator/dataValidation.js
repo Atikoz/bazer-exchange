@@ -7,17 +7,16 @@ const dataValidation = async (userId, data, coin) => {
     const balanceUser = infoUser.userBalance.main[coin];
 
     if (isNaN(data)) {
-      return { success: false, errorMessage: 'Введено не корректное число!' };
+      throw new Error('Введено не корректное число!');
     }
 
     if (data > balanceUser) {
-      console.log('balance: ', balanceUser, coin);
-      return { success: false, errorMessage: 'На вашем балансе не достаточно средств!' };
+      throw new Error('На вашем балансе не достаточно средств!')
     }
 
     return { success: true };
   } catch (error) {
-    console.error(error)
+    return { success: false, errorMessage: error.message };
   }
 };
 

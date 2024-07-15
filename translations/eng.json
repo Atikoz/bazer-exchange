@@ -89,6 +89,15 @@
   "instructionsMenu": "Select the desired section:",
   "instructionsInvestInLiqPool": "Investing in a liquidity pool",
   "textSendingInstructions": "Video instructions are being sent, please wait...",
-  "textErrorAmountGreaterThan0": "Enter an number greater than 0!"
+  "textErrorAmountGreaterThan0": "Enter an number greater than 0!",
+  "purchasingBazerHub": "Purchasing BazerHub",
+  "mainMenuButton": "Main menu",
+  "mainMenuText": "You are in the main menu!",
+  "tradeButton": "Trade",
+  "chooseSection": "Choose a section:",
+  "operationCancelText": "Operation canceled ❌\nYou are in the main menu.",
+  "acceptBuyBazerhubText": "Your purchase request has been processed. Wait for funds to arrive.",
+  "unexpectedError": "An unexpected error has occurred! Notify the administration.",
+  "minimalAmountBuyBazerHub": "Minimum purchase amount: 500 CASHBSC"
 
 }

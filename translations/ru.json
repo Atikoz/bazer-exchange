@@ -90,5 +90,15 @@
   "instructionsMenu": "Выберите нужный раздел:",
   "instructionsInvestInLiqPool": "Инвестирование в пул ликвидности",
   "textSendingInstructions": "Видеоинструкция отправляется, пожалуйста подождите...",
-  "textErrorAmountGreaterThan0": "Введите число больше чем 0!"
+  "textErrorAmountGreaterThan0": "Введите число больше чем 0!",
+  "purchasingBazerHub": "Покупка BAZERHUB",
+  "mainMenuButton": "Главное меню",
+  "mainMenuText": "Вы в главном меню!",
+  "tradeButton": "Торговля",
+  "chooseSection": "Выберите раздел:",
+  "operationCancelText": "Операция отменена ❌\nВы находитесь в главном меню.",
+  "acceptBuyBazerhubText": "Ваша заявка на покупку взята в обработку. Ожидайте поступления средств.",
+  "unexpectedError": "Возникла непредвиденная ошибка! Сообщите администрации.",
+  "minimalAmountBuyBazerHub": "Минимальная сумма покупки на 500 CASHBSC"
+
 }

@@ -40,6 +40,7 @@ const {
   investInPoolButtonIK,
   instructionsMenuIK,
   instructionsLiuidityPoolMenuIK,
+  RM_Trade,
 } = require('./keyboard.js');
 
 const {
@@ -93,6 +94,7 @@ const getTranslation = require('./translations/index.js');
 const MailService = require('./function/mail/serviceMail.js');
 const isValidEmail = require('./validator/isValidEmail.js');
 const path = require('path');
+const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -320,6 +322,22 @@ bot.on('text', async (msg) => {
 
       case getTranslation(selectedLang, "instructions"):
         bot.sendMessage(userId, getTranslation(selectedLang, 'instructionsMenu'), { replyMarkup: instructionsMenuIK(selectedLang) });
+        break;
+
+      case getTranslation(selectedLang, 'purchasingBazerHub'):
+        setState(userId, 36);
+        balanceUserCoin[userId] = getInfoUser.userBalance.main.cashbsc;
+        userRate[userId] = getCoinRate('cashbsc', 'bazerhub');
+
+        bot.sendMessage(userId, `<b>${getTranslation(selectedLang, 'minimalAmountBuyBazerHub')}!</b>  ${getTranslation(selectedLang, 'rate')}: 1 CASHBSC ≈ <code>${userRate[userId].toFixed(9)}</code> BAZERHUB. ${getTranslation(selectedLang, 'available')}: ${circumcisionAmount(balanceUserCoin[userId])} CASHBSC. ${getTranslation(selectedLang, 'coinSaleAmountPrompt')}`, { parseMode: 'html' });
+       break;
+
+      case getTranslation(selectedLang, "tradeButton"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSection'), { replyMarkup: RM_Trade(selectedLang) });
+        break;
+
+      case getTranslation(selectedLang, "mainMenuButton"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'mainMenuText'), { replyMarkup: RM_Home(selectedLang) })
         break;
 
       default:
@@ -1080,6 +1098,20 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         if (!valid.success) return bot.sendMessage(userId, valid.errorMessage);
 
         bot.sendMessage(userId, `Вы действительно хотите конвертировать ${amount[userId]} ${sellCoin[userId].toUpperCase()} = ${amount[userId]} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: generateButton(choice, 'bazerExchange') });
+        break;
+
+      case 36:
+        setState(userId, 0);
+        amount[userId] = +text;
+        const validDataBuyReward = await dataValidation(userId, amount[userId], 'cashbsc');
+
+        if (!validDataBuyReward.success) return bot.sendMessage(userId, validDataBuyReward.errorMessage);
+
+        if (amount[userId] < 500) return bot.sendMessage(userId, 'Минимальная сумма покупки на 500 CASHBSC!');
+
+        const numberCoinsReceived = amount[userId] * userRate[userId];
+
+        bot.sendMessage(userId, `${amount[userId]} CASHBSC ≈ ${numberCoinsReceived.toFixed(9)} BAZERHUB. Желаете продолжить?`, { replyMarkup: generateButton(choice, 'buyBazerhub') });
         break;
 
       default:
@@ -1943,7 +1975,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
         const exchange = await exchangeMinterTransaction(exchangeRoute[userId], exchangeSellAmount[userId], config.adminMinterMnemonic);
 
-        if (!exchange.status) return await bot.sendMessage(userId, `Возникла непредвиденная ошибка! Сообщите администрации.`, { parseMode: 'html' });
+        if (!exchange.status) return await bot.sendMessage(userId, 'Возникла непредвиденная ошибка! Сообщите администрации.', { parseMode: 'html' });
 
         await bot.sendMessage(userId, `Обмен произошел успешно!\nTxHash: <code>${exchange.data.hash}</code>`, { parseMode: 'html' });
         await ControlUserBalance(userId, sellCoin[userId], -exchangeSellAmount[userId]);
@@ -2038,6 +2070,12 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         break;
 
       case 'instructions_p2p':
+        bot.deleteMessage(userId, messageId);
+
+        const pathVideoInstructionP2P = path.join(__dirname, 'ts/instructions', 'InstructionP2P.MOV');
+
+        bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
+        bot.sendVideo(userId, pathVideoInstructionP2P);
         break;
 
       case 'instructions_investIn_LiqPool':
@@ -2046,6 +2084,28 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
         bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
         bot.sendVideo(userId, pathVideoInstructionInvestLiqPool);
+        break;
+
+      case 'buyBazerhub_accept':
+        bot.deleteMessage(userId, messageId);
+
+        const sendCashbsc = await sendMinter(config.walletBuyRewardMinter, amount[userId], config.adminMinterMnemonic, 'cashbsc');
+
+        if (sendCashbsc.status) {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'acceptBuyBazerhubText'));
+          await ControlUserBalance(userId, 'cashbsc', -amount[userId]);
+          await BuyBazerhubMinter.create({
+            id: userId,
+            hash: sendCashbsc.hash
+          });
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
+        break;
+
+      case 'buyBazerhub_cancel':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, getTranslation(selectedLang, 'operationCancelText'), { replyMarkup: RM_Home(selectedLang) });
         break;
 
       default:
@@ -2139,7 +2199,7 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 13);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
+      const rate = getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
       await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} ≈ <code>${rateExchange[userId]}</code> ${buyCoin[userId].toUpperCase()}. Комиссия сделки составляет 1% от суммы сделки, оплата осуществляется в монете CASHBACK.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена торговля, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
@@ -2842,7 +2902,7 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
     else if (data.split('_')[0] === 'buyMinterExchange') {
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
+      const rate = getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
       const balanceSellCoin = await getBalanceCoin(userId, sellCoin[userId]);
       bot.sendMessage(userId, `Курс 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId]}. Введите количество продажи ${sellCoin[userId].toUpperCase()} (доступно ${balanceSellCoin}):`);

@@ -6,10 +6,15 @@ const getTranslation = require('./translations/index.js');
 const bot = new TeleBot(config.token);
 
 const RM_Home = (lang = "eng") => bot.keyboard([
-  [getTranslation(lang, "myAccount"), getTranslation(lang, "spotTrading")],
+  [getTranslation(lang, "myAccount"), getTranslation(lang, "tradeButton")],
   [getTranslation(lang, "converting"), getTranslation(lang, "staking")],
-  ['P2P', getTranslation(lang, "referrals")],
+  [getTranslation(lang, 'purchasingBazerHub'), getTranslation(lang, "referrals")],
   [getTranslation(lang, "settings"), getTranslation(lang, "instructions")]
+], { resize: true });
+
+const RM_Trade = (lang = "eng") => bot.keyboard([
+  [getTranslation(lang, "spotTrading"), 'P2P'],
+  [getTranslation(lang, "mainMenuButton")]
 ], { resize: true });
 
 const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
@@ -163,6 +168,7 @@ const instructionsLiuidityPoolMenuIK = (lang = 'eng') => bot.inlineKeyboard([
 module.exports = {
   RM_Home,
   typeP2P,
+  RM_Trade,
   payOrder,
   stackingIK,
   currency,

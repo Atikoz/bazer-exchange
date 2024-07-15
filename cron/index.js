@@ -8,6 +8,8 @@ const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron
 const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/mpxXfi/ReplenishmentMpxXfiCheck.js');
 const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/minePlex/ReplenishmentMineCheck.js');
 const backupDB = require('../cron/backupDB.js');
+const rewardMinter = require('./minter/RewardBazerHUB.js');
+const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -36,8 +38,10 @@ checkAdminMpxXfiTransaction.start();
 checkArtrBalance.start();
 checkArtrAdminHash.start();
 
-//BIP
+//Minter
 checkMinterTransaction.start();
+rewardMinter.start();
+accrualPurchasesBuyBazerhub.start();
 
 //backup database
 backupDB.start();

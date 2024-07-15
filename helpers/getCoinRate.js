@@ -16,7 +16,7 @@ class GetRate {
     }
   };
 
-  getCoinRate = async (sellCoin, buyCoin) => {
+  getCoinRate = (sellCoin, buyCoin) => {
     try {
       const result = this.rateObj.rub[sellCoin.toLowerCase()] / this.rateObj.rub[buyCoin.toLowerCase()];
 
