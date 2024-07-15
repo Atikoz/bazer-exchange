@@ -10,6 +10,7 @@ const getUserAllBalanceCoin = require("./getUserAllBalanceCoin");
 
 const accrualRewards = async () => {
   try {
+    console.log('start');
     const rewardsTx = await getMinterRewardsTx();
     const arrayUserBalance = await BalanceUserModel.find();
   
@@ -32,6 +33,8 @@ const accrualRewards = async () => {
         for (const user of users) {
           const userPercent = PercentInvestor(balanceBazerHub, user.amount);
           const userReward = onePercentReward * userPercent;
+
+          if (userReward <= 0) continue
   
           await ControlUserBalance(user.id, 'cashbsc', userReward);
           sendMessage(user.id, `Вам начислено ревард в размере ${userReward} CASHBSC за хранение BazerHub. Спасибо что вы с нами!`)
