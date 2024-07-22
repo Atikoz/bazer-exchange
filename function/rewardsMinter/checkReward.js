@@ -36,9 +36,9 @@ const accrualRewards = async () => {
 
           if (userReward <= 0) continue
   
-          await ControlUserBalance(user.id, 'cashbsc', userReward);
-          sendMessage(user.id, `Вам начислено ревард в размере ${userReward} CASHBSC за хранение BazerHub. Спасибо что вы с нами!`)
-          logMsg.push(`Пользователю ${user.id} начислено ревард в размере ${userReward} CASHBSC за хранение BazerHub`);
+          await ControlUserBalance(user.id, 'usdtbsc', userReward);
+          sendMessage(user.id, `Вам начислено ревард в размере ${userReward} USDTBSC за хранение BazerHub. Спасибо что вы с нами!`)
+          logMsg.push(`Пользователю ${user.id} начислено ревард в размере ${userReward} USDTBSC за хранение BazerHub`);
         }
         sendLogs(logMsg.join('\n'))
         await RewardMinter.create({

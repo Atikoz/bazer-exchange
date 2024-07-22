@@ -27,7 +27,7 @@ const {
   balanceStartPageIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
-  stackingIK,
+  bazerStackingIK,
   filterSpotOrdersIK,
   filterCompleteSpotOrdersIK,
   filterBuyP2PIK,
@@ -40,7 +40,7 @@ const {
   investInPoolButtonIK,
   instructionsMenuIK,
   instructionsLiuidityPoolMenuIK,
-  RM_Trade,
+  RM_Trade
 } = require('./keyboard.js');
 
 const {
@@ -211,10 +211,10 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    // const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
+    // const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
+    // const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
+    // const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -233,7 +233,7 @@ bot.on('text', async (msg) => {
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
+    // if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
 
 
     switch (text) {
@@ -309,7 +309,7 @@ bot.on('text', async (msg) => {
         break;
 
       case getTranslation(selectedLang, "staking"):
-        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: stackingIK(selectedLang) });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: bazerStackingIK(selectedLang) });
         break;
 
       case '/admin':
@@ -2028,9 +2028,9 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         bot.sendMessage(userId, 'Выберите язык:', { replyMarkup: languageIK });
         break;
 
-      case 'parcels_p2p':
+      case 'goods_p2p':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, 'посилка');
+        bot.sendMessage(userId, getTranslation(selectedLang, 'goodsP2Ptext'), { replyMarkup: bazerStackingIK(selectedLang) });
         break;
 
       case 'change_Email':

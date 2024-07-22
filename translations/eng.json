@@ -64,8 +64,10 @@
   "p2pDealButton": "P2P Deal",
   "p2pTypeText": "Select the type to use P2P:",
   "p2pDealMenuText": "Select deal type:",
-  "p2pParcels": "Р2Р parcels",
-  "p2pLoans": "Р2Р loans",
+  "P2PGoods": "P2P goods",
+  "p2pLoans": "P2P loans",
+  "digitalGoods": "Digital goods",
+  "physicalGoods": "Physical goods",
   "exchangeRate": "Exchange rate:",
   "purchaseBuyCoinRate": "Enter the coin purchase rate, the rate must be in the style",
   "purchaseSellCoinRate": "Enter the coin sales rate, the rate must be in the style",
@@ -98,6 +100,8 @@
   "operationCancelText": "Operation canceled ❌\nYou are in the main menu.",
   "acceptBuyBazerhubText": "Your purchase request has been processed. Wait for funds to arrive.",
   "unexpectedError": "An unexpected error has occurred! Notify the administration.",
-  "minimalAmountBuyBazerHub": "Minimum purchase amount: 500 CASHBSC"
+  "minimalAmountBuyBazerHub": "Minimum purchase amount: 500 CASHBSC",
+  "goodsP2Ptext": "All products are listed on the marketplace in BAZER STAKING WALLET. This service carries out financial transactions between users within a web browser."
+
 
 }

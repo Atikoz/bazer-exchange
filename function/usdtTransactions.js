@@ -1,7 +1,7 @@
-const axios = require ("axios");
-const ethers = require ("ethers");
-const TronWeb = require ("tronweb");
-const { round } = require ("mathjs");
+const axios = require("axios");
+const ethers = require("ethers");
+const TronWeb = require("tronweb");
+const { round } = require("mathjs");
 const config = require('../config.js');
 
 
@@ -9,25 +9,37 @@ const getBalanceAddressTronNet = async (address) => {
   try {
     const options = {
       method: 'get',
-      url: `https://tron.p2p.bazerwallet.com/tron-client/api/v1/getBalance?address=${address}`,
-      headers: { }
+      url: `https://apilist.tronscanapi.com/api/accountv2?address=${address}`,
+      headers: {}
     };
-  
+
     const response = await axios(options);
     const objectTron = response.data.data.tokenBalances.find(t => t.tokenAbbr === "trx");
     // const objectBazer = response.data.trc20token_balances.find(t => t.tokenAbbr === "BZR");
     const objectUsdt = response.data.data.trc20token_balances.find(t => t.tokenAbbr === "USDT");
-  
-    if (objectUsdt != undefined) return {
-        balanceTron: Number(objectTron.amount),
+
+    if (objectUsdt !== undefined && objectTron !== undefined) {
+      return {
+        balanceTron: +objectTron.amount,
         balanceUsdt: objectUsdt.balance / 1e6,
+      };
+    } else if (objectTron !== undefined) {
+      return {
+        balanceUsdt: 0,
+        balanceTron: +objectTron.amount,
+      };
+    } else {
+      return {
+        balanceUsdt: 0,
+        balanceTron: 0,
+      };
     }
+  } catch (error) {
+    console.error(error.message);
     return {
       balanceUsdt: 0,
-      balanceTron: Number(objectTron.amount),
+      balanceTron: 0,
     };
-  } catch (error) {
-    console.error(error)
   }
 };
 
@@ -40,9 +52,10 @@ const getBalanceTron = async (address, privateKey, urlApi = config.urlApiTronMai
     let tronWeb = new TronWeb(fullNode, solidityNode, eventServer, privateKey);
 
     const balance = await tronWeb.trx.getBalance(address);
-    return balance/1e6;
+    return balance / 1e6;
   } catch (error) {
-    console.error(error)
+    console.error(error.message);
+    return 0
   }
 };
 
@@ -60,8 +73,8 @@ const TransferTronNet = async (privateKey, contract, addressTo, amount, fee = 30
     let result = await instance.transfer(addressTo, `${amount}`).send({ feeLimit: valueToSum(fee) });
     console.log("TransferTronNetResult: ", result);
     return result;
-  } catch (e) {
-    console.log("TransferTronNetError: ", e);
+  } catch (error) {
+    console.log("TransferTronNetError: ", error.message);
   }
 };
 
@@ -76,11 +89,12 @@ const TransferTronwebTrx = async (privateKey, addressFrom, addressTo, amount, ur
     const tradeobj = await tronWeb.transactionBuilder.sendTrx(tronWeb.address.toHex(addressTo), amount, tronWeb.address.toHex(addressFrom));
     const signedtxn = await tronWeb.trx.sign(tradeobj, privateKey);
     const receipt = await tronWeb.trx.sendRawTransaction(signedtxn);
-    if (!receipt.result)
-      return new Error('Непредвиденная ошибка!');
+
+    if (!receipt.result) return new Error('Непредвиденная ошибка!');
+
     return receipt;
   } catch (error) {
-    return new Error(error);
+    console.error(error.message);
   }
 };
 
@@ -107,20 +121,20 @@ const getTransaction = async (address) => {
     const response = await axios({
       method: 'get',
       url: `https://apilist.tronscanapi.com/api/token_trc20/transfers?toAddress=${address}`,
-      headers: { }
+      headers: {}
     });
 
     const transactions = response.data.token_transfers;
-    console.log( `кошелек: `, address);
-    console.log( `количество транзакций: ${transactions.length}`);
+    console.log(`кошелек: `, address);
+    console.log(`количество транзакций: ${transactions.length}`);
     if (transactions.length === 0) return getTransactionsData;
-  
+
     await Promise.all(transactions.map(transaction => {
       const hash = transaction.transaction_id;
       // const amount = transaction.quant;
       const contractRet = transaction.contractRet;
       // const contractType = transaction.contract_address;
-  
+
       // if (contractType === 1) {
       //   getTransactionsData.push({
       //     hash: hash,
@@ -130,8 +144,8 @@ const getTransaction = async (address) => {
       //     amount: amount / 1e6,
       //   });
       // }
-  
-       
+
+
       if (transaction.contract_address === "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t") {
         getTransactionsData.push({
           hash: hash,
@@ -153,7 +167,8 @@ const getTransaction = async (address) => {
     }));
     return getTransactionsData;
   } catch (error) {
-    console.error(error)
+    console.error(error.message);
+    return []
   };
 };
 

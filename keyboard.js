@@ -44,7 +44,11 @@ const tradeP2PMenuIK = (lang = 'eng') => bot.inlineKeyboard([
 ]);
 
 const p2pBetType = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'p2pParcels'), { callback: 'parcels_p2p' }), bot.inlineButton(getTranslation(lang, 'p2pLoans'), { callback: 'loans_p2p' })]
+  [bot.inlineButton(getTranslation(lang, 'P2PGoods'), { callback: 'goods_p2p' }), bot.inlineButton(getTranslation(lang, 'p2pLoans'), { callback: 'loans_p2p' })]
+]);
+
+const p2pGoodsType = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'digitalGoods'), { callback: 'digitalGoods_p2p' }), bot.inlineButton(getTranslation(lang, 'physicalGoods'), { callback: 'physicalGoods_p2p' })]
 ]);
 
 const typeP2POrder = bot.inlineKeyboard([
@@ -114,8 +118,8 @@ const buyerPayOrder = [
   'Done', 'Cancel'
 ];
 
-const stackingIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'stakingAddText'), { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
+const bazerStackingIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton('BAZER STAKING WALLET', { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([
@@ -170,11 +174,12 @@ module.exports = {
   typeP2P,
   RM_Trade,
   payOrder,
-  stackingIK,
+  bazerStackingIK,
   currency,
   settingsIK,
   languageIK,
   tradeP2PMenuIK,
+  p2pGoodsType,
   p2pBetType,
   cabinetIK,
   exchangeIK,
