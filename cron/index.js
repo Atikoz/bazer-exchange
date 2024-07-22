@@ -21,9 +21,9 @@ checkOrders.start();
 checkUserTransaction.start();
 checkUserExchangeTransaction.start();
 
-// //USDT
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
+//USDT
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
 
 //MINE PLEX
 checkUserMinePlexTransaction.start();
