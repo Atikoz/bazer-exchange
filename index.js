@@ -214,7 +214,6 @@ bot.on('text', async (msg) => {
 
     
     const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    console.log(checkUserSubscribe);
 
     if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
 
