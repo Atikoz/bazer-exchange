@@ -95,6 +95,7 @@ const MailService = require('./function/mail/serviceMail.js');
 const isValidEmail = require('./validator/isValidEmail.js');
 const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
+const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -211,10 +212,11 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const p2pChatMember = await bot.getChatMember('@p2plogss', userId);
-    const bazerChatMember = await bot.getChatMember('@linkproject7765', userId);
-    const p2pChannelInclude = !(p2pChatMember.status === 'member' || p2pChatMember.status === 'administrator' || p2pChatMember.status === 'creator');
-    const bazerChannelInclude = !(bazerChatMember.status === 'member' || bazerChatMember.status === 'administrator' || bazerChatMember.status === 'creator');
+    
+    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    console.log(checkUserSubscribe);
+
+    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -232,9 +234,6 @@ bot.on('text', async (msg) => {
     }
 
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
-
-    if (p2pChannelInclude && bazerChannelInclude) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnfolowChanel'));
-
 
     switch (text) {
       case '/update':

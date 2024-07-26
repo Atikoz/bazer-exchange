@@ -5,7 +5,7 @@ const config = require('../../config.js');
 const TransactionMinterStatus = require('../../model/modelMinterStatusTransaction.js');
 const BalanceUserModel = require('../../model/modelBalance.js');
 const sendLogs = require('../../helpers/sendLog.js');
-const sendMessage = require('../../helpers/tgFunction.js');
+const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
 
 
@@ -40,7 +40,7 @@ class ReplenishmentMinter {
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
-           (coin === 'BIP' ||
+          (coin === 'BIP' ||
             coin === 'HUB' ||
             coin === 'MONSTERHUB' ||
             coin === 'BNB' ||
@@ -95,31 +95,31 @@ class ReplenishmentMinter {
             })
           }
 
-            await MinterReplenishment.create({
-              id: id,
-              hash: transaction.hash,
-              amount: transaction.data.value,
-              coin: coin
-            });
+          await MinterReplenishment.create({
+            id: id,
+            hash: transaction.hash,
+            amount: transaction.data.value,
+            coin: coin
+          });
 
-            console.log('minter hash model created');
+          console.log('minter hash model created');
         }
       });
     } catch (error) {
       // console.error(error)
       return
-    }   
+    }
   };
 
   balanceCheckAdminWallet = async () => {
     try {
       const adminTransactions = (await TransactionMinterStatus.find()).filter(tx => tx.status !== 'Done');
       if (adminTransactions.length === 0) return
-      
+
       adminTransactions.forEach(async (transaction) => {
         const resultTx = await sleep(5000).then(async () => await checkMinterHash(transaction.hash));
         let coin = transaction.coin;
-  
+
         if (resultTx.code === "0") {
           await TransactionMinterStatus.updateOne(
             { hash: transaction.hash },
@@ -139,7 +139,7 @@ class ReplenishmentMinter {
               { id: transaction.id },
               { $inc: { [`main.${coin.toLowerCase()}`]: transaction.amount } }
             );
-    
+
             sendMessage(transaction.id, `Ваш счет был пополнен на ${transaction.amount} ${coin.toUpperCase()}`);
             sendLogs(`Пользователь ${transaction.id} пополнил счет на ${transaction.amount} ${coin.toUpperCase()}`);
           }

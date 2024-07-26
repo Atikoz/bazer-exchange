@@ -7,4 +7,17 @@ const sendMessage = (id, message) => {
   bot.sendMessage(id, message, { parseMode: 'html' });
 };
 
-module.exports = sendMessage;
+const getChatMember = async (channel, userId) => {
+  try {
+    const a = await bot.getChatMember(channel, userId).catch((e) => { console.log('channel', channel, 'error', e) });
+    console.log(channel, a);
+    return a
+  } catch (error) {
+    console.log(error)
+  }
+};
+
+module.exports = {
+  sendMessage,
+  getChatMember
+};

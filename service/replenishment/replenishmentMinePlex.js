@@ -8,7 +8,7 @@ const HashSendAdminComission = require('../../model/modelHashSendAdminComission.
 const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions.js');
 const { SendCoin, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
 const sendLog = require('../../helpers/sendLog.js');
-const sendMessage = require('../../helpers/tgFunction.js');
+const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
 
 const minimalReplenishment = {
@@ -22,7 +22,7 @@ class ReplenishmentMinePlex {
     const userWallet = getInfoUser.userWallet.minePlex.address;
     const userKey = getInfoUser.userWallet.minePlex.sk;
     const userTransaction = await sleep(5000).then(async () => await getMinePlexTransactions(userWallet));
-    
+
     try {
       if (userTransaction.data.length === 0) return
 
@@ -177,4 +177,4 @@ class ReplenishmentMinePlex {
   };
 };
 
-  module.exports = new ReplenishmentMinePlex;
+module.exports = new ReplenishmentMinePlex;

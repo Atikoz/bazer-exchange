@@ -4,7 +4,7 @@ const config = require('../config.js');
 const ArteryReplenishment = require('../model/modelArterySendAdmin.js');
 const BalanceUserModel = require('../model/modelBalance.js');
 const sendLog = require('../helpers/sendLog.js');
-const sendMessage = require('../helpers/tgFunction.js');
+const { sendMessage } = require('../helpers/tgFunction.js');
 
 const nodeUrl = 'http://167.172.51.179:1317';
 
@@ -113,7 +113,7 @@ class ReplenishmentArtery {
       if (response.data.balance && response.data.balance.length > 0) {
         const responceBalance = response.data.balance[0].amount;
         const balance = Number(responceBalance) / 1e6;
-        
+
         return balance;
       } else {
         console.log('balance 0');

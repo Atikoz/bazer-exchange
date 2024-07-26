@@ -6,7 +6,7 @@ const UsdtReplenishment = require('../../model/modelUsdtReplenishment.js');
 const TransactionUsdtStatus = require('../../model/modelTransactionsUsdtStatus.js');
 const BalanceUserModel = require('../../model/modelBalance.js');
 const sendLog = require('../../helpers/sendLog.js');
-const sendMessage = require('../../helpers/tgFunction.js');
+const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
 
 class ReplenishmentUSDT {

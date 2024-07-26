@@ -1,7 +1,7 @@
 const { getCoinRate } = require("../../helpers/getCoinRate");
 const PoolProfitManagement = require("../../helpers/poolProfitManagement");
 const sendLogs = require("../../helpers/sendLog.js");
-const sendMessage = require("../../helpers/tgFunction.js");
+const { sendMessage } = require("../../helpers/tgFunction.js");
 const BalanceUserModel = require("../../model/modelBalance.js");
 const LiquidityPoolModel = require("../../model/modelLiquidityPool");
 const CustomOrder = require("../../model/modelOrder");
@@ -30,7 +30,7 @@ const generateCounterOrderLiqPool = async () => {
       ) {
         let sumPool = 0;
         const logMessage = [];
-        pool.poolUser.forEach(el => { sumPool += el.amountFirstCoin } );
+        pool.poolUser.forEach(el => { sumPool += el.amountFirstCoin });
 
         if (sumPool <= 0 || isNaN(sumPool)) return
         if (sumPool >= order.buyAmount) {
@@ -47,26 +47,26 @@ const generateCounterOrderLiqPool = async () => {
             logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} CASHBACK за вознаграждение в пуле,`);
             sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} CASHBACK за вознаграждение в пуле`)
 
-  
+
             await SubtractFirstCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, order.buyAmount);
             await DistributeSecondCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, order.sellAmount);
           }
-  
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "hold.${order.sellCoin}": -${order.sellAmount} } }`)
           );
-  
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "main.${order.buyCoin}": ${order.buyAmount} } }`)
-          ); 
-  
+          );
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "hold.cashback": -${order.comission} } }`)
           );
-  
+
           await CustomOrder.updateOne(
             { id: order.id, orderNumber: order.orderNumber },
             { $set: { status: 'Done' } }
@@ -94,26 +94,26 @@ const generateCounterOrderLiqPool = async () => {
             logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} CASHBACK за вознаграждение в пуле,`);
             sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} CASHBACK за вознаграждение в пуле`)
 
-  
+
             await SubtractFirstCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, sumPool);
             await DistributeSecondCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, buySum);
           }
-  
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "hold.${order.sellCoin}": -${buySum} } }`)
           );
-  
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "main.${order.buyCoin}": ${sumPool} } }`)
           );
-  
+
           await BalanceUserModel.updateOne(
             { id: order.id },
             JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
           );
-  
+
           await CustomOrder.updateOne(
             { id: order.id, orderNumber: order.orderNumber },
             { $inc: { buyAmount: -sumPool, sellAmount: -buySum, comission: -feeTrade } }

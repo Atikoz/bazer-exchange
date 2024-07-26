@@ -1,4 +1,4 @@
-const sendMessage = require("./tgFunction");
+const { sendMessage } = require("./tgFunction");
 
 
 async function sendLogs(text) {

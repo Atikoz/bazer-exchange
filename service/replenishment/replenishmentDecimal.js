@@ -9,7 +9,7 @@ const {
 const TransactionStatus = require('../../model/modelTransactionStatus.js');
 const BalanceUserModel = require('../../model/modelBalance.js');
 const sendLogs = require('../../helpers/sendLog.js');
-const sendMessage = require('../../helpers/tgFunction.js');
+const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
 
 
@@ -93,7 +93,7 @@ class ReplenishmentDecimal {
           tx.to === userWallet &&
           tx.data.amount / 1e18 >= minimalWithdrawal[tx.data.coin]
         ) {
-          
+
           const examinationIf = !await HashReplenishment.findOne({ id: tx.hash });
 
           if (examinationIf) {

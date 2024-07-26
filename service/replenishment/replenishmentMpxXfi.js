@@ -6,7 +6,7 @@ const MpxXfiReplenishment = require('../../model/modelMpxXfiReplenishment.js');
 const HashSendAdminComission = require('../../model/modelHashSendAdminComission.js');
 const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions.js');
 const sendLog = require('../../helpers/sendLog.js');
-const sendMessage = require('../../helpers/tgFunction.js');
+const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
 
 

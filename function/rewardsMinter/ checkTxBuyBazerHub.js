@@ -1,6 +1,6 @@
 const config = require("../../config");
 const sendLogs = require("../../helpers/sendLog");
-const sendMessage = require("../../helpers/tgFunction");
+const { sendMessage } = require("../../helpers/tgFunction");
 const { ControlUserBalance } = require("../../helpers/userControl");
 const BuyBazerhubMinter = require("../../model/modelBuyBazerhubMinter");
 const { getTransaction } = require("../minterTransaction")
@@ -14,7 +14,7 @@ const checkTxBuyBazerHub = async () => {
       const userTx = allTx.find((tx) => {
         const decodedPayload = Buffer.from(tx.payload, 'base64').toString('utf-8');
         return decodedPayload === purchasesTx.hash;
-      }); 
+      });
       if (!userTx) return
       const purchaseAmount = +userTx.data.value;
 
