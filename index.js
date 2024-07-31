@@ -213,9 +213,9 @@ bot.on('text', async (msg) => {
     }
 
     
-    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
 
-    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
+    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
