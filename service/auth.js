@@ -228,11 +228,12 @@ class AuthenticationService {
           }
         });
 
-        return 'ok';
+        return { status: 'ok', message: '', mnemonic: createDelWallet.del.mnemonics };
 
-      } else return;
+      } else return { status: 'error', message: 'user registered', mnemonic: '' };
     } catch (error) {
-      console.error(error)
+      console.error(error);
+      return { status: 'error', message: 'error Authentication function', mnemonic: '' };
     }
   }
 }
