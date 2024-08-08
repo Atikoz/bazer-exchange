@@ -8,7 +8,7 @@ const register = async (req, res) => {
 
     if (result.status === 'error') throw new Error(result.message)
     
-    res.status(201).json({
+    res.status(200).json({
       error: '',
       message: 'User registered successfully',
       data: {

@@ -1,8 +1,9 @@
-const Joi = require('joi'); // Імпорт Joi
+const Joi = require('joi');
 
-// Схема валідації для реєстрації
+
 const registrationSchema = Joi.object({
-  userId: Joi.number().required()
+  userId: Joi.number().required(),
+  // email: Joi.string().required().email()
 });
 
 module.exports = {
