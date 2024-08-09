@@ -15,7 +15,7 @@ class MailService {
 
   async sendConfirmationEmail(email) {
     try {
-      this.generateVerificationCode();
+      const code = this.generateVerificationCode();
 
       const mailOptions = {
         from: botEmail,
@@ -70,7 +70,7 @@ class MailService {
             <div class="container">
               <h1>Email Confirmation</h1>
               <p>Please use the following code to confirm your email address:</p>
-              <span class="code">${this.verificationCode}</span>
+              <span class="code">${code}</span>
               <p>If you didn't request this, you can safely ignore this email.</p>
               <p>Best regards,<br>Bazer Exchange</p>
             </div>
@@ -81,8 +81,18 @@ class MailService {
 
       const info = await this.transporter.sendMail(mailOptions);
       console.log('Email sent: ' + info.response);
+      return {
+        status: true,
+        code: code,
+        message: 'Email sent successfully',
+      };
     } catch (error) {
       console.log(error);
+      return {
+        status: false,
+        code: code,
+        message: `Error sending email: ${error}`,
+      };
     }
   }
 
