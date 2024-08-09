@@ -1,10 +1,10 @@
-const { sendConfirmationEmail } = require("../../function/mail/serviceMail");
+const MailService = require('../../function/mail/serviceMail');
 
 const sendVerificationCode = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const sendCode = await sendConfirmationEmail(email);
+    const sendCode = await MailService.sendConfirmationEmail(email);
 
     const statusSend = sendCode.status;
     const code = sendCode.code;
