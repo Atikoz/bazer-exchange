@@ -5,12 +5,13 @@ const register = async (req, res) => {
   try {
     const { userId } = req.body;
     const result = await AuthenticationService.Authentication(userId);
+    const message = result.message
 
     if (result.status === 'error') throw new Error(result.message)
     
     res.status(200).json({
       error: '',
-      message: 'User registered successfully',
+      message: message,
       data: {
         userId: userId,
         mnemonic: encrypt(result.mnemonic)

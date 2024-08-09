@@ -228,9 +228,12 @@ class AuthenticationService {
           }
         });
 
-        return { status: 'ok', message: '', mnemonic: createDelWallet.del.mnemonics };
+        return { status: 'ok', message: 'user registered successfully', mnemonic: createDelWallet.del.mnemonics };
 
-      } else return { status: 'error', message: 'user registered', mnemonic: '' };
+      } else {
+        const mnemonicUser = (await WalletUserModel.findOne({ id: userId })).mnemonics;
+        return { status: 'ok', message: 'user registered', mnemonic: mnemonicUser };
+      }
     } catch (error) {
       console.error(error);
       return { status: 'error', message: 'error Authentication function', mnemonic: '' };
