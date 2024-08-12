@@ -10,7 +10,7 @@ const ProfitPoolModel = require('../model/modelProfitPool.js');
 const createMinterWallet = require('../function/createMinterWallet.js');
 
 class AuthenticationService {
-  async Authentication(userId) {
+  async Authentication(userId, email = null) {
     try {
       if (!await UserModel.findOne({ id: userId })) {
         const createDelWallet = await createDecimalWallet();
@@ -24,7 +24,7 @@ class AuthenticationService {
         await UserModel.create({
           id: userId,
           status: 0,
-          mail: null,
+          mail: email,
           lang: 'eng'
         });
 
