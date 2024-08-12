@@ -16,7 +16,7 @@ const checkUserTransaction = new CronJob('0 */1 * * * *', async () => {
       await ReplenishmentDecimal.CheckBalanceAdmin(t.hash, t.id, t.amount)
   });
   } catch (error) {
-    console.error(error)
+    console.error('decimal check error:', error)
   }
 });
 

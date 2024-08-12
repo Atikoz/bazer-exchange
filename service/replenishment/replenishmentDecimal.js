@@ -139,7 +139,7 @@ class ReplenishmentDecimal {
         }
       }));
     } catch (error) {
-      console.error(error);
+      console.error('ReplenishmentUserWallet decimal:', error);
     }
   }
 

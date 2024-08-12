@@ -11,7 +11,7 @@ const checkUserExchangeTransaction = new CronJob('0 */1 * * * *', async () => {
       await ExchangeCheckStatus.ExchangeCheckHash(w.id, w.hash, w.coinSell, w.coinBuy)
     });
   } catch (error) {
-    console.error(error)
+    console.error('decimal exchange check error:', error)
   }
 });
 

@@ -114,7 +114,7 @@ class ReplenishmentMinePlex {
         }
       };
     } catch (error) {
-      console.error(error)
+      console.error('CheckMinePlexTransactionAmin:', error)
     }
   };
 
