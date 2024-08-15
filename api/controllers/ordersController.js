@@ -49,7 +49,8 @@ const createOrder = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
+
     let messageResponse = 'orders find';
 
     const result = await P2PLoansOrder.find({

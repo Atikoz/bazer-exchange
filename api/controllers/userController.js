@@ -83,7 +83,7 @@ const getBalanceUser = async (req, res) => {
       message: 'done',
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       status: 'error',
       error: 'error get balance',
       message: error.message,
