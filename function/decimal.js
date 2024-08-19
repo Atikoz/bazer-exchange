@@ -83,23 +83,24 @@ async function getUserTx(adress) {
       method: 'get',
       maxBodyLength: Infinity,
       url: `https://mainnet-explorer-api.decimalchain.com/api/address/${adress}/txs?limit=10&offset=0`,
-      headers: { },
-      timeout: 15000
+      headers: {},
+      timeout: 60000
     };
-    
+
     const resultApi = await axios.request(config);
-    console.log('address:', adress);
-    console.log('status:', resultApi.data.ok);
-    console.log('---------------------------');
 
     return resultApi.data.result
   } catch (error) {
-    console.error(error.message);
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timed out');
+    } else {
+      console.error('An error occurred:', error.message);
+    }
   }
 }
 
-module.exports = { 
+module.exports = {
   SendCoin,
   TransferCommission,
   getUserTx
- };
+};
