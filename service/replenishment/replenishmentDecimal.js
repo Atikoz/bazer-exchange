@@ -4,10 +4,10 @@ const UserManagement = require('../userManagement.js');
 const HashReplenishment = require('../../model/modelHashReplenishment.js');
 const {
   SendCoin,
+  getUserTx,
   TransferCommission
 } = require('../../function/decimal.js');
 const TransactionStatus = require('../../model/modelTransactionStatus.js');
-const BalanceUserModel = require('../../model/modelBalance.js');
 const sendLogs = require('../../helpers/sendLog.js');
 const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
@@ -85,8 +85,8 @@ class ReplenishmentDecimal {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userWallet = getInfoUser.userWallet.del.address;
-      const answer = await sleep(5000).then(async () => await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/address/${userWallet}/txs?limit=10&offset=0`));
-      const userTransaction = answer.data.result.txs;
+      const getTx = await getUserTx(userWallet);
+      const userTransaction = getTx.txs;
 
       await Promise.all(userTransaction.map(async (tx) => {
         if (tx.status === 'Success' &&
@@ -148,10 +148,9 @@ class ReplenishmentDecimal {
       const infoTransaction = await sleep(5000).then(async () => await axios.get(`https://mainnet-explorer-api.decimalchain.com/api/tx/${hash}`));
       if (infoTransaction.data.result.status === 'Success') {
         const replenishmentCoin = infoTransaction.data.result.data.coin;
-        await BalanceUserModel.updateOne(
-          { id: userId },
-          { $inc: { [`main.${replenishmentCoin}`]: amount } }
-        );
+
+        ControlUserBalance(userId, replenishmentCoin, amount)
+
 
         await TransactionStatus.updateOne(
           { hash: hash },

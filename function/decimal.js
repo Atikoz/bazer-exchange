@@ -2,7 +2,6 @@ const axios = require('axios');
 
 async function SendCoin(mnemonics, wallet, coin, amount) {
   try {
-
     const request = await axios({
       method: 'POST',
       url: `https://cryptoapi7.ru/api/v1/sendCoins`,
@@ -78,7 +77,29 @@ async function TransferCommission(mnemonics, wallet, coin, amount) {
   }
 };
 
+async function getUserTx(adress) {
+  try {
+    const config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: `https://mainnet-explorer-api.decimalchain.com/api/address/${adress}/txs?limit=10&offset=0`,
+      headers: { },
+      timeout: 15000
+    };
+    
+    const resultApi = await axios.request(config);
+    console.log('address:', adress);
+    console.log('status:', resultApi.data.ok);
+    console.log('---------------------------');
+
+    return resultApi.data.result
+  } catch (error) {
+    console.error(error.message);
+  }
+}
+
 module.exports = { 
   SendCoin,
   TransferCommission,
+  getUserTx
  };
