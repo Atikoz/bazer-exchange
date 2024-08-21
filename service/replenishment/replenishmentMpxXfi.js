@@ -1,6 +1,6 @@
 const config = require('../../config.js');
 const UserManagement = require('../userManagement.js');
-const BalanceUserModel = require('../../model/modelBalance.js');
+const BalanceUserModel = require('../../model/user/modelBalance.js');
 const { getMpxXfiTransactions, CheckBalance, SendMpxXfi, CheckTransactionHash } = require('../../function/mpxXfiTransactions.js');
 const MpxXfiReplenishment = require('../../model/modelMpxXfiReplenishment.js');
 const HashSendAdminComission = require('../../model/modelHashSendAdminComission.js');

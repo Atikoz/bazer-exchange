@@ -2,7 +2,7 @@ const TeleBot = require('telebot');
 const mongoose = require('mongoose');
 const config = require('./config.js');
 const validator = require('validator');
-const WalletUserModel = require('./model/modelWallet.js');
+const WalletUserModel = require('./model/user/modelWallet.js');
 
 
 const {
@@ -53,12 +53,11 @@ const {
   decimalWallet
 } = require('./decimalConfig.js');
 
-const AuthenticationService = require('./service/auth.js');
-const BalanceUserModel = require('./model/modelBalance.js');
+const BalanceUserModel = require('./model/user/modelBalance.js');
 const UserManagement = require('./service/userManagement.js');
 const CustomOrder = require('./model/modelOrder.js');
 const CustomP2POrder = require('./model/modelP2POrder.js');
-const UserModel = require('./model/modelUser.js');
+const UserModel = require('./model/user/modelUser.js');
 const ExchangeRateCoin = require('./exchanger/exchangeRate.js');
 const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
@@ -83,7 +82,7 @@ const { v4 } = require('uuid');
 const { sendMinter, getCoinId, getRouteExchange, getFeeExchange, exchangeMinterTransaction, getPriceCoinInBip } = require('./function/minterTransaction.js');
 const exchangeValidator = require('./validator/minterExchangeValidator.js');
 const getBalanceCoin = require('./helpers/getBalanceCoin.js');
-const ProfitPoolModel = require('./model/modelProfitPool.js');
+const ProfitPoolModel = require('./model/user/modelProfitPool.js');
 const poolProfitDValidator = require('./validator/withdrawPoolProfirValidator.js');
 const poolProfitManagement = require('./helpers/poolProfitManagement.js');
 const LiquidityPoolModel = require('./model/modelLiquidityPool.js');
@@ -96,6 +95,7 @@ const isValidEmail = require('./validator/isValidEmail.js');
 const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
+const { registerUser } = require('./service/register/createNewAccAndRegister.js');
 
 
 mongoose.connect('mongodb://127.0.0.1/test');
@@ -223,7 +223,7 @@ bot.on('text', async (msg) => {
     if (text === '/start') {
       
       if (getInfoUser === "not user") {
-        await AuthenticationService.Authentication(userId);
+        await registerUser(userId);
         setState(userId, 31);
         bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
         await bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });

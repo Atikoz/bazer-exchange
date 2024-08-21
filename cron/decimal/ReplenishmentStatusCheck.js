@@ -1,5 +1,5 @@
 const TransactionStatus = require('../../model/modelTransactionStatus.js');
-const WalletUserModel = require('../../model/modelWallet.js');
+const WalletUserModel = require('../../model/user/modelWallet.js');
 const ReplenishmentDecimal = require('../../service/replenishment/replenishmentDecimal.js');
 
 const CronJob = require('cron').CronJob;

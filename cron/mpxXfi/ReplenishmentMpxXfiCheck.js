@@ -1,5 +1,5 @@
 const TransactionMpxXfiStatus = require('../../model/modelMpxXfiStatusTransactions');
-const WalletUserModel = require('../../model/modelWallet');
+const WalletUserModel = require('../../model/user/modelWallet.js');
 const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin } = require('../../service/replenishment/replenishmentMpxXfi');
 
 

@@ -1,4 +1,4 @@
-const BalanceUserModel = require("../../model/modelBalance")
+const BalanceUserModel = require("../../model/user/modelBalance")
 
 const getUserAllBalanceCoin = async (coin) => {
   const allCoin = await BalanceUserModel.find();

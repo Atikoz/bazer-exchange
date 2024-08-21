@@ -1,6 +1,6 @@
 const { resolve } = require('mathjs');
 const TransactionUsdtStatus = require('../../model/modelTransactionsUsdtStatus');
-const WalletUserModel = require('../../model/modelWallet');
+const WalletUserModel = require('../../model/user/modelWallet.js');
 const { ReplenishmentUserWalletUSDT, CheckUsdtTransactionAmin } = require('../../service/replenishment/replenishmentUSDT');
 const sleep = require('../../helpers/sleepFunction');
 

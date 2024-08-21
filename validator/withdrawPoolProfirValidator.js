@@ -1,4 +1,4 @@
-const ProfitPoolModel = require('../model/modelProfitPool.js');
+const ProfitPoolModel = require('../model/user/modelProfitPool.js');
 
 const poolProfitDValidator = async (userId, amount) => {
   try {

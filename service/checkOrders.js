@@ -1,5 +1,5 @@
 const CustomOrder = require('../model/modelOrder.js');
-const BalanceUser = require('../model/modelBalance.js');
+const BalanceUser = require('../model/user/modelBalance.js');
 const { calculateFeeTrade } = require('../function/calculateSpotTradeFee.js');
 const sendLogs = require('../helpers/sendLog.js');
 const { sendMessage } = require('../helpers/tgFunction.js');

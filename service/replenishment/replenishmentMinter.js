@@ -3,7 +3,7 @@ const { getTransaction, getCommissionTx, checkMinterHash, sendMinter, getCoinId,
 const MinterReplenishment = require('../../model/modelMinterReplenishment.js');
 const config = require('../../config.js');
 const TransactionMinterStatus = require('../../model/modelMinterStatusTransaction.js');
-const BalanceUserModel = require('../../model/modelBalance.js');
+const BalanceUserModel = require('../../model/user/modelBalance.js');
 const sendLogs = require('../../helpers/sendLog.js');
 const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');

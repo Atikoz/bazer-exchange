@@ -2,7 +2,7 @@ const axios = require('axios');
 const { Wallet } = require('artery-api');
 const config = require('../config.js');
 const ArteryReplenishment = require('../model/modelArterySendAdmin.js');
-const BalanceUserModel = require('../model/modelBalance.js');
+const BalanceUserModel = require('../model/user/modelBalance.js');
 const sendLog = require('../helpers/sendLog.js');
 const { sendMessage } = require('../helpers/tgFunction.js');
 

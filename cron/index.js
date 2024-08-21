@@ -10,6 +10,7 @@ const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSe
 const backupDB = require('../cron/backupDB.js');
 const rewardMinter = require('./minter/RewardBazerHUB.js');
 const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');
+const createFreeAcc = require('./createFeeAccount.js');
 
 mongoose.connect('mongodb://127.0.0.1/test');
 
@@ -45,3 +46,6 @@ accrualPurchasesBuyBazerhub.start();
 
 //backup database
 backupDB.start();
+
+// create free account
+createFreeAcc.start();

@@ -1,4 +1,4 @@
-const WalletUserModel = require('../../model/modelWallet');
+const WalletUserModel = require('../../model/user/modelWallet.js');
 const { checkUserTransaction, balanceCheckAdminWallet } = require('../../service/replenishment/replenishmentMinter');
 
 

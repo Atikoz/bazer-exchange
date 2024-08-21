@@ -1,4 +1,4 @@
-const BalanceUserModel = require("../model/modelBalance");
+const BalanceUserModel = require("../model/user/modelBalance");
 
 class BalanceManager {
   freezeBalance = async (userId, amount, coin) => {

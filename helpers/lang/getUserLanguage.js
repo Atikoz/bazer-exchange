@@ -1,4 +1,4 @@
-const UserModel = require("../../model/modelUser");
+const UserModel = require("../../model/user/modelUser");
 
 const getUserLanguage = async (userId) => {
   try {

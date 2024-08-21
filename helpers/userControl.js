@@ -1,4 +1,4 @@
-const BalanceUserModel = require('../model/modelBalance.js');
+const BalanceUserModel = require('../model/user/modelBalance.js');
 
 async function ControlUserBalance(id, coin, amount) {
   try {

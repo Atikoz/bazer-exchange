@@ -1,7 +1,7 @@
 const { encrypt } = require('../../helpers/encryptionFunction.js');
-const AuthenticationService = require('../../service/auth.js');
 const { ControlUserBalance } = require("../../helpers/userControl");
 const userManagement = require("../../service/userManagement");
+const { registerUser } = require('../../service/register/createNewAccAndRegister.js');
 const getInfo = userManagement.getInfoUser;
 
 
@@ -40,7 +40,7 @@ const payWithBot = async (req, res) => {
 const register = async (req, res) => {
   try {
     const { userId, email } = req.body;
-    const result = await AuthenticationService.Authentication(userId, email);
+    const result = await registerUser(userId, email);
     const message = result.message
 
     if (result.status === 'error') throw new Error(result.message)

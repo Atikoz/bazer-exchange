@@ -2,8 +2,8 @@ const { Wallet } = require('artery-api');
 const axios = require('axios');
 const crypto = require('crypto');
 const config = require('../config.js');
-const WalletUserModel = require('../model/modelWallet.js');
-const BalanceUserModel = require('../model/modelBalance.js');
+const WalletUserModel = require('../model/user/modelWallet.js');
+const BalanceUserModel = require('../model/user/modelBalance.js');
 
 const referAcc = 'artr17yvfmrelm4ejd40yz056j0gc2seqr32dazhclj';
 

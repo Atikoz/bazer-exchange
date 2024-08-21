@@ -1,6 +1,6 @@
 const HashSendAdminComission = require('../../model/modelHashSendAdminComission');
 const TransactionMinePlextStatus = require('../../model/modelMinePlexStatusTransactions');
-const WalletUserModel = require('../../model/modelWallet');
+const WalletUserModel = require('../../model/user/modelWallet.js');
 const { ReplenishmentUserWallet, CheckMinePlexTransactionAmin, CheckCommissionTransactionAmin } = require('../../service/replenishment/replenishmentMinePlex');
 
 

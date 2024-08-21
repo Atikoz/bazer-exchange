@@ -1,4 +1,4 @@
-const ProfitPoolModel = require("../model/modelProfitPool");
+const ProfitPoolModel = require("../model/user/modelProfitPool");
 
 const poolProfitManagement = async (userId, amount) => {
   try {

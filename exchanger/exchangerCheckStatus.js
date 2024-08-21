@@ -1,7 +1,7 @@
 const axios = require('axios');
 const sendLog = require('../helpers/sendLog.js');
 const ExchangeStatus = require('../model/modelExchangeStatus');
-const BalanceUserModel = require('../model/modelBalance.js');
+const BalanceUserModel = require('../model/user/modelBalance.js');
 const { sendMessage } = require('../helpers/tgFunction.js');
 
 

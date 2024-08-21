@@ -1,6 +1,6 @@
-const UserModel = require('../model/modelUser.js');
-const WalletUserModel = require('../model/modelWallet.js');
-const BalanceUserModel = require('../model/modelBalance.js');
+const UserModel = require('../model/user/modelUser.js');
+const WalletUserModel = require('../model/user/modelWallet.js');
+const BalanceUserModel = require('../model/user/modelBalance.js');
 
 class UserManagement {
   async getInfoUser(userId) {
