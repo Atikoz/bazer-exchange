@@ -13,17 +13,20 @@ const FreeAccountModel = require('../../model/user/modelFreeAccount.js');
 
 const createNewAcc = async () => {
   try {
+    const a = await FreeAccountModel.find();
+    console.log(a);
+    console.log(a.length);
     const createDelWallet = await createDecimalWallet();
     const createUsdt = await CreateUsdtWallet();
-    const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
-    const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
-    const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
-    const createMinter = createMinterWallet(createDelWallet.del.mnemonics)
+    const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonic);
+    const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonic);
+    const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonic);
+    const createMinter = createMinterWallet(createDelWallet.del.mnemonic)
     if (createDelWallet.status != 'ok') return await createNewAcc();
 
     await FreeAccountModel.create( {
       busy: false,
-      mnemonic: createDelWallet.del.mnemonics,
+      mnemonic: createDelWallet.del.mnemonic,
       del: {
         address: createDelWallet.del.address,
       },
@@ -67,7 +70,7 @@ const registerUser = async (userId, email = null) => {
       return {
         status: 'ok',
         message: 'user registered',
-        mnemonic: walletUser.mnemonics
+        mnemonic: walletUser.mnemonic
       };
     }
 

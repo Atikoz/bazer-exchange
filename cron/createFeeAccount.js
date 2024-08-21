@@ -3,7 +3,7 @@ const CronJob = require('cron').CronJob;
 
 const createFreeAcc = new CronJob('* * * * *', () => {
   try {
-    console.log('Запуск создание свободных аккаунтов');
+    console.log('Запуск создания свободных аккаунтов');
     createNewAcc();
   } catch (error) {
     console.error(error.message);
