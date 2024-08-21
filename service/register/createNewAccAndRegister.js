@@ -67,7 +67,7 @@ const registerUser = async (userId, email = null) => {
       return {
         status: 'ok',
         message: 'user registered',
-        mnemonic: walletUser.mnemonic
+        mnemonic: walletUser.mnemonics
       };
     }
 
@@ -295,7 +295,7 @@ const registerUser = async (userId, email = null) => {
     return {
       status: 'ok', 
       message: 'user registered successfully',
-      mnemonic: freeAccount.mnemonic 
+      mnemonic: freeAccount.mnemonic
     };
   } catch (error) {
     console.error(error);

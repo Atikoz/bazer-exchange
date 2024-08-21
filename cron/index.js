@@ -15,37 +15,37 @@ const createFreeAcc = require('./createFeeAccount.js');
 mongoose.connect('mongodb://127.0.0.1/test');
 
 
-// //SpotTrade
-// checkOrders.start();
+//SpotTrade
+checkOrders.start();
 
-// //Decimal
-// checkUserTransaction.start();
-// checkUserExchangeTransaction.start();
+//Decimal
+checkUserTransaction.start();
+checkUserExchangeTransaction.start();
 
-// //USDT
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
+//USDT
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
 
-// //MINE PLEX
-// checkUserMinePlexTransaction.start();
-// chechAdminMinePlexTransaction.start();
-// checkHashSendAdminComission.start();
+//MINE PLEX
+checkUserMinePlexTransaction.start();
+chechAdminMinePlexTransaction.start();
+checkHashSendAdminComission.start();
 
-// //MPX XFI
-// checkUserMpxXfiTransaction.start();
-// checkAdminMpxXfiTransaction.start();
+//MPX XFI
+checkUserMpxXfiTransaction.start();
+checkAdminMpxXfiTransaction.start();
 
-// //ARTERY
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
+//ARTERY
+checkArtrBalance.start();
+checkArtrAdminHash.start();
 
-// //Minter
-// checkMinterTransaction.start();
-// rewardMinter.start();
-// accrualPurchasesBuyBazerhub.start();
+//Minter
+checkMinterTransaction.start();
+rewardMinter.start();
+accrualPurchasesBuyBazerhub.start();
 
-// //backup database
-// backupDB.start();
+//backup database
+backupDB.start();
 
-// create free account
-createFreeAcc.start();
+// // create free account
+// createFreeAcc.start();
