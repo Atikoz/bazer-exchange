@@ -13,9 +13,6 @@ const FreeAccountModel = require('../../model/user/modelFreeAccount.js');
 
 const createNewAcc = async () => {
   try {
-    const a = await FreeAccountModel.find();
-    console.log(a);
-    console.log(a.length);
     const createDelWallet = await createDecimalWallet();
     const createUsdt = await CreateUsdtWallet();
     const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonic);
