@@ -101,7 +101,10 @@
   "acceptBuyBazerhubText": "Your purchase request has been processed. Wait for funds to arrive.",
   "unexpectedError": "An unexpected error has occurred! Notify the administration.",
   "minimalAmountBuyBazerHub": "Minimum purchase amount: 500 CASHBSC",
-  "goodsP2Ptext": "All products are listed on the marketplace in BAZER STAKING WALLET. This service carries out financial transactions between users within a web browser."
+  "goodsP2Ptext": "All products are listed on the marketplace in BAZER STAKING WALLET. This service carries out financial transactions between users within a web browser.",
+  "buyDelForRub": "Byu DEL for ruble",
+  "buyDelForRubText": "Here you can buy DEL for rubles:",
+  "buyDelForRubButton": "Buy DEL"
 
 
 }

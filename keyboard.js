@@ -9,7 +9,8 @@ const RM_Home = (lang = "eng") => bot.keyboard([
   [getTranslation(lang, "myAccount"), getTranslation(lang, "tradeButton")],
   [getTranslation(lang, "converting"), getTranslation(lang, "staking")],
   [getTranslation(lang, 'purchasingBazerHub'), getTranslation(lang, "referrals")],
-  [getTranslation(lang, "settings"), getTranslation(lang, "instructions")]
+  [getTranslation(lang, "settings"), getTranslation(lang, "instructions")],
+  [getTranslation(lang, "buyDelForRub")]
 ], { resize: true });
 
 const RM_Trade = (lang = "eng") => bot.keyboard([
@@ -118,8 +119,12 @@ const buyerPayOrder = [
   'Done', 'Cancel'
 ];
 
-const bazerStackingIK = (lang = 'eng') => bot.inlineKeyboard([
+const bazerStackingIK = bot.inlineKeyboard([
   [bot.inlineButton('BAZER STAKING WALLET', { url: 'https://t.me/Bazer_stake_bot?start=d01pp9jcn0vphnq985fp0a7wf3zgvznshn938s868' })]
+]);
+
+const buyDelForRubIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'buyDelForRubButton'), { url: 'https://t.me/+RseklArJALAwMDQy' })]
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([
@@ -190,6 +195,7 @@ module.exports = {
   investInPoolIK,
   balancePage2IK,
   balancePage3IK,
+  buyDelForRubIK,
   balancePage4IK,
   filterBuyP2PIK,
   filterSellP2PIK,

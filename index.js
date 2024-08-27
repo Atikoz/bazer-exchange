@@ -40,7 +40,8 @@ const {
   investInPoolButtonIK,
   instructionsMenuIK,
   instructionsLiuidityPoolMenuIK,
-  RM_Trade
+  RM_Trade,
+  buyDelForRubIK
 } = require('./keyboard.js');
 
 const {
@@ -229,7 +230,7 @@ bot.on('text', async (msg) => {
         await bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
       } else {
         setState(userId, 0);
-        bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
+        bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) }).catch((error) => console.log(error));
       }
     }
 
@@ -308,7 +309,7 @@ bot.on('text', async (msg) => {
         break;
 
       case getTranslation(selectedLang, "staking"):
-        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: bazerStackingIK(selectedLang) });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: bazerStackingIK });
         break;
 
       case '/admin':
@@ -337,6 +338,11 @@ bot.on('text', async (msg) => {
 
       case getTranslation(selectedLang, "mainMenuButton"):
         bot.sendMessage(userId, getTranslation(selectedLang, 'mainMenuText'), { replyMarkup: RM_Home(selectedLang) })
+        break;
+
+
+      case getTranslation(selectedLang, "buyDelForRub"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'buyDelForRubText'), { replyMarkup: buyDelForRubIK(selectedLang) });
         break;
 
       default:
