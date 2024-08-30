@@ -342,7 +342,7 @@ bot.on('text', async (msg) => {
 
 
       case getTranslation(selectedLang, "buyDelForRub"):
-        bot.sendMessage(userId, getTranslation(selectedLang, 'buyDelForRubText'), { replyMarkup: buyDelForRubIK(selectedLang) });
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSection'), { replyMarkup: buyDelForRubIK(selectedLang) });
         break;
 
       default:

@@ -124,7 +124,8 @@ const bazerStackingIK = bot.inlineKeyboard([
 ]);
 
 const buyDelForRubIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'buyDelForRubButton'), { url: 'https://t.me/+RseklArJALAwMDQy' })]
+  [bot.inlineButton(getTranslation(lang, 'buyDelForRubButton'), { url: 'https://t.me/+RseklArJALAwMDQy' })],
+  [bot.inlineButton(getTranslation(lang, 'buyDelForRubInstrtuctionButton'), { url: 'https://decimalchain.com/blog/ru/kak-kupit-del-za-rubli/' })]
 ]);
 
 const liquidityPoolsIK = bot.inlineKeyboard([

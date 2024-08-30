@@ -105,6 +105,7 @@
   "goodsP2Ptext": "Все продукты размещаются на торговой площадке в BAZER STAKING WALLET. Этот сервис осуществляет финансовые транзакции между пользователями внутри веб-браузера.",
   "buyDelForRub": "Купить DEL за рубли",
   "buyDelForRubText": "Здесь вы можете купить DEL за рубли:",
-  "buyDelForRubButton": "Купить DEL"
+  "buyDelForRubButton": "Купить DEL",
+  "buyDelForRubInstrtuctionButton": "Инстукция"
   
 }
