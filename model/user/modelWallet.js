@@ -5,7 +5,6 @@ const WalletUserModel = mongoose.model('WalletUsers', {
   mnemonics: String,
   del: {
     address: String,
-    mnemonics: String,
   },
   usdt: {
     address: String,

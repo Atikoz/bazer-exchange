@@ -97,9 +97,10 @@ const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
+const updateDecimalWallet = require('./function/updateDecimalAddres.js');
 
 
-mongoose.connect('mongodb://127.0.0.1/test');
+mongoose.connect(config.dataBaseUrl);
 
 const bot = new TeleBot(config.token);
 
@@ -198,6 +199,9 @@ const choice = ['accept', 'cancel'];
 //text
 bot.on('text', async (msg) => {
   try {
+    const typeMsg = msg.chat.type;
+    if (typeMsg !== 'private') return
+    
     const userId = msg.from.id;
     const text = msg.text;
     const userName = msg.from.first_name;
@@ -270,7 +274,9 @@ bot.on('text', async (msg) => {
           }
         };
 
-        await startTe();
+        await updateDecimalWallet();
+
+        // await startTe();
         bot.sendMessage(userId, 'Изменения применены...');
         break;
 

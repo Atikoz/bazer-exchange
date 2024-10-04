@@ -1,6 +1,7 @@
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const config = require('../config');
 
 function backupDatabase() {
     // 1. Генерация метки времени
@@ -21,7 +22,7 @@ function backupDatabase() {
     const backupFilePath = path.join(backupDir, backupFileName);
     
     // 4. Формирование команды для создания бэкапа
-    const command = `mongodump --uri="mongodb://127.0.0.1:27017/test" --archive=${backupFilePath} --gzip`;
+    const command = `mongodump --uri="${config.dataBaseUrl}" --archive=${backupFilePath} --gzip`;
 
     // 5. Выполнение команды для создания бэкапа
     exec(command, (error, stdout, stderr) => {

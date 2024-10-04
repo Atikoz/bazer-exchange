@@ -9,9 +9,8 @@ const sendMessage = (id, message) => {
 
 const getChatMember = async (channel, userId) => {
   try {
-    const a = await bot.getChatMember(channel, userId).catch((e) => { console.log('channel', channel, 'error', e) });
-    console.log(channel, a);
-    return a
+    const chatMemberInfo = await bot.getChatMember(channel, userId).catch((e) => { console.log('channel', channel, 'error', e) });
+    return chatMemberInfo
   } catch (error) {
     console.log(error)
   }

@@ -11,8 +11,9 @@ const backupDB = require('../cron/backupDB.js');
 const rewardMinter = require('./minter/RewardBazerHUB.js');
 const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');
 const createFreeAcc = require('./createFeeAccount.js');
+const config = require('../config.js');
 
-mongoose.connect('mongodb://127.0.0.1/test');
+mongoose.connect(config.dataBaseUrl);
 
 
 //SpotTrade

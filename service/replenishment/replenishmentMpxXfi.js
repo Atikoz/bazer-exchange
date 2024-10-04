@@ -22,6 +22,7 @@ class ReplenishmentMpxXfi {
       const userWallet = getInfoUser.userWallet.mpxXfi.address;
       const userMnemonic = getInfoUser.userWallet.mnemonics;
       const userTransaction = await getMpxXfiTransactions(userWallet);
+      console.log(userTransaction);
 
       if (userTransaction.length === 0) return
 
