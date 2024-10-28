@@ -47,6 +47,7 @@ const {
 const {
   SendCoin,
   TransferCommission,
+  getUserTx,
 } = require('./function/decimal.js');
 
 const {
@@ -79,7 +80,6 @@ const { freezeBalance, unfreezeBalance } = require('./helpers/holdBalanceManager
 const { calculateSpotTradeFee } = require('./function/calculateSpotTradeFee.js');
 const { getCoinRate, getCurrencyRate } = require('./helpers/getCoinRate.js');
 const poolDataValidation = require('./validator/poolDataValidation.js');
-const { v4 } = require('uuid');
 const { sendMinter, getCoinId, getRouteExchange, getFeeExchange, exchangeMinterTransaction, getPriceCoinInBip } = require('./function/minterTransaction.js');
 const exchangeValidator = require('./validator/minterExchangeValidator.js');
 const getBalanceCoin = require('./helpers/getBalanceCoin.js');
@@ -97,7 +97,6 @@ const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
-const updateDecimalWallet = require('./function/updateDecimalAddres.js');
 
 
 mongoose.connect(config.dataBaseUrl);
@@ -219,7 +218,6 @@ bot.on('text', async (msg) => {
 
     
     const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-
     if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
@@ -274,10 +272,16 @@ bot.on('text', async (msg) => {
           }
         };
 
-        await updateDecimalWallet();
-
         // await startTe();
         bot.sendMessage(userId, 'Изменения применены...');
+        break;
+
+      case '/test':
+        const a = 'domain art fresh tag music ability spirit elbow defense snake icon ramp length shrimp dentist pen melody exit stomach lava sea blind enough bag';
+        const b ='0xf41c850aa251ab5721bb004fd3fcdbf6603dde2a';
+
+        const c = await SendCoin(a, b, 'del', 1);
+        console.log(c);
         break;
 
       case getTranslation(selectedLang, "myAccount"):
@@ -316,10 +320,6 @@ bot.on('text', async (msg) => {
 
       case getTranslation(selectedLang, "staking"):
         bot.sendMessage(userId, getTranslation(selectedLang, 'stakingText'), { replyMarkup: bazerStackingIK });
-        break;
-
-      case '/admin':
-        bot.sendMessage(userId, 'Вы перейшли в админ панель. Перейдите, пожалуйста, по кнопке ниже:', { replyMarkup: adminPanelIK });
         break;
 
       case getTranslation(selectedLang, "settings"):

@@ -1,4 +1,5 @@
 const P2PLoansOrder = require("../../model/p2pLoans/modelP2POrder");
+const { v4: uuidv4 } = require('uuid');
 
 const createOrder = async (req, res) => {
   try {
@@ -16,6 +17,8 @@ const createOrder = async (req, res) => {
       downPayment
     } = req.body;
 
+    const socketId = uuidv4();
+
     const result = await P2PLoansOrder.create({
       buyerId: buyerId,
       sellerId: sellerId,
@@ -28,7 +31,8 @@ const createOrder = async (req, res) => {
       description: description,
       requisites: requisites,
       collateral: collateral,
-      downPayment: downPayment
+      downPayment: downPayment,
+      socketId: socketId
     });
 
     console.log(result);
@@ -37,6 +41,7 @@ const createOrder = async (req, res) => {
       status: 'ok',
       error: '',
       message: 'order created',
+      socketUrl: `http://localhost:3001/socket/${socketId}`
     });
   } catch (error) {
     res.status(500).json({
@@ -83,8 +88,6 @@ const getUserOrders = async (req, res) => {
 const getAllOrders = async ( req, res ) => {
   try {
     const result = await P2PLoansOrder.find();
-
-    console.log(result);
 
     res.status(200).json({
       status: 'ok',

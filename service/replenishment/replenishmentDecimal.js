@@ -85,8 +85,7 @@ class ReplenishmentDecimal {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userWallet = getInfoUser.userWallet.del.address;
-      const getTx = await getUserTx(userWallet);
-      const userTransaction = getTx.txs;
+      const userTransaction = await getUserTx(userWallet);
 
       await Promise.all(userTransaction.map(async (tx) => {
         if (tx.status === 'Success' &&

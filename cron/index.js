@@ -19,22 +19,22 @@ mongoose.connect(config.dataBaseUrl);
 //SpotTrade
 checkOrders.start();
 
-//Decimal
-checkUserTransaction.start();
-checkUserExchangeTransaction.start();
+// //Decimal
+// checkUserTransaction.start();
+// checkUserExchangeTransaction.start();
 
 //USDT
 checkUserUsdtTransaction.start();
 chechAdminUsdtTransaction.start();
 
-//MINE PLEX
-checkUserMinePlexTransaction.start();
-chechAdminMinePlexTransaction.start();
-checkHashSendAdminComission.start();
+// //MINE PLEX
+// checkUserMinePlexTransaction.start();
+// chechAdminMinePlexTransaction.start();
+// checkHashSendAdminComission.start();
 
-//MPX XFI
-checkUserMpxXfiTransaction.start();
-checkAdminMpxXfiTransaction.start();
+// //MPX XFI
+// checkUserMpxXfiTransaction.start();
+// checkAdminMpxXfiTransaction.start();
 
 //ARTERY
 checkArtrBalance.start();
