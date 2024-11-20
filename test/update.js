@@ -1,0 +1,105 @@
+const mongoose = require('mongoose');
+const config = require('../config');
+const { Wallet } = require("dsc-js-sdk");
+const WalletUserModel = require('../model/user/modelWallet');
+const crossfiService = require("../function/crossfi/crossfiService");
+const FreeAccountModel = require('../model/user/modelFreeAccount');
+
+mongoose.connect(config.dataBaseUrl);
+
+
+async function updateDecimalWallet(seed) {
+  try {
+    const decimalWallet = new Wallet(seed);
+    const oldAddres = decimalWallet.wallet.address;
+    const updateUserWallet = decimalWallet.wallet.evmAddress;
+
+    console.log('oldAddres:', oldAddres);
+    console.log('updateUserWallet:', updateUserWallet);
+
+    return updateUserWallet
+
+  } catch (error) {
+    console.error(`Помилка: ${error}`);
+  }
+}
+
+const updateDb = async () => {
+  try {
+    const result = await FreeAccountModel.updateMany(
+      {},
+      { $unset: { minePlex: "" } }
+    );
+
+    console.log(`Documents minePlex updated: ${result.modifiedCount}`);
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const updateName = async () => {
+  try {
+    const result = await FreeAccountModel.updateMany(
+      {},
+      { $rename: { mpxXfi: 'crossfi' } } // Перейменовує поле
+    );
+
+    console.log(`Documents mpxXfi updated: ${result.modifiedCount}`);
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const updateWallet = async () => {
+  try {
+    const allAcc = await FreeAccountModel.find();
+    const allUser = await WalletUserModel.find();
+
+    for (const user of allUser) {
+      const mnemonic = user.mnemonic;
+      console.log('mnemonic', mnemonic);
+      const wallet = await crossfiService.createWallet(mnemonic);
+
+      if (!wallet.status) return
+
+      await WalletUserModel.updateOne(
+        { id: user.id },
+        { $set: { crossfi: { address: wallet.address } } }
+      )
+    }
+
+    for (const user of allAcc) {
+      const mnemonic = user.mnemonic;
+      console.log('mnemonic', mnemonic);
+      const wallet = await updateDecimalWallet(mnemonic);
+
+      const walletCrossfi = await crossfiService.createWallet(mnemonic);
+
+      if (!walletCrossfi.status) return
+
+      await FreeAccountModel.updateOne(
+        { mnemonic: user.mnemonic },
+        {
+          $set: {
+            crossfi: {
+              address: walletCrossfi.address
+            },
+            del: {
+              address: wallet
+            }
+          }
+        }
+      )
+    }
+
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+(async () => {
+  await updateDb();
+  await updateName();
+  await updateWallet();
+  await mongoose.connection.close();
+})();

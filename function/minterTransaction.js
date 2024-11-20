@@ -162,7 +162,7 @@ class MinterTransaction {
   getBalance = async (address) => {
     const config = {
       method: 'get',
-      url: `http://api-minter.mnst.club:8843/v2/address/${address}?delegated=false`,
+      url: `http://api-minter.mnst.club:8443/v2/address/${address}?delegated=false`,
       headers: {}
     };
 

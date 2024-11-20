@@ -5,7 +5,7 @@ const WalletUserModel = mongoose.model('WalletUsers', {
     type: Number,
     required: true
   },
-  mnemonics: {
+  mnemonic: {
     type: String,
     required: true
   },
@@ -22,12 +22,7 @@ const WalletUserModel = mongoose.model('WalletUsers', {
     },
     privateKey: String
   },
-  minePlex: {
-    address: String,
-    sk: String,
-    pk: String
-  },
-  mpxXfi: {
+  crossfi: {
     address: {
       type: String,
       required: true

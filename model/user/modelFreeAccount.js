@@ -1,30 +1,51 @@
 const mongoose = require('mongoose');
 
 const FreeAccountModel = mongoose.model('free-account', {
-  busy: Boolean,
-  mnemonic: String,
+  busy: {
+    type: Boolean,
+    required: true
+  },
+  mnemonic: {
+    type: String,
+    required: true
+  },
   del: {
-    address: String,
-    mnemonics: String,
+    address: {
+      type: String,
+      required: true
+    }
   },
   usdt: {
-    address: String,
-    privateKey: String
+    address: {
+      type: String,
+      required: true
+    },
+    privateKey: {
+      type: String,
+      required: true
+    },
   },
-  minePlex: {
-    address: String,
-    sk: String,
-    pk: String
-  },
-  mpxXfi: {
-    address: String
+  crossfi: {
+    address: {
+      type: String,
+      required: true
+    },
   },
   artery: {
-    address: String
+    address: {
+      type: String,
+      required: true
+    },
   },
   minter: {
-    address: String,
-    privateKey: String
+    address: {
+      type: String,
+      required: true
+    },
+    privateKey: {
+      type: String,
+      required: true
+    },
   }
 });
 
