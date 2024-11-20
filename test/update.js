@@ -4,6 +4,7 @@ const { Wallet } = require("dsc-js-sdk");
 const WalletUserModel = require('../model/user/modelWallet');
 const crossfiService = require("../function/crossfi/crossfiService");
 const FreeAccountModel = require('../model/user/modelFreeAccount');
+const { createNewAcc } = require('../service/register/createNewAccAndRegister');
 
 mongoose.connect(config.dataBaseUrl);
 
@@ -26,12 +27,9 @@ async function updateDecimalWallet(seed) {
 
 const updateDb = async () => {
   try {
-    const result = await FreeAccountModel.updateMany(
-      {},
-      { $unset: { minePlex: "" } }
-    );
+    const result = await FreeAccountModel.deleteMany();
 
-    console.log(`Documents minePlex updated: ${result.modifiedCount}`);
+    console.log(result);
   } catch (error) {
     console.error(error)
   }
@@ -68,29 +66,29 @@ const updateWallet = async () => {
       )
     }
 
-    for (const user of allAcc) {
-      const mnemonic = user.mnemonic;
-      console.log('mnemonic', mnemonic);
-      const wallet = await updateDecimalWallet(mnemonic);
+    // for (const user of allAcc) {
+    //   const mnemonic = user.mnemonic;
+    //   console.log('mnemonic', mnemonic);
+    //   const wallet = await updateDecimalWallet(mnemonic);
 
-      const walletCrossfi = await crossfiService.createWallet(mnemonic);
+    //   const walletCrossfi = await crossfiService.createWallet(mnemonic);
 
-      if (!walletCrossfi.status) return
+    //   if (!walletCrossfi.status) return
 
-      await FreeAccountModel.updateOne(
-        { mnemonic: user.mnemonic },
-        {
-          $set: {
-            crossfi: {
-              address: walletCrossfi.address
-            },
-            del: {
-              address: wallet
-            }
-          }
-        }
-      )
-    }
+    //   await FreeAccountModel.updateOne(
+    //     { mnemonic: user.mnemonic },
+    //     {
+    //       $set: {
+    //         crossfi: {
+    //           address: walletCrossfi.address
+    //         },
+    //         del: {
+    //           address: wallet
+    //         }
+    //       }
+    //     }
+    //   )
+    // }
 
   } catch (error) {
     console.error(error)
@@ -98,8 +96,12 @@ const updateWallet = async () => {
 }
 
 (async () => {
-  await updateDb();
-  await updateName();
-  await updateWallet();
+  // await updateDb();
+  // await updateName();
+  // await updateWallet();
+
+  for (let i = 1; i <= 10; i++) {
+    createNewAcc()
+  }
   await mongoose.connection.close();
 })();

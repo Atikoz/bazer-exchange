@@ -66,8 +66,6 @@ const ExchangeStatus = require('./model/modelExchangeStatus.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
 const { TransferTronNet } = require('./function/usdtTransactions.js');
 
-const { SendMpxXfi } = require('./function/mpxXfiTransactions.js');
-
 const sendLog = require('./helpers/sendLog.js');
 const generateButton = require('./helpers/generateButton.js');
 const deleteSelectedCoin = require('./helpers/deleteSelectedCoin.js');
@@ -911,7 +909,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (!isNaN(userCode) && MailService.verificationCode === userCode) {
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
-            const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
+            // const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
             coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
               (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
             await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMpxXfi}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
@@ -2295,11 +2293,8 @@ bot.on('callbackQuery', async (msg) => {
       if (data.split('_')[1] === 'usdt') {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
-      else if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minePlex.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
-      }
       else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.mpxXfi.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.crossfi.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
       }
       else if (data.split('_')[1] === 'artery') {
         await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.artery.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });

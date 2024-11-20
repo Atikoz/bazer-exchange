@@ -21,6 +21,7 @@ const createNewAcc = async () => {
     const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
     const createMinter = createMinterWallet(createDelWallet.mnemonic);
 
+    
     if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
 
     await FreeAccountModel.create({
@@ -33,7 +34,7 @@ const createNewAcc = async () => {
         address: createUsdt.address,
         privateKey: createUsdt.privateKey
       },
-      mpxXfi: {
+      crossfi: {
         address: createMpxXfi.address
       },
       artery: {
@@ -64,7 +65,7 @@ const registerUser = async (userId, email = null) => {
       return {
         status: 'ok',
         message: 'user registered',
-        mnemonic: walletUser.mnemonics
+        mnemonic: walletUser.mnemonic
       };
     }
 
@@ -94,7 +95,7 @@ const registerUser = async (userId, email = null) => {
 
     await WalletUserModel.create({
       id: userId,
-      mnemonics: freeAccount.mnemonic,
+      mnemonic: freeAccount.mnemonic,
       del: {
         address: freeAccount.del.address,
       },
@@ -102,13 +103,8 @@ const registerUser = async (userId, email = null) => {
         address: freeAccount.usdt.address,
         privateKey: freeAccount.usdt.privateKey
       },
-      minePlex: {
-        address: freeAccount.minePlex.pkh,
-        sk: freeAccount.minePlex.sk,
-        pk: freeAccount.minePlex.pk
-      },
-      mpxXfi: {
-        address: freeAccount.mpxXfi.address
+      crossfi: {
+        address: freeAccount.crossfi.address
       },
       artery: {
         address: freeAccount.artery.address
@@ -123,8 +119,6 @@ const registerUser = async (userId, email = null) => {
       id: userId,
       main: {
         usdt: 0,
-        mine: 0,
-        plex: 0,
         mpx: 0,
         xfi: 0,
         artery: 0,
@@ -205,8 +199,6 @@ const registerUser = async (userId, email = null) => {
       },
       hold: {
         usdt: 0,
-        mine: 0,
-        plex: 0,
         mpx: 0,
         xfi: 0,
         artery: 0,
