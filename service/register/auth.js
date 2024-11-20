@@ -2,22 +2,24 @@ const UserModel = require('../../model/user/modelUser.js');
 const WalletUserModel = require('../../model/user/modelWallet.js');
 const BalanceUserModel = require('../../model/user/modelBalance.js');
 const CreateUsdtWallet = require('../../function/createUsdtWallet.js');
-const createDecimalWallet = require('../../function/createDecimalWallet.js');
-const CreateMinePlexWallet = require('../../function/createMinePlexWallet.js');
-const createMpxXfiWallet = require('../../function/createMpxXfiWallet.js');
+const createDecimalWallet = require('../../function/decimal/createDecimalWallet.js');
 const { createUserArteryWallet } = require('../../function/createArteryWallet.js');
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
+const CrossfiService = require('../../function/crossfi/crossfiService.js');
 
 async function Authentication(userId, email = null) {
   try {
     const createDelWallet = await createDecimalWallet();
+    
+    if (!createDelWallet.status) return this.Authentication(userId);
+
     const createUsdt = await CreateUsdtWallet();
-    const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonics);
-    const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonics);
-    const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonics);
-    const createMinter = createMinterWallet(createDelWallet.del.mnemonics)
-    if (createDelWallet.status != 'ok') return this.Authentication(userId);
+    const createMpxXfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
+    const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
+    const createMinter = createMinterWallet(createDelWallet.mnemonic);
+
+    if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
 
     await UserModel.create({
       id: userId,
@@ -33,21 +35,16 @@ async function Authentication(userId, email = null) {
 
     await WalletUserModel.create({
       id: userId,
-      mnemonics: createDelWallet.del.mnemonics,
+      mnemonics: createDelWallet.mnemonic,
       del: {
-        address: createDelWallet.del.address,
+        address: createDelWallet.address,
       },
       usdt: {
         address: createUsdt.address,
         privateKey: createUsdt.privateKey
       },
-      minePlex: {
-        address: createMinePlex.data.keys.pkh,
-        sk: createMinePlex.data.keys.sk,
-        pk: createMinePlex.data.keys.pk
-      },
       mpxXfi: {
-        address: createMpxXfi.data.account.address
+        address: createMpxXfi.address
       },
       artery: {
         address: createArtery
@@ -226,7 +223,7 @@ async function Authentication(userId, email = null) {
       }
     });
 
-    return { status: 'ok', message: 'user registered successfully', mnemonic: createDelWallet.del.mnemonics };
+    return { status: 'ok', message: 'user registered successfully', mnemonic: createDelWallet.mnemonic };
   } catch (error) {
     console.error(error);
     return { status: 'error', message: 'error Authentication function', mnemonic: '' };

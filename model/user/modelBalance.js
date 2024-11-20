@@ -82,8 +82,7 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     crypton: Number,
     iloveyou: Number,
     bazercoin: Number,
-    bazerusd: Number,
-
+    bazerusd: Number
   },
   hold:{
     usdt: Number,
@@ -165,8 +164,7 @@ const BalanceUserModel = mongoose.model('BalanceUsers', {
     crypton: Number,
     iloveyou: Number,
     bazercoin: Number,
-    bazerusd: Number,
-    
+    bazerusd: Number
   }
 });
 

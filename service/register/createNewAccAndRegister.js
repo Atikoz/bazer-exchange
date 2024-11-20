@@ -3,41 +3,38 @@ const UserModel = require('../../model/user/modelUser.js');
 const WalletUserModel = require('../../model/user/modelWallet.js');
 const BalanceUserModel = require('../../model/user/modelBalance.js');
 const CreateUsdtWallet = require('../../function/createUsdtWallet.js');
-const createDecimalWallet = require('../../function/createDecimalWallet.js');
-const CreateMinePlexWallet = require('../../function/createMinePlexWallet.js');
-const createMpxXfiWallet = require('../../function/createMpxXfiWallet.js');
+const createDecimalWallet = require('../../function/decimal/createDecimalWallet.js');
 const { createUserArteryWallet } = require('../../function/createArteryWallet.js');
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
 const FreeAccountModel = require('../../model/user/modelFreeAccount.js');
+const CrossfiService = require('../../function/crossfi/crossfiService.js');
 
 const createNewAcc = async () => {
   try {
     const createDelWallet = await createDecimalWallet();
-    const createUsdt = await CreateUsdtWallet();
-    const createMinePlex = await CreateMinePlexWallet(createDelWallet.del.mnemonic);
-    const createMpxXfi = await createMpxXfiWallet(createDelWallet.del.mnemonic);
-    const createArtery = await createUserArteryWallet(createDelWallet.del.mnemonic);
-    const createMinter = createMinterWallet(createDelWallet.del.mnemonic)
-    if (createDelWallet.status != 'ok') return await createNewAcc();
 
-    await FreeAccountModel.create( {
+    if (!createDelWallet.status) return await createNewAcc();
+    
+    const createUsdt = await CreateUsdtWallet();
+    const createMpxXfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
+    const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
+    const createMinter = createMinterWallet(createDelWallet.mnemonic);
+
+    if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
+
+    await FreeAccountModel.create({
       busy: false,
-      mnemonic: createDelWallet.del.mnemonic,
+      mnemonic: createDelWallet.mnemonic,
       del: {
-        address: createDelWallet.del.address,
+        address: createDelWallet.address,
       },
       usdt: {
         address: createUsdt.address,
         privateKey: createUsdt.privateKey
       },
-      minePlex: {
-        address: createMinePlex.data.keys.pkh,
-        sk: createMinePlex.data.keys.sk,
-        pk: createMinePlex.data.keys.pk
-      },
       mpxXfi: {
-        address: createMpxXfi.data.account.address
+        address: createMpxXfi.address
       },
       artery: {
         address: createArtery
@@ -60,7 +57,7 @@ const registerUser = async (userId, email = null) => {
       UserModel.findOne({ id: userId }).lean(),
       FreeAccountModel.findOne({ busy: false }).lean()
     ]);
-    
+
     // Якщо користувач знайдений, повертаємо дані про нього
     if (existingUser) {
       const walletUser = await WalletUserModel.findOne({ id: userId }).lean();
@@ -293,7 +290,7 @@ const registerUser = async (userId, email = null) => {
     await FreeAccountModel.deleteOne({ mnemonic: freeAccount.mnemonic });
 
     return {
-      status: 'ok', 
+      status: 'ok',
       message: 'user registered successfully',
       mnemonic: freeAccount.mnemonic
     };

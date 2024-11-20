@@ -22,7 +22,7 @@ const createOrder = async (req, res) => {
     const result = await P2PLoansOrder.create({
       buyerId: buyerId,
       sellerId: sellerId,
-      statusOrder: 'Processed',
+      statusOrder: 'WaitPayment',
       type: type,
       name: name,
       currency: currency,

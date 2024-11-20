@@ -4,15 +4,23 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "postinstall": "patch-package"
   },
   "author": "Atikoz",
   "license": "ISC",
   "dependencies": {
+    "@cosmjs/amino": "^0.31.3",
+    "@cosmjs/crypto": "0.31.0",
+    "@cosmjs/math": "^0.31.3",
+    "@cosmjs/proto-signing": "0.31.0",
+    "@cosmjs/stargate": "0.31.0",
+    "@cosmjs/tendermint-rpc": "0.31.0",
     "@types/cron": "^2.4.0",
     "@types/mongoose": "^5.11.97",
     "@types/nodemailer": "^6.4.15",
     "axios": "^1.4.0",
+    "bip39": "^3.1.0",
     "body-parser": "^1.20.2",
     "coingecko": "^1.0.0",
     "coingecko-api": "^1.0.10",
@@ -47,6 +55,7 @@
     "@types/joi": "^17.2.3",
     "@types/node": "^20.14.13",
     "@types/telebot": "^1.2.7",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "patch-package": "^8.0.0"
   }
 }

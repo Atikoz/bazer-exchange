@@ -1,13 +1,25 @@
 const mongoose = require('mongoose');
 
 const WalletUserModel = mongoose.model('WalletUsers', {
-  id: Number,
-  mnemonics: String,
+  id: {
+    type: Number,
+    required: true
+  },
+  mnemonics: {
+    type: String,
+    required: true
+  },
   del: {
-    address: String,
+    address: {
+      type: String,
+      required: true
+    }
   },
   usdt: {
-    address: String,
+    address: {
+      type: String,
+      required: true
+    },
     privateKey: String
   },
   minePlex: {
@@ -16,14 +28,26 @@ const WalletUserModel = mongoose.model('WalletUsers', {
     pk: String
   },
   mpxXfi: {
-    address: String
+    address: {
+      type: String,
+      required: true
+    }
   },
   artery: {
-    address: String
+    address: {
+      type: String,
+      required: true
+    }
   },
   minter: {
-    address: String,
-    privateKey: String
+    address: {
+      type: String,
+      required: true
+    },
+    privateKey: {
+      type: String,
+      required: true
+    }
   }
 
 });

@@ -6,7 +6,6 @@ const checkUserExchangeTransaction = require('../cron/decimal/StatusCheckExchang
 const { checkArtrBalance, checkArtrAdminHash } = require('../cron/artery/ReplenishmentArtr.js');
 const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron/usdt/ReplenishmentUsdtCheck.js');
 const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/mpxXfi/ReplenishmentMpxXfiCheck.js');
-const { checkUserMinePlexTransaction, chechAdminMinePlexTransaction, checkHashSendAdminComission } = require('../cron/minePlex/ReplenishmentMineCheck.js');
 const backupDB = require('../cron/backupDB.js');
 const rewardMinter = require('./minter/RewardBazerHUB.js');
 const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');
@@ -26,11 +25,6 @@ checkOrders.start();
 //USDT
 checkUserUsdtTransaction.start();
 chechAdminUsdtTransaction.start();
-
-// //MINE PLEX
-// checkUserMinePlexTransaction.start();
-// chechAdminMinePlexTransaction.start();
-// checkHashSendAdminComission.start();
 
 // //MPX XFI
 // checkUserMpxXfiTransaction.start();

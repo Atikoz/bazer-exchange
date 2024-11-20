@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const P2PLoansOrder = mongoose.model('p2p-loans-orders', {
   buyerId: Number,
   sellerId: Number,
-  statusOrder: String, //ClientSend, Done, Fail
+  statusOrder: String, //WaitPayment, PaidBuyer, Canceled, Dispute, Done, Fail
   type: String,
   name: String,
   currency: String,

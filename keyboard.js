@@ -44,14 +44,6 @@ const tradeP2PMenuIK = (lang = 'eng') => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'buy'), { callback: 'buyList_p2pOrders' }), bot.inlineButton(getTranslation(lang, 'sell'), { callback: 'sellList_p2pOrders' })]
 ]);
 
-const p2pBetType = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'P2PGoods'), { callback: 'goods_p2p' }), bot.inlineButton(getTranslation(lang, 'p2pLoans'), { callback: 'loans_p2p' })]
-]);
-
-const p2pGoodsType = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'digitalGoods'), { callback: 'digitalGoods_p2p' }), bot.inlineButton(getTranslation(lang, 'physicalGoods'), { callback: 'physicalGoods_p2p' })]
-]);
-
 const typeP2POrder = bot.inlineKeyboard([
   [bot.inlineButton('Купить', { callback: 'p2pBuy' }), bot.inlineButton('Продать', { callback: 'p2pSell' })],
   [bot.inlineButton('Назад 🔙', { callback: 'p2p_back' })]
@@ -185,8 +177,6 @@ module.exports = {
   settingsIK,
   languageIK,
   tradeP2PMenuIK,
-  p2pGoodsType,
-  p2pBetType,
   cabinetIK,
   exchangeIK,
   payOrderCoin,

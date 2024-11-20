@@ -66,7 +66,6 @@ const ExchangeStatus = require('./model/modelExchangeStatus.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
 const { TransferTronNet } = require('./function/usdtTransactions.js');
 
-const { sendCoin } = require('./function/minePlexTransactions.js');
 const { SendMpxXfi } = require('./function/mpxXfiTransactions.js');
 
 const sendLog = require('./helpers/sendLog.js');
@@ -97,6 +96,7 @@ const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
+const crossfiService = require('./function/crossfi/crossfiService.js');
 
 
 mongoose.connect(config.dataBaseUrl);
@@ -217,8 +217,10 @@ bot.on('text', async (msg) => {
     }
 
     
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)ж
+
+    await crossfiService.getBalance('mx1utyfgv6hlj85m06j4p567wca5jcuxztadcq0dh')
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -277,11 +279,11 @@ bot.on('text', async (msg) => {
         break;
 
       case '/test':
-        const a = 'domain art fresh tag music ability spirit elbow defense snake icon ramp length shrimp dentist pen melody exit stomach lava sea blind enough bag';
-        const b ='0xf41c850aa251ab5721bb004fd3fcdbf6603dde2a';
+        // const a = 'domain art fresh tag music ability spirit elbow defense snake icon ramp length shrimp dentist pen melody exit stomach lava sea blind enough bag';
+        // const b ='0xf41c850aa251ab5721bb004fd3fcdbf6603dde2a';
 
-        const c = await SendCoin(a, b, 'del', 1);
-        console.log(c);
+        // const c = await SendCoin(a, b, 'del', 1);
+        // console.log(c);
         break;
 
       case getTranslation(selectedLang, "myAccount"):
@@ -357,6 +359,7 @@ bot.on('text', async (msg) => {
 
     //states
     if (getInfoUser === "not user") return;
+    console.log(`пользователь ${userId} на ${getInfoUser.user.status} стейте`);
     switch (getInfoUser.user.status) {
       case 10:
         setState(userId, 11);
@@ -907,14 +910,6 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         const userCode = +text;
 
         if (!isNaN(userCode) && MailService.verificationCode === userCode) {
-          if (coin[userId] === 'mine' || coin[userId] === 'plex') {
-            const sendMinePlex = await sendCoin(config.adminMinePlexSk, wallet[userId], amount[userId], coin[userId]);
-            if (sendMinePlex.data.error) return bot.sendMessage(userId, 'При выводе возникла ошибка', { replyMarkup: RM_Home(selectedLang) });
-            coin[userId] === 'mine' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
-              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mine', -2))
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMinePlex.data.transaction.hash}</code>`)
-          }
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
             const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
             coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
@@ -1144,10 +1139,14 @@ bot.on('callbackQuery', async (msg) => {
     const selectedLang = getInfoUser.user.lang;
     const userMail = getInfoUser.user.mail;
     const userMnemonic = getInfoUser.userWallet.mnemonics;
-    const arrayCoinList = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
+
+    const balanceUser = await BalanceUserModel.findOne({ id: userId });
+    const arrayCoinList = Object.keys(balanceUser.main)
+    .filter(coin => coin !== 'mine' && coin !== 'plex');
+
     const firstPage = arrayCoinList.slice(0, 20);
 
-    console.log(data);
+    console.log(`пользователь ${userId} отправил колбек: ${data}`);
 
     const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
 
@@ -1614,7 +1613,7 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'deal_p2p':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealMenuText'), { replyMarkup: p2pBetType(selectedLang)});
+        bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealText'));
         
         break;
 

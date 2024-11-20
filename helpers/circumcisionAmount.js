@@ -1,5 +1,5 @@
 const circumcisionAmount = (sum) => {
-  const roundedNumber = Number(sum.toFixed(6));
+  const roundedNumber = sum.toFixed(6);
   
   return +roundedNumber;
 
