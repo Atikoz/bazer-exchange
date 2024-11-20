@@ -20,7 +20,7 @@ class ReplenishmentMpxXfi {
     try {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userWallet = getInfoUser.userWallet.mpxXfi.address;
-      const userMnemonic = getInfoUser.userWallet.mnemonics;
+      const userMnemonic = getInfoUser.userWallet.mnemonic;
       const userTransaction = await getMpxXfiTransactions(userWallet);
       console.log(userTransaction);
 
@@ -102,7 +102,7 @@ class ReplenishmentMpxXfi {
   //     console.log(transaction);
 
   //     const getInfoUser = await UserManagement.getInfoUser(transaction.id);
-  //     const userMnemonic = getInfoUser.userWallet.mnemonics;
+  //     const userMnemonic = getInfoUser.userWallet.mnemonic;
 
   //     const chechTransaction = await CheckTransactionHash(hash);
 

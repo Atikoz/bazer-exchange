@@ -99,9 +99,5 @@ const updateWallet = async () => {
   // await updateDb();
   // await updateName();
   // await updateWallet();
-
-  for (let i = 1; i <= 10; i++) {
-    createNewAcc()
-  }
   await mongoose.connection.close();
 })();

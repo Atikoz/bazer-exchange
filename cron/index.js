@@ -5,7 +5,6 @@ const checkMinterTransaction = require('../cron/minter/ReplenishmentMinterCheck.
 const checkUserExchangeTransaction = require('../cron/decimal/StatusCheckExchanger.js');
 const { checkArtrBalance, checkArtrAdminHash } = require('../cron/artery/ReplenishmentArtr.js');
 const { checkUserUsdtTransaction, chechAdminUsdtTransaction } = require('../cron/usdt/ReplenishmentUsdtCheck.js');
-const { checkUserMpxXfiTransaction, checkAdminMpxXfiTransaction } = require('../cron/mpxXfi/ReplenishmentMpxXfiCheck.js');
 const backupDB = require('../cron/backupDB.js');
 const rewardMinter = require('./minter/RewardBazerHUB.js');
 const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');

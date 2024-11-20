@@ -22,7 +22,7 @@ class MinterTransaction {
 
       return { status: true, hash: sendRequest.hash };
     } catch (error) {
-      console.error(error.response.data);
+      console.error(error);
       return { status: false, error: error.response.data.error.message };
     }
   };
@@ -52,7 +52,7 @@ class MinterTransaction {
     try {
       const config = {
         method: 'get',
-        url: `http://api-minter.mnst.club:8843/v2/transaction/${hash}`,
+        url: `http://api-minter.mnst.club:8443/v2/transaction/${hash}`,
         headers: {}
       };
 
@@ -94,7 +94,7 @@ class MinterTransaction {
     try {
       const config = {
         method: 'get',
-        url: `http://api-minter.mnst.club:8843/v2/best_trade/${sellCoinId}/${buyCoinId}/output/${amount}?max_depth=5`,
+        url: `http://api-minter.mnst.club:8443/v2/best_trade/${sellCoinId}/${buyCoinId}/output/${amount}?max_depth=5`,
         headers: {}
       };
 
@@ -114,7 +114,7 @@ class MinterTransaction {
       const amount = valueToNumber(valueToSell);
       const firstElement = 0;
       const lastElement = routeArray.length - 1;
-      let url = `http://api-minter.mnst.club:8843/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[lastElement]}&coin_id_to_sell=${routeArray[firstElement]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool`;
+      let url = `http://api-minter.mnst.club:8443/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[lastElement]}&coin_id_to_sell=${routeArray[firstElement]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool`;
 
       if (routeArray.length > 2) {
         for (let i = 1; i < routeArray.length - 1; i++) {

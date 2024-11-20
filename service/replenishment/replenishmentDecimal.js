@@ -97,7 +97,7 @@ class ReplenishmentDecimal {
 
           if (examinationIf) {
             const comission = await sleep(5000).then(async () => await TransferCommission(
-              getInfoUser.userWallet.mnemonics,
+              getInfoUser.userWallet.mnemonic,
               decimalWallet,
               tx.data.coin,
               (tx.data.amount / 1e18) - 63
@@ -106,7 +106,7 @@ class ReplenishmentDecimal {
             console.log('Calculated comission:', comission);
 
             const moneyTransfer = await sleep(5000).then(async () => await SendCoin(
-              getInfoUser.userWallet.mnemonics,
+              getInfoUser.userWallet.mnemonic,
               decimalWallet,
               tx.data.coin,
               tx.data.amount / 1e18 - comission

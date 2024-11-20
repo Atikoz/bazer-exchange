@@ -215,8 +215,8 @@ bot.on('text', async (msg) => {
     }
 
     
-    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)ж
+    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)ж
 
     await crossfiService.getBalance('mx1utyfgv6hlj85m06j4p567wca5jcuxztadcq0dh')
 
@@ -1136,7 +1136,7 @@ bot.on('callbackQuery', async (msg) => {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
     const userMail = getInfoUser.user.mail;
-    const userMnemonic = getInfoUser.userWallet.mnemonics;
+    const userMnemonic = getInfoUser.userWallet.mnemonic;
 
     const balanceUser = await BalanceUserModel.findOne({ id: userId });
     const arrayCoinList = Object.keys(balanceUser.main)

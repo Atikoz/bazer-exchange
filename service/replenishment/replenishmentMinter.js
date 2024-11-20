@@ -14,7 +14,7 @@ class ReplenishmentMinter {
     try {
       const getInfoUser = await UserManagement.getInfoUser(id);
       const userAddress = getInfoUser.userWallet.minter.address;
-      const userSeed = getInfoUser.userWallet.mnemonics;
+      const userSeed = getInfoUser.userWallet.mnemonic;
 
       const minimumAmounts = {
         BIP: 100,
@@ -54,7 +54,7 @@ class ReplenishmentMinter {
           +transaction.data.value >= minimumAmount;
 
         if (requirements) {
-          console.log('found trancsaction');
+          console.log('found trancsaction', transaction.hash);
 
           const coinId = await getCoinId(coin);
           const commissionTransfer = await sleep(5000).then(async () => await getCommissionTx(config.adminMinterWallet, transaction.data.value, coinId));
