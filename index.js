@@ -198,7 +198,7 @@ bot.on('text', async (msg) => {
   try {
     const typeMsg = msg.chat.type;
     if (typeMsg !== 'private') return
-    
+
     const userId = msg.from.id;
     const text = msg.text;
     const userName = msg.from.first_name;
@@ -214,9 +214,8 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`)ж
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     await crossfiService.getBalance('mx1utyfgv6hlj85m06j4p567wca5jcuxztadcq0dh')
 
@@ -224,7 +223,7 @@ bot.on('text', async (msg) => {
 
 
     if (text === '/start') {
-      
+
       if (getInfoUser === "not user") {
         await registerUser(userId);
         setState(userId, 31);
@@ -336,7 +335,7 @@ bot.on('text', async (msg) => {
         userRate[userId] = getCoinRate('cashbsc', 'bazerhub');
 
         bot.sendMessage(userId, `<b>${getTranslation(selectedLang, 'minimalAmountBuyBazerHub')}!</b>  ${getTranslation(selectedLang, 'rate')}: 1 CASHBSC ≈ <code>${userRate[userId].toFixed(9)}</code> BAZERHUB. ${getTranslation(selectedLang, 'available')}: ${circumcisionAmount(balanceUserCoin[userId])} CASHBSC. ${getTranslation(selectedLang, 'coinSaleAmountPrompt')}`, { parseMode: 'html' });
-       break;
+        break;
 
       case getTranslation(selectedLang, "tradeButton"):
         bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSection'), { replyMarkup: RM_Trade(selectedLang) });
@@ -1140,7 +1139,7 @@ bot.on('callbackQuery', async (msg) => {
 
     const balanceUser = await BalanceUserModel.findOne({ id: userId });
     const arrayCoinList = Object.keys(balanceUser.main)
-    .filter(coin => coin !== 'mine' && coin !== 'plex');
+      .filter(coin => coin !== 'mine' && coin !== 'plex');
 
     const firstPage = arrayCoinList.slice(0, 20);
 
@@ -1612,7 +1611,7 @@ bot.on('callbackQuery', async (msg) => {
       case 'deal_p2p':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, getTranslation(selectedLang, 'p2pDealText'));
-        
+
         break;
 
       case 'p2pBuy':
@@ -1910,6 +1909,9 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'decimalExchange':
         bot.deleteMessage(userId, messageId);
+
+        return bot.sendMessage(userId, 'На данный момент конвертацие монет из сети Decimal недоступна. Приносим свои извенения.');
+        
         const decimalCoinList = (Object.keys((await BalanceUserModel.findOne({ id: userId })).main)).filter((element) =>
           !(element === 'bip' ||
             element === 'hub' ||
@@ -2279,27 +2281,10 @@ bot.on('callbackQuery', async (msg) => {
 
     else if (data.split('_')[0] === 'replenishment') {
       bot.deleteMessage(userId, messageId);
-      const textReplenishment = [
-        `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
-        'Деньги прийдут в течении 10 минут.',
-        `<b>Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}. В случает пополнения суммы меньшей минимальной деньги не будут зачислены на счет!</b>`,
-        'Для пополнение баланса переведите средства на свой адрес ниже:'
-      ].join('\n');
-      await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
 
-      // if (data.split('_')[1] === 'usdt') {
-      //   return bot.sendMessage(userId, 'Пополнение USDT временно недоступно!');
-      // }
-      if (data.split('_')[1] === 'usdt') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
-      }
-      else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.crossfi.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
-      }
-      else if (data.split('_')[1] === 'artery') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.artery.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
-      }
-      else if (data.split('_')[1] === 'bip' ||
+      if (data.split('_')[1] === 'usdt' ||
+        data.split('_')[1] === 'artery' ||
+        data.split('_')[1] === 'bip' ||
         data.split('_')[1] === 'hub' ||
         data.split('_')[1] === 'monsterhub' ||
         data.split('_')[1] === 'bnb' ||
@@ -2308,11 +2293,42 @@ bot.on('callbackQuery', async (msg) => {
         data.split('_')[1] === 'cashbsc' ||
         data.split('_')[1] === 'minterBazercoin' ||
         data.split('_')[1] === 'bazerhub' ||
-        data.split('_')[1] === 'ruble') {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minter.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        data.split('_')[1] === 'ruble'
+      ) {
+        const textReplenishment = [
+          `Способ пополнения через <b>${data.split('_')[1].toUpperCase()}</b>`,
+          'Деньги прийдут в течении 10 минут.',
+          `<b>Минимальная сумма пополнения ${minimalSum[data.split('_')[1]]} ${data.split('_')[1].toUpperCase()}. В случает пополнения суммы меньшей минимальной деньги не будут зачислены на счет!</b>`,
+          'Для пополнение баланса переведите средства на свой адрес ниже:'
+        ].join('\n');
+        await bot.sendMessage(userId, textReplenishment, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+
+        if (data.split('_')[1] === 'usdt') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.usdt.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        }
+        else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.crossfi.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        }
+        else if (data.split('_')[1] === 'artery') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.artery.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        }
+        else if (data.split('_')[1] === 'bip' ||
+          data.split('_')[1] === 'hub' ||
+          data.split('_')[1] === 'monsterhub' ||
+          data.split('_')[1] === 'bnb' ||
+          data.split('_')[1] === 'usdtbsc' ||
+          data.split('_')[1] === 'bipkakaxa' ||
+          data.split('_')[1] === 'cashbsc' ||
+          data.split('_')[1] === 'minterBazercoin' ||
+          data.split('_')[1] === 'bazerhub' ||
+          data.split('_')[1] === 'ruble') {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.minter.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        } else {
+          await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
+        };
       } else {
-        await bot.sendMessage(userId, `<code>${getInfoUser.userWallet.del.address}</code>`, { replyMarkup: RM_Home(selectedLang), parseMode: 'html' });
-      };
+        return bot.sendMessage(userId, `В данный момент пополнение ${data.split('_')[1].toUpperCase()} недоступно, приносим свои извениния.`)
+      }
     }
 
     else if (data === 'withdrawal_Page1') {
@@ -2342,11 +2358,9 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'withdrawal') {
       bot.deleteMessage(userId, messageId);
       let delCoin;
-      (data.split('_')[1] === 'mine') ||
-        (data.split('_')[1] === 'plex') ||
         (data.split('_')[1] === 'usdt') ||
-        (data.split('_')[1] === 'mpx') ||
-        (data.split('_')[1] === 'xfi') ||
+        // (data.split('_')[1] === 'mpx') ||
+        // (data.split('_')[1] === 'xfi') ||
         (data.split('_')[1] === 'artery') ||
         (data.split('_')[1] === 'bip') ||
         (data.split('_')[1] === 'monsterhub') ||
@@ -2360,24 +2374,12 @@ bot.on('callbackQuery', async (msg) => {
         (data.split('_')[1] === 'minterBazercoin') ?
         delCoin = false : delCoin = true;
 
-      if (data.split('_')[1] === 'mine' || data.split('_')[1] === 'plex') {
+      if (data.split('_')[1] === 'usdt') {
         coin[userId] = data.split('_')[1];
         balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
         minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия вывода составляет 2 MINE! Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
+        await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}. Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
         setState(userId, 27);
-      };
-      if (data.split('_')[1] === 'usdt') {
-        try {
-          coin[userId] = data.split('_')[1];
-          balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
-          minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}. Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
-          setState(userId, 27);
-        } catch (error) {
-          console.error(error);
-          bot.sendMessage(userId, 'Возникла ошибка');
-        }
       }
       else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
         try {
@@ -2426,11 +2428,12 @@ bot.on('callbackQuery', async (msg) => {
       }
 
       if (delCoin) {
-        coin[userId] = data.split('_')[1];
-        balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
-        minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-        bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
-        setState(userId, 10);
+        return bot.sendMessage(userId, `На данный момент вывод монеты ${data.split('_')[1].toUpperCase()} недоступен. Приносим свои извенения.`)
+        // coin[userId] = data.split('_')[1];
+        // balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+        // minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+        // bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nКомиссия оплачивается за счёт пользователя!\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Введите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
+        // setState(userId, 10);
       }
     }
     else if (data === 'sellDecimalExchange_Page1') {

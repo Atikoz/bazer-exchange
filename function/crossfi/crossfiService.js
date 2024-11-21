@@ -158,6 +158,7 @@ class CrossfiService {
     }
   }
 
+  //TODO: amountToSend надо сделать числом блокчейна
   async sendCoin(recipient, mnemonic, denom, amountToSend) {
     try {
       const GAS_PRICE = {
@@ -190,7 +191,7 @@ class CrossfiService {
         value: {
           fromAddress: newAddressAccountData.address,
           toAddress: recipient,
-          amount: [coin(amountToSend, denom)], // amountToSend надо сделать числом блокчейна
+          amount: [coin(amountToSend, denom)],
         },
       };
   

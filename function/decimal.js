@@ -3,7 +3,7 @@ const { Wallet, DecimalEVM, DecimalNetworks } = require("dsc-js-sdk");
 async function SendCoin(mnemonic, wallet, coin, amount) {
   try {
     const decimalWallet = new Wallet(mnemonic);
-    const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.devnet);
+    const decimalEVM = new DecimalEVM(decimalWallet, DecimalNetworks.mainnet);
 
     await decimalEVM.connect('contract-center');
     const sendAmount = decimalEVM.parseEther(amount);
