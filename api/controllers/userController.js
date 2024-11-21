@@ -9,7 +9,7 @@ const payWithBot = async (req, res) => {
   try {
     const { userId, amount, coin, mnemonic } = req.body;
     const balanceUser = (await getInfo(userId)).userBalance.main;
-    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonics);
+    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonic);
 
     if (mnemonicUser !== mnemonic.trim()) throw new Error('invalid seed phrase');
 
@@ -69,7 +69,7 @@ const getBalanceUser = async (req, res) => {
   try {
     const { userId, mnemonic } = req.body;
     const balanceUser = (await getInfo(userId)).userBalance.main;
-    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonics);
+    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonic);
 
     if (mnemonicUser !== mnemonic.trim()) throw new Error('invalid seed phrase');
 

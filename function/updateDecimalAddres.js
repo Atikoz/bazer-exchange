@@ -23,7 +23,7 @@ async function updateDecimalWallet () {
   try {
     const users = await WalletUserModel.find({});
     users.map(async (u) => {
-      const updatedWallet = await getDecimalInfo(u.mnemonics);
+      const updatedWallet = await getDecimalInfo(u.mnemonic);
       console.log('updatedWallet', updatedWallet);
       await WalletUserModel.updateOne( { id: u.id }, { $set: { del: { address: updatedWallet }} }).then(() => console.log('wallet updated'))
     })

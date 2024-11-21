@@ -35,7 +35,7 @@ async function Authentication(userId, email = null) {
 
     await WalletUserModel.create({
       id: userId,
-      mnemonics: createDelWallet.mnemonic,
+      mnemonic: createDelWallet.mnemonic,
       del: {
         address: createDelWallet.address,
       },

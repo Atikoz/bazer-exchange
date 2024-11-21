@@ -72,7 +72,7 @@ class DecimalService {
     }
   }
 
-  async getTransferCommission(mnemonics, wallet, coin, amount) {
+  async getTransferCommission(mnemonic, wallet, coin, amount) {
     try {
       if (coin === 'cashback') return 15
   
@@ -82,7 +82,7 @@ class DecimalService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mnemonics: `${mnemonics}`,
+          mnemonics: `${mnemonic}`,
           transaction: {
             network: 'mainnet',
             isNodeDirectMode: false,

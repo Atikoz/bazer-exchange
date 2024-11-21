@@ -149,7 +149,7 @@ class ReplenishmentMinePlex {
           console.log('model send admin wallet created');
         }
       } else {
-        const userMnemonic = getInfoUser.userWallet.mnemonics;
+        const userMnemonic = getInfoUser.userWallet.mnemonic;
 
         const chechTransaction = await CheckTransactionHash(transaction.hash);
 

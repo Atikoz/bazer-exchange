@@ -214,8 +214,8 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     await crossfiService.getBalance('mx1utyfgv6hlj85m06j4p567wca5jcuxztadcq0dh')
 

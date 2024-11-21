@@ -8,7 +8,7 @@ const CronJob = require('cron').CronJob;
 const checkArtrBalance = new CronJob('0 */1 * * * *', async () => {
   try {
     const wallets = await WalletUserModel.find({});
-    wallets.map(async (w) => { await checkBalanceArtery(w.id, w.mnemonics, w.artery.address) });
+    wallets.map(async (w) => { await checkBalanceArtery(w.id, w.mnemonic, w.artery.address) });
   } catch (error) {
     console.error(error)
   }

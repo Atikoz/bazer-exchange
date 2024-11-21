@@ -1,13 +1,13 @@
 const axios = require('axios');
 
 class ExchangeCoinTransaction {
-  async exchangeComission(mnemonics, sellCoin, buyCoin, amountBuy, amountSell) {
+  async exchangeComission(mnemonic, sellCoin, buyCoin, amountBuy, amountSell) {
     try {
       return await axios({
         method: 'POST',
         url: `https://cryptoapi7.ru/api/v1/buyCoin`,
         data: JSON.stringify({
-          "mnemonics": `${mnemonics}`,
+          "mnemonics": `${mnemonic}`,
           "transaction": {
             "network": "mainnet",
             "isNodeDirectMode": false,

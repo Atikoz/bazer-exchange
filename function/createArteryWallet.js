@@ -33,7 +33,7 @@ const createArteryManyWallet = async (arr) => {
   const seed = config.adminArteryMnemonic;
   console.log('admnim mnemonic: ', seed);
   const wallet = new Wallet(seed);
-  const arrayMnemonic = arr.map((item) => item.mnemonics);
+  const arrayMnemonic = arr.map((item) => item.mnemonic);
   const arrayUser = arr.map((item) => item.id);
 
   // Url ноды к которой слать запросы
