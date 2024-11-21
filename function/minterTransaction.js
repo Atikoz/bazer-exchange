@@ -2,8 +2,13 @@ const axios = require('axios');
 const Decimal = require('decimal.js');
 const valueToNumber = require('../helpers/valueToNumber.js');
 const { Minter, TX_TYPE } = require("minter-js-sdk");
+const configBot = require('../config.js');
 
-const minter = new Minter({ apiType: 'node', baseURL: 'https://api-minter.mnst.club/v2/' });
+const minter = new Minter(
+  {
+    apiType: 'node',
+    baseURL: 'https://api-minter.mnst.club/v2/'
+  });
 
 class MinterTransaction {
   sendMinter = async (address, amount, seed, coin) => {
@@ -52,7 +57,7 @@ class MinterTransaction {
     try {
       const config = {
         method: 'get',
-        url: `http://api-minter.mnst.club:8443/v2/transaction/${hash}`,
+        url: `${configBot.minterNodeUrl}/v2/transaction/${hash}`,
         headers: {}
       };
 
@@ -81,7 +86,7 @@ class MinterTransaction {
 
   getCoinId = async (coinName) => {
     try {
-      
+
       const coinId = await minter.getCoinId(coinName.toUpperCase());
 
       return +coinId
@@ -94,7 +99,7 @@ class MinterTransaction {
     try {
       const config = {
         method: 'get',
-        url: `http://api-minter.mnst.club:8443/v2/best_trade/${sellCoinId}/${buyCoinId}/output/${amount}?max_depth=5`,
+        url: `${configBot.minterNodeUrl}/v2/best_trade/${sellCoinId}/${buyCoinId}/output/${amount}?max_depth=5`,
         headers: {}
       };
 
@@ -114,7 +119,7 @@ class MinterTransaction {
       const amount = valueToNumber(valueToSell);
       const firstElement = 0;
       const lastElement = routeArray.length - 1;
-      let url = `http://api-minter.mnst.club:8443/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[lastElement]}&coin_id_to_sell=${routeArray[firstElement]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool`;
+      let url = `${configBot.minterNodeUrl}/v2/estimate_coin_sell?coin_id_to_buy=${routeArray[lastElement]}&coin_id_to_sell=${routeArray[firstElement]}&value_to_sell=${amount}&coin_id_commission=0&swap_from=pool`;
 
       if (routeArray.length > 2) {
         for (let i = 1; i < routeArray.length - 1; i++) {
@@ -162,7 +167,7 @@ class MinterTransaction {
   getBalance = async (address) => {
     const config = {
       method: 'get',
-      url: `http://api-minter.mnst.club:8443/v2/address/${address}?delegated=false`,
+      url: `${configBot.minterNodeUrl}/v2/address/${address}?delegated=false`,
       headers: {}
     };
 
