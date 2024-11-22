@@ -5,6 +5,7 @@ const WalletUserModel = require('../model/user/modelWallet');
 const crossfiService = require("../function/crossfi/crossfiService");
 const FreeAccountModel = require('../model/user/modelFreeAccount');
 const { createNewAcc } = require('../service/register/createNewAccAndRegister');
+const P2PLoansOrder = require('../model/p2pLoans/modelP2POrder');
 
 mongoose.connect(config.dataBaseUrl);
 
@@ -95,9 +96,19 @@ const updateWallet = async () => {
   }
 }
 
+const update = async () => {
+  try {
+    await P2PLoansOrder.deleteMany();
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+
 (async () => {
   // await updateDb();
   // await updateName();
   // await updateWallet();
+  await update()
   await mongoose.connection.close();
 })();

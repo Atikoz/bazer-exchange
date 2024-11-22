@@ -7,6 +7,7 @@ module.exports = (io) => {
     try {
     socket.on('joinOrder', async ({ socketId, telegramId }) => {
       try {
+        console.log(socketId);
         const order = await P2PLoansOrder.findOne({ socketId });
 
         if (!order) {
