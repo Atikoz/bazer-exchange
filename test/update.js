@@ -4,8 +4,12 @@ const { Wallet } = require("dsc-js-sdk");
 const WalletUserModel = require('../model/user/modelWallet');
 const crossfiService = require("../function/crossfi/crossfiService");
 const FreeAccountModel = require('../model/user/modelFreeAccount');
-const { createNewAcc } = require('../service/register/createNewAccAndRegister');
+const { createNewAcc, registerUser } = require('../service/register/createNewAccAndRegister');
 const P2PLoansOrder = require('../model/p2pLoans/modelP2POrder');
+const UserModel = require('../model/user/modelUser');
+const BalanceUserModel = require('../model/user/modelBalance');
+const ProfitPoolModel = require('../model/user/modelProfitPool');
+const createFreeAcc = require('../cron/createFeeAccount');
 
 mongoose.connect(config.dataBaseUrl);
 
@@ -98,7 +102,23 @@ const updateWallet = async () => {
 
 const update = async () => {
   try {
-    await P2PLoansOrder.deleteMany();
+    await createFreeAcc()
+    await createFreeAcc()
+    await createFreeAcc()
+    
+    const id = 7122942360;
+
+    const user = await UserModel.find({ id: id });
+    const balance = await BalanceUserModel.find({ id: id })
+    const wallet = await WalletUserModel.find({ id: id });
+    const poolProfit = await ProfitPoolModel.find({ id: id });
+
+    console.log('user', user);
+    console.log('balance', balance);
+    console.log('wallet', wallet);
+    console.log('poolProfit', poolProfit);
+
+
   } catch (error) {
     console.error(error)
   }
