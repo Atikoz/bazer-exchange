@@ -102,9 +102,12 @@ const updateWallet = async () => {
 
 const update = async () => {
   try {
-    await createFreeAcc()
-    await createFreeAcc()
-    await createFreeAcc()
+    // await createNewAcc()
+    // await createNewAcc()
+    // await createNewAcc()
+
+    const freeAcc = await FreeAccountModel.find();
+    console.log('free acc', freeAcc);
     
     const id = 7122942360;
 
@@ -117,6 +120,8 @@ const update = async () => {
     console.log('balance', balance);
     console.log('wallet', wallet);
     console.log('poolProfit', poolProfit);
+
+    // await registerUser(999)
 
 
   } catch (error) {
