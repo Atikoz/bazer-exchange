@@ -10,6 +10,7 @@ const UserModel = require('../model/user/modelUser');
 const BalanceUserModel = require('../model/user/modelBalance');
 const ProfitPoolModel = require('../model/user/modelProfitPool');
 const createFreeAcc = require('../cron/createFeeAccount');
+const createDecimalWallet = require('../function/decimal/createDecimalWallet');
 
 mongoose.connect(config.dataBaseUrl);
 
@@ -107,33 +108,45 @@ const update = async () => {
     // await createNewAcc()
 
     const freeAcc = await FreeAccountModel.find();
-    console.log('free acc', freeAcc);
+    console.log('free acc', freeAcc.length);
     
-    const id = 7122942360;
+    // const id = 7122942360;
+    // const id = 5558197931;
 
     const user = await UserModel.find({ id: id });
     const balance = await BalanceUserModel.find({ id: id })
     const wallet = await WalletUserModel.find({ id: id });
     const poolProfit = await ProfitPoolModel.find({ id: id });
 
+
+    // const user = await UserModel.deleteOne({ id: id });
+    // const balance = await BalanceUserModel.deleteOne({ id: id })
+    // const wallet = await WalletUserModel.deleteOne({ id: id });
+    // const poolProfit = await ProfitPoolModel.deleteOne({ id: id });
+
+
+
     console.log('user', user);
     console.log('balance', balance);
     console.log('wallet', wallet);
     console.log('poolProfit', poolProfit);
 
-    // await registerUser(999)
-
-
+    // await registerUser(id)
   } catch (error) {
     console.error(error)
   }
 }
 
+const createCrossfi = async () => {
+  const walletDecimal = await createDecimalWallet()
+  const walletCrossfi = await crossfiService.createWallet(walletDecimal.mnemonic);
+
+  console.log('walletDecimal', walletDecimal);
+  console.log('walletCrossfi', walletCrossfi);
+}
+
 
 (async () => {
-  // await updateDb();
-  // await updateName();
-  // await updateWallet();
-  await update()
+  await createCrossfi();
   await mongoose.connection.close();
 })();

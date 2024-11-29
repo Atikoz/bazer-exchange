@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
 const BuyBazerhubMinter = mongoose.model('buy-bazerhub-minter', {
-  id: Number,
-  hash: String,
+  id: {
+    type: Number,
+    required: true
+  },
+  hash: {
+    type: String,
+    required: true
+  },
 });
 
 module.exports = BuyBazerhubMinter;

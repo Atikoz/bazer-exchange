@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
 const ProfitPoolModel = mongoose.model('Profit-pool-model', {
-  id: String,
-  profit: Number
+  id: {
+    type: String,
+    required: true
+  },
+  profit: {
+    type: Number,
+    default: 0
+  }
 });
 
 module.exports = ProfitPoolModel;

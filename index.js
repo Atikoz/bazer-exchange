@@ -94,7 +94,6 @@ const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
-const crossfiService = require('./function/crossfi/crossfiService.js');
 
 
 mongoose.connect(config.dataBaseUrl);
@@ -214,10 +213,8 @@ bot.on('text', async (msg) => {
       selectedMail = getInfoUser.user.mail;
     }
 
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
-
-    await crossfiService.getBalance('mx1utyfgv6hlj85m06j4p567wca5jcuxztadcq0dh')
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -238,51 +235,6 @@ bot.on('text', async (msg) => {
     if (!msg.from.username) return bot.sendMessage(userId, getTranslation(selectedLang, 'alertUnknownUserName'));
 
     switch (text) {
-      case '/update':
-        async function startTe() {
-          try {
-            console.log('Inside startTe function');
-            const users = await WalletUserModel.find({});
-            users.map(async (u) => {
-              // await WalletUserModel.updateOne({ id: u.id }, { $set: { mnemonics: u.del.mnemonics } });
-
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   { $unset: { "del.mnemonics": "" } },
-              // );
-
-              // await UserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set": { "mail": ${null}} }`)
-              // )
-
-              // await WalletUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set": { "minter.address": "${a.address}", "minter.privateKey": "${a.privateKey}" } }`)
-              // );
-
-              // await BalanceUserModel.updateOne(
-              //   { id: u.id },
-              //   JSON.parse(`{ "$set" : { "main.bazerhub": "0", "hold.bazerhub": "0" } }`)
-              // );
-            });
-          } catch (error) {
-            console.error(error);
-          }
-        };
-
-        // await startTe();
-        bot.sendMessage(userId, 'Изменения применены...');
-        break;
-
-      case '/test':
-        // const a = 'domain art fresh tag music ability spirit elbow defense snake icon ramp length shrimp dentist pen melody exit stomach lava sea blind enough bag';
-        // const b ='0xf41c850aa251ab5721bb004fd3fcdbf6603dde2a';
-
-        // const c = await SendCoin(a, b, 'del', 1);
-        // console.log(c);
-        break;
-
       case getTranslation(selectedLang, "myAccount"):
         setState(userId, 0);
         let userMail = '';
@@ -1135,7 +1087,6 @@ bot.on('callbackQuery', async (msg) => {
     const getInfoUser = await UserManagement.getInfoUser(userId);
     const selectedLang = getInfoUser.user.lang;
     const userMail = getInfoUser.user.mail;
-    const userMnemonic = getInfoUser.userWallet.mnemonic;
 
     const balanceUser = await BalanceUserModel.findOne({ id: userId });
     const arrayCoinList = Object.keys(balanceUser.main)
@@ -2060,15 +2011,6 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         bot.sendMessage(userId, getTranslation(selectedLang, 'supportText'));
         break;
 
-      case 'showMnemonic':
-        bot.deleteMessage(userId, messageId);
-
-        if (!userMail) return bot.sendMessage(userId, 'У вас не указаная электронная почта, пожалуйста укажите её перейдя в настройки.');
-
-        MailService.sendMnemonicEmail(userMail, userMnemonic);
-        bot.sendMessage(userId, 'Ваша seed фраза отправлена вам на почту.');
-        break;
-
       case 'instructionsMenu':
         bot.deleteMessage(userId, messageId);
         bot.sendMessage(userId, getTranslation(selectedLang, 'instructionsMenu'),);
@@ -2358,7 +2300,7 @@ bot.on('callbackQuery', async (msg) => {
     else if (data.split('_')[0] === 'withdrawal') {
       bot.deleteMessage(userId, messageId);
       let delCoin;
-        (data.split('_')[1] === 'usdt') ||
+      (data.split('_')[1] === 'usdt') ||
         // (data.split('_')[1] === 'mpx') ||
         // (data.split('_')[1] === 'xfi') ||
         (data.split('_')[1] === 'artery') ||

@@ -15,13 +15,13 @@ const createNewAcc = async () => {
     const createDelWallet = await createDecimalWallet();
 
     if (!createDelWallet.status) return await createNewAcc();
-    
+
     const createUsdt = await CreateUsdtWallet();
     const createMpxXfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
     const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
     const createMinter = createMinterWallet(createDelWallet.mnemonic);
 
-    
+
     if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
 
     await FreeAccountModel.create({
@@ -87,11 +87,8 @@ const registerUser = async (userId, email = null) => {
     });
 
     await ProfitPoolModel.create({
-      id: userId,
-      profit: 0
+      id: userId
     });
-
-    console.log(freeAccount);
 
     await WalletUserModel.create({
       id: userId,

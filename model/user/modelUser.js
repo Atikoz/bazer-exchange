@@ -1,12 +1,18 @@
 const mongoose = require('mongoose');
 
 const UserModel = mongoose.model('Users', {
-  id: String,
+  id: {
+    type: String,
+    required: true
+  },
   status: {
     type: Number,
     default: 0
   },
-  mail: String,
+  mail: {
+    type: String,
+    required: true
+  },
   lang: {
     type: String,
     default: 'eng'

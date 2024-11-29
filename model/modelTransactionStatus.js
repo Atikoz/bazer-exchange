@@ -1,11 +1,26 @@
 const mongoose = require('mongoose');
 
 const TransactionStatus = mongoose.model('TransactionStatus', {
-  id: String,
-  hash: String,
-  status: String,
-  amount: Number,
-  processed: Boolean,
+  id: {
+    type: String,
+    required: true
+  },
+  hash: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  processed: {
+    type: Boolean,
+    required: true
+  },
 })
 
 module.exports = TransactionStatus;
