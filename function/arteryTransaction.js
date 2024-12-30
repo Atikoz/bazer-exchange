@@ -1,17 +1,20 @@
 const axios = require('axios');
-const { Wallet } = require('artery-api');
+const { Wallet } = require('dem-api');
 const config = require('../config.js');
 const ArteryReplenishment = require('../model/modelArterySendAdmin.js');
 const BalanceUserModel = require('../model/user/modelBalance.js');
 const sendLog = require('../helpers/sendLog.js');
 const { sendMessage } = require('../helpers/tgFunction.js');
+const encryptionService = require('./encryptionService.js');
 
 const nodeUrl = 'http://167.172.51.179:1317';
 
 class ReplenishmentArtery {
   async authWallet(seed) {
+    seed = encryptionService.decryptSeed(seed)
+    const wallet = new Wallet(seed);
+
     try {
-      const wallet = new Wallet(seed);
       const accData = await axios({
         method: 'GET',
         url: nodeUrl + '/cosmos/auth/v1beta1/accounts/' + wallet.address
@@ -34,6 +37,8 @@ class ReplenishmentArtery {
   async sendArtery(seed, recipient, amount) {
     try {
       amount = amount * 1e6;
+      seed = encryptionService.decryptSeed(seed)
+
       const wallet = await this.authWallet(seed);
       // Резолвим адрес из ника / адреса Arteru / bech32 (sdk) адреса
       recipient = recipient.toLowerCase();
@@ -85,7 +90,6 @@ class ReplenishmentArtery {
   // convertAddress = async (address) => {
   //   const config = {
   //     method: 'get',
-  //     maxBodyLength: Infinity,
   //     url: `http://167.172.51.179:1317/artery/profile/v1beta1/get_by_card/${address}`,
   //     headers: {}
   //   };
@@ -104,7 +108,7 @@ class ReplenishmentArtery {
     try {
       const config = {
         method: 'get',
-        url: `http://167.172.51.179:1317/artery/bank/v1beta1/balance/${address}`,
+        url: `${nodeUrl}/artery/bank/v1beta1/balance/${address}`,
         headers: {}
       };
 
@@ -126,16 +130,19 @@ class ReplenishmentArtery {
     }
   };
 
-
+  //проверка баланса пользователя
   checkBalanceArtery = async (userId, seed, address) => {
     try {
+      seed = encryptionService.decryptSeed(seed)
       const balanceUser = await this.getBalanceArtery(address);
-      //проверка баланса пользователя
+      
       if (balanceUser < 1) return;
+
       console.log("баланс пользователя", userId, balanceUser, "artr");
 
       const totalAmountARTR = (balanceUser - balanceUser * 0.0055).toFixed(5);
       const sendCoin = await this.sendArtery(seed, config.adminArteryWallet, totalAmountARTR);
+
       console.log('sendCoin responce:', sendCoin);
       console.log('sendCoin hash:', sendCoin.txhash);
 
@@ -158,7 +165,7 @@ class ReplenishmentArtery {
     try {
       const config = {
         method: 'get',
-        url: `http://167.172.51.179:1317/cosmos/tx/v1beta1/txs/${hash}`,
+        url: `${nodeUrl}/cosmos/tx/v1beta1/txs/${hash}`,
         headers: {}
       };
 

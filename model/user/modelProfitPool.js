@@ -1,9 +1,11 @@
+const { numberDependencies } = require('mathjs');
 const mongoose = require('mongoose');
 
 const ProfitPoolModel = mongoose.model('Profit-pool-model', {
   id: {
-    type: String,
-    required: true
+    type: Number,
+    required: true,
+    unique: true
   },
   profit: {
     type: Number,

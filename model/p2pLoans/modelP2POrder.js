@@ -19,6 +19,6 @@ const P2PLoansOrder = mongoose.model('p2p-loans-orders', {
   collateral: { type: Number, required: true },
   downPayment: { type: Number, required: true },
   socketId: { type: String, required: true },
-}, { timestamps: true });
+});
 
 module.exports = P2PLoansOrder;

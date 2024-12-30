@@ -11,4 +11,5 @@ const LiquidityPoolModel = mongoose.model('Liquidity-pool-model', {
   secondCoin: { type: String, required: true },
   poolUser: { type: [poolUserSchema], required: true }
 });
+
 module.exports = LiquidityPoolModel;

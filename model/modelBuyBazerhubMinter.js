@@ -8,7 +8,7 @@ const BuyBazerhubMinter = mongoose.model('buy-bazerhub-minter', {
   hash: {
     type: String,
     required: true
-  },
+  }
 });
 
 module.exports = BuyBazerhubMinter;

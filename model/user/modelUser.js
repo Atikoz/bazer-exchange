@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const UserModel = mongoose.model('Users', {
   id: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   status: {
     type: Number,
@@ -11,7 +12,8 @@ const UserModel = mongoose.model('Users', {
   },
   mail: {
     type: String,
-    required: true
+    required: true,
+    default: null
   },
   lang: {
     type: String,

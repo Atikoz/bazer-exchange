@@ -28,7 +28,7 @@ class ReplenishmentUSDT {
           const balanceTronUser = async () => await getBalanceTron(userUsdtAdress, userUsdtPrivatKey);
 
           if (balanceTronUser < 30) {
-            await TransferTronwebTrx(config.adminPrivateKeyUsdt, config.adminWalletUsdt, userUsdtAdress, 30 - balanceTronUser);
+            await TransferTronwebTrx(config.privatKeyUsdt, config.adminWalletUsdt, userUsdtAdress, 30 - balanceTronUser);
             console.log('tron send user wallet');
             return
           };

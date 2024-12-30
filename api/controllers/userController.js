@@ -1,7 +1,7 @@
-const { encrypt } = require('../../helpers/encryptionFunction.js');
 const { ControlUserBalance } = require("../../helpers/userControl");
 const userManagement = require("../../service/userManagement");
 const { registerUser } = require('../../service/register/createNewAccAndRegister.js');
+const encryptionService = require('../../function/encryptionService.js');
 const getInfo = userManagement.getInfoUser;
 
 
@@ -9,8 +9,9 @@ const payWithBot = async (req, res) => {
   try {
     const { userId, amount, coin, mnemonic } = req.body;
     const balanceUser = (await getInfo(userId)).userBalance.main;
-    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonic);
-
+    const encryptMemonic = ((await getInfo(userId)).userWallet.mnemonic);
+    const mnemonicUser = encryptionService.decryptSeed(encryptMemonic);
+    
     if (mnemonicUser !== mnemonic.trim()) throw new Error('invalid seed phrase');
 
     if (balanceUser[coin] < amount) throw new Error('insufficient funds on balance');
@@ -52,7 +53,7 @@ const register = async (req, res) => {
       data: {
         userId: userId,
         email: email,
-        mnemonic: encrypt(result.mnemonic)
+        mnemonic: encryptionService.encryptSeed(result.mnemonic, '12345678901234567890123456789015')
       }
     });
   } catch (error) {
@@ -69,7 +70,8 @@ const getBalanceUser = async (req, res) => {
   try {
     const { userId, mnemonic } = req.body;
     const balanceUser = (await getInfo(userId)).userBalance.main;
-    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonic);
+    const encryptMemonic = ((await getInfo(userId)).userWallet.mnemonic);
+    const mnemonicUser = encryptionService.decryptSeed(encryptMemonic);
 
     if (mnemonicUser !== mnemonic.trim()) throw new Error('invalid seed phrase');
 

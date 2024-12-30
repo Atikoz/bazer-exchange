@@ -1,9 +1,10 @@
-const { Wallet } = require('artery-api');
+const { Wallet } = require('dem-api');
 const axios = require('axios');
 const crypto = require('crypto');
 const config = require('../config.js');
 const WalletUserModel = require('../model/user/modelWallet.js');
 const BalanceUserModel = require('../model/user/modelBalance.js');
+const sleep = require('../helpers/sleepFunction.js');
 
 const referAcc = 'artr17yvfmrelm4ejd40yz056j0gc2seqr32dazhclj';
 
@@ -33,8 +34,8 @@ const createArteryManyWallet = async (arr) => {
   const seed = config.adminArteryMnemonic;
   console.log('admnim mnemonic: ', seed);
   const wallet = new Wallet(seed);
-  const arrayMnemonic = arr.map((item) => item.mnemonic);
-  const arrayUser = arr.map((item) => item.id);
+  const arrayMnemonic = arr.map(item => item.mnemonic);
+  const arrayUser = arr.map(item => item.id);
 
   // Url ноды к которой слать запросы
   const nodeUrl = 'http://167.172.51.179:1317';
@@ -56,6 +57,7 @@ const createArteryManyWallet = async (arr) => {
   wallet.setSequence(accData.data.account.sequence + '')
 
   for (let i = 0; i < arrayMnemonic.length; i++) {
+    await sleep(10000)
     // Создаем новый сид для пользователя (или делаем ключ другим удобным способом)
     // Получаем кошелек из сида
     console.log('select user: ', arrayUser[i]);
@@ -64,20 +66,14 @@ const createArteryManyWallet = async (arr) => {
     const newAcc = new Wallet(arrayMnemonic[i]);
 
     // Для простоты никнейм делаем из адреса простым хешированием
-
     let nickname = crypto.createHash('md5').update(newAcc.address).digest("hex");
 
     const adressCreatedWallet = await createAccount(wallet, newAcc.address, nickname, nodeUrl);
     wallet.setSequence(Number(wallet.sequence) + 1);
-    await WalletUserModel.updateMany(
+    await WalletUserModel.updateOne(
       { id: arrayUser[i] },
       JSON.parse(`{ "$set" : { "artery.address": "${adressCreatedWallet}" } }`)
     );
-
-    // await BalanceUserModel.updateOne(
-    //   { id: u.id },
-    //   JSON.parse(`{ "$inc" : { "main.artery": "0", "hold.artery": "0"} }`)
-    // );
   };
   console.log('wallets artery created');
 };

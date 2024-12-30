@@ -10,6 +10,7 @@ const rewardMinter = require('./minter/RewardBazerHUB.js');
 const accrualPurchasesBuyBazerhub = require('./minter/checkTxBuyBazerhub.js');
 const createFreeAcc = require('./createFeeAccount.js');
 const config = require('../config.js');
+const { checkUserCrossfiTransaction, checkAdminCrossfiTransaction } = require('./crossfi/ReplenishmentMpxXfiCheck.js');
 
 mongoose.connect(config.dataBaseUrl);
 
@@ -25,9 +26,9 @@ checkOrders.start();
 checkUserUsdtTransaction.start();
 chechAdminUsdtTransaction.start();
 
-// //MPX XFI
-// checkUserMpxXfiTransaction.start();
-// checkAdminMpxXfiTransaction.start();
+//COSSFI
+checkUserCrossfiTransaction.start();
+checkAdminCrossfiTransaction.start();
 
 //ARTERY
 checkArtrBalance.start();

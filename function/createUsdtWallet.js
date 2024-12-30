@@ -5,7 +5,7 @@ module.exports = async function CreateUsdtWallet () {
   const { address, privateKey } = generateAccount();
 
   return {
-    address: address, 
+    address: address,
     privateKey: privateKey
   }
 };

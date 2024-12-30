@@ -1,12 +1,14 @@
-const crossfiService = require("../function/crossfi/crossfiService");
+const EncryptionService = require("../function/encryptionService");
 
-const main = async (param) => {
+const main = async (seed) => {
   try {
-    const data = await crossfiService.getUserTx(param);
+    console.log('seed', seed)
+    const encrypted = EncryptionService.encryptSeed(seed);
+    console.log('Encrypted:', encrypted);
 
-    console.log(data);
 
-    console.log('test done');
+    const decrypted = EncryptionService.decryptSeed(encrypted);
+    console.log('Decrypted:', decrypted);
   } catch (error) {
     console.error(error);
     console.log('test error');
@@ -14,7 +16,6 @@ const main = async (param) => {
 }
 
 (async () => {
-  const address = 'mx1gkqazfgq8tmc6r69u6s6wzlvcz7lufy75n2qtt';
-  const hash = '09a76187f9afeaf48f081a884eb9c8830405c723e2e48949b5b2cee6e6a8ce70'
-  await main(address);
+  const seed = 'invite quality poverty height tail shoulder follow term better okay civil cheese strong skirt loyal explain present coin color frost asset correct like coach'
+  await main(seed);
 })();

@@ -7,7 +7,8 @@ const payWithBot = async (req, res) => {
   try {
     const { userId, amount, coin, mnemonic } = req.body;
     const balanceUser = (await getInfo(userId)).userBalance.main;
-    const mnemonicUser = ((await getInfo(userId)).userWallet.mnemonic);
+    const encryptMemonic = ((await getInfo(userId)).userWallet.mnemonic);
+    const mnemonicUser = encryptionService.decryptSeed(encryptMemonic);
 
     if (mnemonicUser !== mnemonic.trim()) throw new Error('invalid seed phrase');
 

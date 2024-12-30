@@ -12,7 +12,6 @@ const {
   tradeP2PMenuIK,
   cabinetIK,
   exchangeIK,
-  adminPanelIK,
   payOrderCoin,
   typeP2POrder,
   buyerPayOrder,
@@ -94,6 +93,8 @@ const path = require('path');
 const BuyBazerhubMinter = require('./model/modelBuyBazerhubMinter.js');
 const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.js');
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
+const crossfiService = require('./service/crossfi/crossfiService.js');
+const CrossfiService = new crossfiService;
 
 
 mongoose.connect(config.dataBaseUrl);
@@ -172,8 +173,8 @@ const minimalSum = {
   mine: 2,
   plex: 2,
   ddao: 5,
-  mpx: 2,
-  xfi: 2,
+  mpx: 5,
+  xfi: 3,
   artery: 2,
   cashback: 50,
   bip: 100,
@@ -202,25 +203,16 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    let selectedLang;
-    let selectedMail;
+    const selectedLang = getInfoUser.user.lang;
+    let selectedMail = getInfoUser.user.mail;
 
-    if (getInfoUser === "not user") {
-      selectedLang = 'eng';
-      selectedMail = null;
-    } else {
-      selectedLang = getInfoUser.user.lang;
-      selectedMail = getInfoUser.user.mail;
-    }
-
-    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
 
     if (text === '/start') {
-
       if (getInfoUser === "not user") {
         await registerUser(userId);
         setState(userId, 31);
@@ -653,29 +645,33 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         try {
           amount[userId] = Number(text);
 
-          if (!validator.isNumeric(text)) {
+          if(!validator.isNumeric(text)) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'Введено не корректное число!');
           }
 
-          if (!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
+          if(!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home(selectedLang) });
           }
 
-          if ((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
+          if((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if (coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId]) {
+          if(coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId]) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} USDT + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if ((coin[userId] === 'xfi' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mpx < 2) || (coin[userId] === 'mpx' && (amount[userId] + 2) > balanceUserCoin[userId])) {
+          if(coin[userId] === 'mpx' && (amount[userId] + 4) > balanceUserCoin[userId]) {
             setState(userId, 0);
-            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 4 MPX з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if ((coin[userId] === 'bip' && (amount[userId] + 70) > balanceUserCoin[userId]) ||
+          if(coin[userId] === 'xfi' && (amount[userId] + 0.5) > balanceUserCoin[userId]) {
+            setState(userId, 0);
+            return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 0.5 XFI з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
+          }
+          if((coin[userId] === 'bip' && (amount[userId] + 70) > balanceUserCoin[userId]) ||
             (coin[userId] === 'hub' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'monsterhub' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'bnb' && getInfoUser.userBalance.main.bip < 70) ||
@@ -718,10 +714,10 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
           }
           else if (coin[userId] === 'mpx') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 2)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 4)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) });
           }
           else if (coin[userId] === 'xfi') {
-            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MPX\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
+            await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${(amount[userId] + 0.5)} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
           }
           else if (coin[userId] === 'bip') {
             await bot.sendMessage(userId, `Сумма вывода вместе с комиссией: ${amount[userId] + 70} ${coin[userId].toUpperCase()}\nАдресс кошелька: ${wallet[userId]}`, { replyMarkup: acceptCancelWithdrawalIK(selectedLang) })
@@ -860,14 +856,23 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (!isNaN(userCode) && MailService.verificationCode === userCode) {
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
-            // const sendMpxXfi = await SendMpxXfi(config.adminMnemonicMinePlex, wallet[userId], coin[userId], amount[userId]);
-            coin[userId] === 'mpx' ? await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2)) :
-              (await ControlUserBalance(userId, coin[userId], -amount[userId]), await ControlUserBalance(userId, 'mpx', -2))
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendMpxXfi}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendMpxXfi}</code>`)
+            const sendCrossfi = await CrossfiService.sendCoin(wallet[userId], config.mnemoic, coin[userId], amount[userId]);
+
+            if(!sendCrossfi.status) {
+              return bot.sendMessage(userId, `Ошибка при выводе! Попробуйте попытку позже, или обратитесь в поддержку.`, { parseMode: 'html' });
+            }
+
+            if(coin[userId] === 'mpx') {
+              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 4))
+            } else {
+              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 0.5))
+            }
+
+            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCrossfi.tx.transactionHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCrossfi.tx.transactionHash}</code>`)
           }
           if (coin[userId] === 'usdt') {
-            const sendUsdtHash = await TransferTronNet(config.adminPrivateKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
+            const sendUsdtHash = await TransferTronNet(config.privatKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
             await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
             await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdtHash}</code>`)
@@ -1098,91 +1103,16 @@ bot.on('callbackQuery', async (msg) => {
 
     const allCoin = Object.keys((await BalanceUserModel.findOne({ id: userId })).main);
 
+    const textBalance = ['💵 Балансы:'];
 
-    const textBalance = [
-      '💵 Балансы:',
-      `USDT: ${circumcisionAmount(getInfoUser.userBalance.main.usdt)}`,
-      `BIP: ${circumcisionAmount(getInfoUser.userBalance.main.bip)}`,
-      `HUB: ${circumcisionAmount(getInfoUser.userBalance.main.hub)}`,
-      `MONSTERHUB: ${circumcisionAmount(getInfoUser.userBalance.main.monsterhub)}`,
-      `BNB: ${circumcisionAmount(getInfoUser.userBalance.main.bnb)}`,
-      `USDTBSC: ${circumcisionAmount(getInfoUser.userBalance.main.usdtbsc)}`,
-      `BIPKAKAXA: ${circumcisionAmount(getInfoUser.userBalance.main.bipkakaxa)}`,
-      `CASHBSC: ${circumcisionAmount(getInfoUser.userBalance.main.cashbsc)}`,
-      `BAZERCOIN (Minter): ${circumcisionAmount(getInfoUser.userBalance.main.minterBazercoin)}`,
-      `RUBLE: ${circumcisionAmount(getInfoUser.userBalance.main.ruble)}`,
-      `BAZERHUB: ${circumcisionAmount(getInfoUser.userBalance.main.bazerhub)}`,
-      `MINE: ${circumcisionAmount(getInfoUser.userBalance.main.mine)}`,
-      `PLEX: ${circumcisionAmount(getInfoUser.userBalance.main.plex)}`,
-      `MPX: ${circumcisionAmount(getInfoUser.userBalance.main.mpx)}`,
-      `XFI: ${circumcisionAmount(getInfoUser.userBalance.main.xfi)}`,
-      `ARTERY: ${circumcisionAmount(getInfoUser.userBalance.main.artery)}`,
-      `CASHBACK: ${circumcisionAmount(getInfoUser.userBalance.main.cashback)}`,
-      `DEL: ${circumcisionAmount(getInfoUser.userBalance.main.del)}`,
-      `DDAO: ${circumcisionAmount(getInfoUser.userBalance.main.ddao)}`,
-      `BAZERCOIN: ${circumcisionAmount(getInfoUser.userBalance.main.bazercoin)}`,
-      `BAZERUSD: ${circumcisionAmount(getInfoUser.userBalance.main.bazerusd)}`,
-      `DELKAKAXA: ${circumcisionAmount(getInfoUser.userBalance.main.delkakaxa)}`,
-      `CONVERTER: ${circumcisionAmount(getInfoUser.userBalance.main.converter)}`,
-      `PRO: ${circumcisionAmount(getInfoUser.userBalance.main.pro)}`,
-      `DAR: ${circumcisionAmount(getInfoUser.userBalance.main.dar)}`,
-      `SBT: ${circumcisionAmount(getInfoUser.userBalance.main.sbt)}`,
-      `REBOOT: ${circumcisionAmount(getInfoUser.userBalance.main.reboot)}`,
-      `MAKAROVSKY: ${circumcisionAmount(getInfoUser.userBalance.main.makarovsky)}`,
-      `BTT: ${circumcisionAmount(getInfoUser.userBalance.main.btt)}`,
-      `DIXWELL: ${circumcisionAmount(getInfoUser.userBalance.main.dixwell)}`,
-      `AVT: ${circumcisionAmount(getInfoUser.userBalance.main.avt)}`,
-      `KHARAT: ${circumcisionAmount(getInfoUser.userBalance.main.kharat)}`,
-      `BYACADEMY: ${circumcisionAmount(getInfoUser.userBalance.main.byacademy)}`,
-      `PATRICK: ${circumcisionAmount(getInfoUser.userBalance.main.patrick)}`,
-      `ITCOIN: ${circumcisionAmount(getInfoUser.userBalance.main.itcoin)}`,
-      `MESSEGE: ${circumcisionAmount(getInfoUser.userBalance.main.messege)}`,
-      `RRUNION: ${circumcisionAmount(getInfoUser.userBalance.main.rrunion)}`,
-      `VEGVISIR: ${circumcisionAmount(getInfoUser.userBalance.main.vegvisir)}`,
-      `FBWORLD: ${circumcisionAmount(getInfoUser.userBalance.main.fbworld)}`,
-      `DCSCHOOL: ${circumcisionAmount(getInfoUser.userBalance.main.dcschool)}`,
-      `COMCOIN: ${circumcisionAmount(getInfoUser.userBalance.main.comcoin)}`,
-      `MINTCANDY: ${circumcisionAmount(getInfoUser.userBalance.main.mintcandy)}`,
-      `SIRIUS: ${circumcisionAmount(getInfoUser.userBalance.main.sirius)}`,
-      `CGTTOKEN: ${circumcisionAmount(getInfoUser.userBalance.main.cgttoken)}`,
-      `GENESIS: ${circumcisionAmount(getInfoUser.userBalance.main.genesis)}`,
-      `TAXICOIN: ${circumcisionAmount(getInfoUser.userBalance.main.taxicoin)}`,
-      `PROSMM: ${circumcisionAmount(getInfoUser.userBalance.main.prosmm)}`,
-      `SHARAFI: ${circumcisionAmount(getInfoUser.userBalance.main.sharafi)}`,
-      `SAFECOIN: ${circumcisionAmount(getInfoUser.userBalance.main.safecoin)}`,
-      `DTRADECOIN: ${circumcisionAmount(getInfoUser.userBalance.main.dtradecoin)}`,
-      `IZICOIN: ${circumcisionAmount(getInfoUser.userBalance.main.izicoin)}`,
-      `GZACADEMY: ${circumcisionAmount(getInfoUser.userBalance.main.gzacademy)}`,
-      `WORKOUT: ${circumcisionAmount(getInfoUser.userBalance.main.workout)}`,
-      `ZARUBA: ${circumcisionAmount(getInfoUser.userBalance.main.zaruba)}`,
-      `MAGNETAR: ${circumcisionAmount(getInfoUser.userBalance.main.magnetar)}`,
-      `CANDYPOP: ${circumcisionAmount(getInfoUser.userBalance.main.candypop)}`,
-      `RANDOMX: ${circumcisionAmount(getInfoUser.userBalance.main.randomx)}`,
-      `EKOLOGY: ${circumcisionAmount(getInfoUser.userBalance.main.ekology)}`,
-      `EMELYANOV: ${circumcisionAmount(getInfoUser.userBalance.main.emelyanov)}`,
-      `BELYMAG: ${circumcisionAmount(getInfoUser.userBalance.main.belymag)}`,
-      `DOORHAN: ${circumcisionAmount(getInfoUser.userBalance.main.doorhan)}`,
-      `LAKSHMI: ${circumcisionAmount(getInfoUser.userBalance.main.lakshmi)}`,
-      `RYABININ: ${circumcisionAmount(getInfoUser.userBalance.main.ryabinin)}`,
-      `RELATED: ${circumcisionAmount(getInfoUser.userBalance.main.related)}`,
-      `MONOPOLY: ${circumcisionAmount(getInfoUser.userBalance.main.monopoly)}`,
-      `BARONCOIN: ${circumcisionAmount(getInfoUser.userBalance.main.baroncoin)}`,
-      `NASHIDELA: ${circumcisionAmount(getInfoUser.userBalance.main.nashidela)}`,
-      `IRMACOIN: ${circumcisionAmount(getInfoUser.userBalance.main.irmacoin)}`,
-      `MARITIME: ${circumcisionAmount(getInfoUser.userBalance.main.maritime)}`,
-      `BUSINESS: ${circumcisionAmount(getInfoUser.userBalance.main.business)}`,
-      `RANDICE: ${circumcisionAmount(getInfoUser.userBalance.main.randice)}`,
-      `ALLELUIA: ${circumcisionAmount(getInfoUser.userBalance.main.alleluia)}`,
-      `HOSANNA: ${circumcisionAmount(getInfoUser.userBalance.main.hosanna)}`,
-      `CBGREWARDS: ${circumcisionAmount(getInfoUser.userBalance.main.cbgrewards)}`,
-      `NOVOSELKA: ${circumcisionAmount(getInfoUser.userBalance.main.novoselka)}`,
-      `MONKEYCLUB: ${circumcisionAmount(getInfoUser.userBalance.main.monkeyclub)}`,
-      `GRANDPAY: ${circumcisionAmount(getInfoUser.userBalance.main.grandpay)}`,
-      `MAGNATE: ${circumcisionAmount(getInfoUser.userBalance.main.magnate)}`,
-      `CRYPTON: ${circumcisionAmount(getInfoUser.userBalance.main.crypton)}`,
-      `ILOVEYOU: ${circumcisionAmount(getInfoUser.userBalance.main.iloveyou)}`,
+    for (const key in getInfoUser.userBalance.main) {
+      const balance = getInfoUser.userBalance.main[key];
 
-    ];
+      if(typeof balance === 'number') {
+        const msg = `${key.toUpperCase()}: ${circumcisionAmount(balance)}`;
+        textBalance.push(msg);
+      }
+    }
 
     switch (data) {
       case 'balance':
@@ -2226,6 +2156,8 @@ bot.on('callbackQuery', async (msg) => {
 
       if (data.split('_')[1] === 'usdt' ||
         data.split('_')[1] === 'artery' ||
+        data.split('_')[1] === 'mpx' ||
+        data.split('_')[1] === 'xfi' ||
         data.split('_')[1] === 'bip' ||
         data.split('_')[1] === 'hub' ||
         data.split('_')[1] === 'monsterhub' ||
@@ -2301,8 +2233,8 @@ bot.on('callbackQuery', async (msg) => {
       bot.deleteMessage(userId, messageId);
       let delCoin;
       (data.split('_')[1] === 'usdt') ||
-        // (data.split('_')[1] === 'mpx') ||
-        // (data.split('_')[1] === 'xfi') ||
+        (data.split('_')[1] === 'mpx') ||
+        (data.split('_')[1] === 'xfi') ||
         (data.split('_')[1] === 'artery') ||
         (data.split('_')[1] === 'bip') ||
         (data.split('_')[1] === 'monsterhub') ||
@@ -2323,12 +2255,24 @@ bot.on('callbackQuery', async (msg) => {
         await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}. Доступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}.\nКомиссия вывода составляет 2 USDT!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
         setState(userId, 27);
       }
-      else if (data.split('_')[1] === 'mpx' || data.split('_')[1] === 'xfi') {
+      else if (data.split('_')[1] === 'mpx') {
         try {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
           minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
-          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия вывода составляет 2 MPX!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия вывода составляет 4 MPX!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
+          setState(userId, 27);
+        } catch (error) {
+          console.error(error);
+          bot.sendMessage(userId, 'Возникла ошибка');
+        }
+      }
+      else if(data.split('_')[1] === 'xfi') {
+        try {
+          coin[userId] = data.split('_')[1];
+          balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
+          minimalWithdrawAmount[userId] = minimalSum[data.split('_')[1]];
+          await bot.sendMessage(userId, `Минимальная сумма вывода ${minimalWithdrawAmount[userId]} ${coin[userId].toUpperCase()}\nДоступно: ${balanceUserCoin[userId]} ${coin[userId].toUpperCase()}. Комиссия вывода составляет 0.5 XFI!\nВведите сумму вывода:`, { replyMarkup: RM_Home(selectedLang) });
           setState(userId, 27);
         } catch (error) {
           console.error(error);

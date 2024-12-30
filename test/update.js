@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const config = require('../config');
 const { Wallet } = require("dsc-js-sdk");
 const WalletUserModel = require('../model/user/modelWallet');
-const crossfiService = require("../function/crossfi/crossfiService");
+const crossfiService = require("../service/crossfi/crossfiService");
 const FreeAccountModel = require('../model/user/modelFreeAccount');
 const { createNewAcc, registerUser } = require('../service/register/createNewAccAndRegister');
 const P2PLoansOrder = require('../model/p2pLoans/modelP2POrder');
@@ -11,142 +11,174 @@ const BalanceUserModel = require('../model/user/modelBalance');
 const ProfitPoolModel = require('../model/user/modelProfitPool');
 const createFreeAcc = require('../cron/createFeeAccount');
 const createDecimalWallet = require('../function/decimal/createDecimalWallet');
+const { createUserArteryWallet, createArteryManyWallet } = require('../function/createArteryWallet');
+const ReplenishmentCrossfi = require('../service/crossfi/ReplenishmentService');
+const createUsdtWallet = require('../function/createUsdtWallet');
+const createMinterWallet = require('../function/createMinterWallet');
+const encryptionService = require('../function/encryptionService');
 
-mongoose.connect(config.dataBaseUrl);
+
+const CrossfiService = new crossfiService;
 
 
-async function updateDecimalWallet(seed) {
+async function updateWallet() {
   try {
-    const decimalWallet = new Wallet(seed);
-    const oldAddres = decimalWallet.wallet.address;
-    const updateUserWallet = decimalWallet.wallet.evmAddress;
+    await WalletUserModel.deleteMany();
+    const allUser = await UserModel.find();
 
-    console.log('oldAddres:', oldAddres);
-    console.log('updateUserWallet:', updateUserWallet);
+    for (const user of allUser) {
+      const createDelWallet = await createDecimalWallet();
 
-    return updateUserWallet
+      if (!createDelWallet.status) return await createNewAcc();
 
+      const createUsdt = await createUsdtWallet();
+      const createCrossfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
+      const createMinter = createMinterWallet(createDelWallet.mnemonic);
+
+      if (!createCrossfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
+
+      await WalletUserModel.create({
+        id: user.id,
+        mnemonic: createDelWallet.mnemonic,
+        del: {
+          address: createDelWallet.address,
+        },
+        usdt: {
+          address: createUsdt.address,
+          privateKey: createUsdt.privateKey
+        },
+        crossfi: {
+          address: createCrossfi.address
+        },
+        artery: {
+          address: '1',
+        },
+        minter: {
+          address: createMinter.address,
+          privateKey: createMinter.privateKey
+        }
+      });
+    }
   } catch (error) {
     console.error(`Помилка: ${error}`);
   }
 }
 
-const updateDb = async () => {
+async function updateArteryWallet() {
   try {
-    const result = await FreeAccountModel.deleteMany();
-
-    console.log(result);
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const updateName = async () => {
-  try {
-    const result = await FreeAccountModel.updateMany(
-      {},
-      { $rename: { mpxXfi: 'crossfi' } } // Перейменовує поле
-    );
-
-    console.log(`Documents mpxXfi updated: ${result.modifiedCount}`);
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-const updateWallet = async () => {
-  try {
-    const allAcc = await FreeAccountModel.find();
     const allUser = await WalletUserModel.find();
-
-    for (const user of allUser) {
-      const mnemonic = user.mnemonic;
-      console.log('mnemonic', mnemonic);
-      const wallet = await crossfiService.createWallet(mnemonic);
-
-      if (!wallet.status) return
-
-      await WalletUserModel.updateOne(
-        { id: user.id },
-        { $set: { crossfi: { address: wallet.address } } }
-      )
-    }
-
-    // for (const user of allAcc) {
-    //   const mnemonic = user.mnemonic;
-    //   console.log('mnemonic', mnemonic);
-    //   const wallet = await updateDecimalWallet(mnemonic);
-
-    //   const walletCrossfi = await crossfiService.createWallet(mnemonic);
-
-    //   if (!walletCrossfi.status) return
-
-    //   await FreeAccountModel.updateOne(
-    //     { mnemonic: user.mnemonic },
-    //     {
-    //       $set: {
-    //         crossfi: {
-    //           address: walletCrossfi.address
-    //         },
-    //         del: {
-    //           address: wallet
-    //         }
-    //       }
-    //     }
-    //   )
-    // }
-
+    await createArteryManyWallet(allUser)
   } catch (error) {
-    console.error(error)
+    console.error(`Помилка: ${error}`);
   }
 }
 
-const update = async () => {
-  try {
-    // await createNewAcc()
-    // await createNewAcc()
-    // await createNewAcc()
-
-    const freeAcc = await FreeAccountModel.find();
-    console.log('free acc', freeAcc.length);
-    
-    // const id = 7122942360;
-    // const id = 5558197931;
-
-    const user = await UserModel.find({ id: id });
-    const balance = await BalanceUserModel.find({ id: id })
-    const wallet = await WalletUserModel.find({ id: id });
-    const poolProfit = await ProfitPoolModel.find({ id: id });
-
-
-    // const user = await UserModel.deleteOne({ id: id });
-    // const balance = await BalanceUserModel.deleteOne({ id: id })
-    // const wallet = await WalletUserModel.deleteOne({ id: id });
-    // const poolProfit = await ProfitPoolModel.deleteOne({ id: id });
-
-
-
-    console.log('user', user);
-    console.log('balance', balance);
-    console.log('wallet', wallet);
-    console.log('poolProfit', poolProfit);
-
-    // await registerUser(id)
-  } catch (error) {
-    console.error(error)
-  }
-}
 
 const createCrossfi = async () => {
   const walletDecimal = await createDecimalWallet()
-  const walletCrossfi = await crossfiService.createWallet(walletDecimal.mnemonic);
+  const walletCrossfi = await CrossfiService.createWallet(walletDecimal.mnemonic);
 
   console.log('walletDecimal', walletDecimal);
   console.log('walletCrossfi', walletCrossfi);
 }
 
+async function updatePoolProfit() {
+  await ProfitPoolModel.deleteMany();
+  const allUser = await UserModel.find();
+
+  allUser.map(async (user) => {
+    await ProfitPoolModel.create({
+      id: +user.id
+    });
+  })
+}
+
+async function updateBalance() {
+  const allUser = await UserModel.find();
+
+  for (user of allUser) {
+    const isUserExist = await BalanceUserModel.findOne({ id: +user.id });
+
+    if (isUserExist) {
+      continue
+    }
+
+    await BalanceUserModel.create({
+      id: +user.id
+    });
+  }
+}
+
+function checkBalance(user) {
+  let mainBalance = 0;
+  let holdBalance = 0;
+
+  const listCoin = user.main;
+
+  for (key in listCoin) {
+    mainBalance += parseFloat(user.main[key]) || 0
+    holdBalance += parseFloat(user.hold[key]) || 0
+  }
+
+  if (mainBalance > 0 || holdBalance > 0) {
+    return true
+  } else {
+    return false
+  }
+}
+
+async function removeDuplicatesAndKeepNonZeroBalance() {
+  const allUser = await BalanceUserModel.find();
+
+  const userArr = [];
+
+  allUser.map((el) => {
+    const a = checkBalance(el);
+
+    if (a) {
+      userArr.push(el)
+    }
+  })
+
+  console.log(userArr[0])
+
+  await BalanceUserModel.deleteMany();
+
+  const usersToInsert = userArr.map((user) => {
+    delete user._id;
+    return user;
+  });
+
+  await BalanceUserModel.insertMany(usersToInsert);
+}
+
+async function encryptMnemonic() {
+  try {
+    const allUser = await WalletUserModel.find();
+
+    for (user of allUser) {
+      const encryptedSeed = encryptionService.encryptSeed(user.mnemonic);
+
+      await WalletUserModel.updateOne(
+        { mnemonic: user.mnemonic },
+        { $set: { mnemonic: encryptedSeed } }
+      )
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 (async () => {
-  await createCrossfi();
-  await mongoose.connection.close();
+  await mongoose.connect(config.dataBaseUrl)
+    .then(console.log('Mongo connected'))
+    .catch((error) => console.error('error connnect mongo:', error));
+
+  // await updatePoolProfit()
+  // await removeDuplicatesAndKeepNonZeroBalance()
+  // await updateBalance()
+  // await updateWallet()
+  // await updateArteryWallet()
+  // await encryptMnemonic()
+  await createNewAcc()
 })();

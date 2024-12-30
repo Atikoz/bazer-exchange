@@ -6,7 +6,8 @@ const createDecimalWallet = require('../../function/decimal/createDecimalWallet.
 const { createUserArteryWallet } = require('../../function/createArteryWallet.js');
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
-const CrossfiService = require('../../function/crossfi/crossfiService.js');
+const crossfiService = require('../../service/crossfi/crossfiService.js');
+const CrossfiService = new crossfiService;
 
 async function Authentication(userId, email = null) {
   try {
@@ -15,12 +16,14 @@ async function Authentication(userId, email = null) {
     if (!createDelWallet.status) return this.Authentication(userId);
 
     const createUsdt = await CreateUsdtWallet();
-    const createMpxXfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
+    const createCrossfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
     const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
     const createMinter = createMinterWallet(createDelWallet.mnemonic);
 
-    if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
+    if (!createCrossfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
 
+    const encryptedMnemonic = encryptionService.encryptSeed(createDelWallet.mnemonic);
+    
     await UserModel.create({
       id: userId,
       mail: email
@@ -32,7 +35,7 @@ async function Authentication(userId, email = null) {
 
     await WalletUserModel.create({
       id: userId,
-      mnemonic: createDelWallet.mnemonic,
+      mnemonic: encryptedMnemonic,
       del: {
         address: createDelWallet.address,
       },
@@ -40,8 +43,8 @@ async function Authentication(userId, email = null) {
         address: createUsdt.address,
         privateKey: createUsdt.privateKey
       },
-      mpxXfi: {
-        address: createMpxXfi.address
+      crossfi: {
+        address: createCrossfi.address
       },
       artery: {
         address: createArtery
@@ -56,10 +59,19 @@ async function Authentication(userId, email = null) {
       id: userId
     });
 
-    return { status: 'ok', message: 'user registered successfully', mnemonic: createDelWallet.mnemonic };
+    return {
+      status: 'ok',
+      message: 'user registered successfully',
+      mnemonic: encryptedMnemonic
+    };
   } catch (error) {
     console.error(error);
-    return { status: 'error', message: 'error Authentication function', mnemonic: '' };
+
+    return {
+      status: 'error',
+      message: 'error Authentication function',
+      mnemonic: ''
+    };
   }
 }
 

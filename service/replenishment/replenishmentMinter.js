@@ -7,6 +7,7 @@ const BalanceUserModel = require('../../model/user/modelBalance.js');
 const sendLogs = require('../../helpers/sendLog.js');
 const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
+const encryptionService = require('../../function/encryptionService.js');
 
 
 class ReplenishmentMinter {
@@ -14,7 +15,8 @@ class ReplenishmentMinter {
     try {
       const getInfoUser = await UserManagement.getInfoUser(id);
       const userAddress = getInfoUser.userWallet.minter.address;
-      const userSeed = getInfoUser.userWallet.mnemonic;
+      const encryptedUserSeed = getInfoUser.userWallet.mnemonic;
+      const userSeed = encryptionService.decryptSeed(encryptedUserSeed);
 
       const minimumAmounts = {
         BIP: 100,

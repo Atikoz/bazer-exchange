@@ -3,45 +3,57 @@ const mongoose = require('mongoose');
 const WalletUserModel = mongoose.model('WalletUsers', {
   id: {
     type: Number,
-    required: true
+    required: true,
+    unique: true
   },
   mnemonic: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   del: {
     address: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     }
   },
   usdt: {
     address: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
-    privateKey: String
+    privateKey: {
+      type: String,
+      required: true,
+      unique: true
+    }
   },
   crossfi: {
     address: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     }
   },
   artery: {
     address: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     }
   },
   minter: {
     address: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     },
     privateKey: {
       type: String,
-      required: true
+      required: true,
+      unique: true
     }
   }
 

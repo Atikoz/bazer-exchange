@@ -8,7 +8,9 @@ const { createUserArteryWallet } = require('../../function/createArteryWallet.js
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
 const FreeAccountModel = require('../../model/user/modelFreeAccount.js');
-const CrossfiService = require('../../function/crossfi/crossfiService.js');
+const crossfiService = require('../../service/crossfi/crossfiService.js');
+const encryptionService = require('../../function/encryptionService.js');
+const CrossfiService = new crossfiService;
 
 const createNewAcc = async () => {
   try {
@@ -17,16 +19,17 @@ const createNewAcc = async () => {
     if (!createDelWallet.status) return await createNewAcc();
 
     const createUsdt = await CreateUsdtWallet();
-    const createMpxXfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
+    const createCrossfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
     const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
     const createMinter = createMinterWallet(createDelWallet.mnemonic);
 
+    if (!createCrossfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
 
-    if (!createMpxXfi.status) return await CrossfiService.createWallet(createDelWallet.mnemonic);
+    const encryptedMnemonic = encryptionService.encryptSeed(createDelWallet.mnemonic);
 
     await FreeAccountModel.create({
       busy: false,
-      mnemonic: createDelWallet.mnemonic,
+      mnemonic: encryptedMnemonic,
       del: {
         address: createDelWallet.address,
       },
@@ -35,7 +38,7 @@ const createNewAcc = async () => {
         privateKey: createUsdt.privateKey
       },
       crossfi: {
-        address: createMpxXfi.address
+        address: createCrossfi.address
       },
       artery: {
         address: createArtery

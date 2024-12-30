@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const BalanceUserModel = mongoose.model('BalanceUsers', {
   id: {
     type: Number,
-    required: true
+    required: true,
+    unique: true
   },
   main: {
     usdt: {
