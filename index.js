@@ -206,8 +206,8 @@ bot.on('text', async (msg) => {
     const selectedLang = getInfoUser.user.lang;
     let selectedMail = getInfoUser.user.mail;
 
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 

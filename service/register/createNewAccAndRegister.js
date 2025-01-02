@@ -10,6 +10,7 @@ const createMinterWallet = require('../../function/createMinterWallet.js');
 const FreeAccountModel = require('../../model/user/modelFreeAccount.js');
 const crossfiService = require('../../service/crossfi/crossfiService.js');
 const encryptionService = require('../../function/encryptionService.js');
+const sendLogs = require('../../helpers/sendLog.js');
 const CrossfiService = new crossfiService;
 
 const createNewAcc = async () => {
@@ -48,9 +49,11 @@ const createNewAcc = async () => {
         privateKey: createMinter.privateKey
       }
     });
+    
     return true
   } catch (error) {
     console.error(error);
+
     return false;
   }
 }
@@ -65,6 +68,7 @@ const registerUser = async (userId, email = null) => {
     // Якщо користувач знайдений, повертаємо дані про нього
     if (existingUser) {
       const walletUser = await WalletUserModel.findOne({ id: userId }).lean();
+
       return {
         status: 'ok',
         message: 'user registered',
@@ -74,7 +78,9 @@ const registerUser = async (userId, email = null) => {
 
     // Якщо немає вільних акаунтів, робимо "аварійну" реєстрацію
     if (!freeAccount) {
+      console.log('karau')
       const emergencyRegistration = await Authentication(userId, email);
+
       return emergencyRegistration;
     }
 
@@ -121,6 +127,8 @@ const registerUser = async (userId, email = null) => {
 
     await FreeAccountModel.deleteOne({ mnemonic: freeAccount.mnemonic });
 
+    await sendLogs(`Пользователь ${userId} зарегестрировался в боте. Добро пожаловать!`)
+
     return {
       status: 'ok',
       message: 'user registered successfully',
@@ -128,6 +136,7 @@ const registerUser = async (userId, email = null) => {
     };
   } catch (error) {
     console.error(error);
+
     return {
       status: 'error',
       message: 'error register function',

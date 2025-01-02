@@ -3,8 +3,6 @@ const axios = require('axios');
 const crypto = require('crypto');
 const config = require('../config.js');
 const WalletUserModel = require('../model/user/modelWallet.js');
-const BalanceUserModel = require('../model/user/modelBalance.js');
-const sleep = require('../helpers/sleepFunction.js');
 
 const referAcc = 'artr17yvfmrelm4ejd40yz056j0gc2seqr32dazhclj';
 
@@ -57,7 +55,6 @@ const createArteryManyWallet = async (arr) => {
   wallet.setSequence(accData.data.account.sequence + '')
 
   for (let i = 0; i < arrayMnemonic.length; i++) {
-    await sleep(10000)
     // Создаем новый сид для пользователя (или делаем ключ другим удобным способом)
     // Получаем кошелек из сида
     console.log('select user: ', arrayUser[i]);
@@ -70,6 +67,7 @@ const createArteryManyWallet = async (arr) => {
 
     const adressCreatedWallet = await createAccount(wallet, newAcc.address, nickname, nodeUrl);
     wallet.setSequence(Number(wallet.sequence) + 1);
+
     await WalletUserModel.updateOne(
       { id: arrayUser[i] },
       JSON.parse(`{ "$set" : { "artery.address": "${adressCreatedWallet}" } }`)

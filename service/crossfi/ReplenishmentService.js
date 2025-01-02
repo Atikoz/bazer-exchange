@@ -37,7 +37,13 @@ class ReplenishmentCrossfi extends crossfiService {
             txData.amount / 1e18
           );
 
-          const amountSendAdminWallet = (+txData.amount / 1e18) - feeTx;
+          let amountSendAdminWallet = (+txData.amount / 1e18) - feeTx;
+
+          if (txData.coin === 'mpx') {
+            amountSendAdminWallet -= 0.3
+          } else {
+            amountSendAdminWallet -= 0.004
+          }
 
           await sleep(5000)
 
@@ -45,7 +51,7 @@ class ReplenishmentCrossfi extends crossfiService {
             config.adminWalletCrossfi,
             userMnemonic,
             txData.coin,
-            amountSendAdminWallet - 0.001
+            amountSendAdminWallet - 0.01
           );
 
           if (!sendCoinAdmin.status) {
@@ -71,7 +77,7 @@ class ReplenishmentCrossfi extends crossfiService {
         }
       }
     } catch (error) {
-      console.error(error.message)
+      console.error('crossfi CheckUserWallet error:', error.message)
     }
   }
 

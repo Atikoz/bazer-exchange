@@ -26,7 +26,7 @@ checkOrders.start();
 checkUserUsdtTransaction.start();
 chechAdminUsdtTransaction.start();
 
-//COSSFI
+//CROSSFI
 checkUserCrossfiTransaction.start();
 checkAdminCrossfiTransaction.start();
 

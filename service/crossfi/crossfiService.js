@@ -206,7 +206,7 @@ class CrossfiService {
 
       const clientOptions = {
         gasPrice,
-        broadcastTimeoutMs: 5000,
+        broadcastTimeoutMs: 20000,
         broadcastPollIntervalMs: 1000,
       };
 

@@ -59,6 +59,8 @@ async function Authentication(userId, email = null) {
       id: userId
     });
 
+    await sendLogs(`Пользователь ${userId} зарегестрировался в боте. Добро пожаловать!`)
+
     return {
       status: 'ok',
       message: 'user registered successfully',
