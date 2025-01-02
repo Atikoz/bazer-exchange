@@ -51,7 +51,7 @@ class ReplenishmentCrossfi extends crossfiService {
             config.adminWalletCrossfi,
             userMnemonic,
             txData.coin,
-            amountSendAdminWallet - 0.01
+            amountSendAdminWallet
           );
 
           if (!sendCoinAdmin.status) {
