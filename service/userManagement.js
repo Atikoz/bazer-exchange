@@ -6,17 +6,34 @@ class UserManagement {
   async getInfoUser(userId) {
     try {
       const user = await UserModel.findOne({id: userId});
-      if (!user) return "not user";
+
+      if (!user) {
+        return {
+          status: false,
+          user: null,
+          userBalance: null,
+          userWallet: null,
+        };
+      }
 
       const userBalance = await BalanceUserModel.findOne({id: userId});
       const userWallet = await WalletUserModel.findOne({id: userId});
+
       return {
+        status: true,
         user,
         userBalance,
         userWallet,
       };
     } catch (error) {
-      console.error(error)
+      console.error(error);
+
+      return {
+        status: false,
+        user: null,
+        userBalance: null,
+        userWallet: null,
+      };
     }
   };
 }

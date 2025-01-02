@@ -203,14 +203,13 @@ bot.on('text', async (msg) => {
     const text = msg.text;
     const userName = msg.from.first_name;
     const getInfoUser = await UserManagement.getInfoUser(userId);
-    const selectedLang = getInfoUser.user.lang;
-    let selectedMail = getInfoUser.user.mail;
+    const selectedLang = getInfoUser?.user?.lang || 'eng';
+    let selectedMail = getInfoUser?.user?.mail || null;
 
-    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
-
 
     if (text === '/start') {
       if (getInfoUser === "not user") {
