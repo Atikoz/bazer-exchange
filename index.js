@@ -2,7 +2,6 @@ const TeleBot = require('telebot');
 const mongoose = require('mongoose');
 const config = require('./config.js');
 const validator = require('validator');
-const WalletUserModel = require('./model/user/modelWallet.js');
 
 
 const {
@@ -212,7 +211,7 @@ bot.on('text', async (msg) => {
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
     if (text === '/start') {
-      if (getInfoUser === "not user") {
+      if (!getInfoUser.status) {
         await registerUser(userId);
         setState(userId, 31);
         bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
@@ -298,8 +297,10 @@ bot.on('text', async (msg) => {
     };
 
     //states
-    if (getInfoUser === "not user") return;
+    if (!getInfoUser.status) return;
+
     console.log(`пользователь ${userId} на ${getInfoUser.user.status} стейте`);
+
     switch (getInfoUser.user.status) {
       case 10:
         setState(userId, 11);
