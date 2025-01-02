@@ -7,7 +7,7 @@ const CrossfiUserReplenishment = require('../../model/crossfi/CrossfiUserRepleni
 
 const minimalSum = {
   xfi: 3,
-  mpx: 5
+  mpx: 10
 }
 
 const GAS_PRICE = {
