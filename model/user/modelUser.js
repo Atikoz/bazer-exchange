@@ -12,7 +12,6 @@ const UserModel = mongoose.model('Users', {
   },
   mail: {
     type: String,
-    required: true,
     default: null
   },
   lang: {
