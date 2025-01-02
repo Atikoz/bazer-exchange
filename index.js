@@ -215,7 +215,7 @@ bot.on('text', async (msg) => {
         await registerUser(userId);
         setState(userId, 31);
         bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
-        await bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
+        bot.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
       } else {
         setState(userId, 0);
         bot.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) }).catch((error) => console.log(error));
