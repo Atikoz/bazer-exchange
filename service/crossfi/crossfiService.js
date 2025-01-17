@@ -2,7 +2,7 @@ const { StargateClient, SigningStargateClient, GasPrice, calculateFee } = requir
 const { DirectSecp256k1HdWallet, coin, decodeTxRaw } = require('@cosmjs/proto-signing');
 const config = require('../../config');
 const { stringToPath } = require('@cosmjs/crypto');
-const toBaseUnit = require('../../helpers/toBaseUnit');
+const toBaseUnit = require('../../helpers/count/toBaseUnit');
 const CrossfiUserReplenishment = require('../../model/crossfi/CrossfiUserReplenishment');
 
 const minimalSum = {

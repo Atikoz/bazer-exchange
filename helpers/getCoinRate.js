@@ -1,4 +1,4 @@
-const getAllCoinRate = require("../function/getCurrencyRate");
+const RateService = require("../function/getCurrencyRate");
 
 class GetRate {
   constructor() {
@@ -10,7 +10,7 @@ class GetRate {
 
   updateRateObj = async () => {
     try {
-      this.rateObj = await getAllCoinRate();
+      this.rateObj = await RateService.getCoinPrice();
     } catch (error) {
       console.error(error);
     }

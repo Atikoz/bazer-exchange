@@ -1,14 +1,13 @@
-const EncryptionService = require("../function/encryptionService");
+const mongoose = require('mongoose');
+const RateService = require('../function/getCurrencyRate');
+const config = require('../config');
 
-const main = async (seed) => {
+const main = async () => {
   try {
-    console.log('seed', seed)
-    const encrypted = EncryptionService.encryptSeed(seed);
-    console.log('Encrypted:', encrypted);
+    console.log('test start');
+    mongoose.connect(config.dataBaseUrl);
 
-
-    const decrypted = EncryptionService.decryptSeed(encrypted);
-    console.log('Decrypted:', decrypted);
+    await RateService.getCoinPrice()
   } catch (error) {
     console.error(error);
     console.log('test error');
@@ -16,6 +15,5 @@ const main = async (seed) => {
 }
 
 (async () => {
-  const seed = 'invite quality poverty height tail shoulder follow term better okay civil cheese strong skirt loyal explain present coin color frost asset correct like coach'
-  await main(seed);
+  await main();
 })();

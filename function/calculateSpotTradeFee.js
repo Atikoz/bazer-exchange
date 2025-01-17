@@ -6,13 +6,13 @@ class calculateFee {
   calculateSpotTradeFee = async (tradeAmount, tradeCoin) => {
     try {
       // Валюта, в которой взимается комиссия
-      const feeCurrency = 'cashback';
+      const feeCurrency = 'cashbsc';
 
       // Процент комиссии
       const percentFee = 1;
 
       // Получение обменного курса между торговой валютой и валютой комиссии
-      const exchangeRate = await getCoinRate(tradeCoin, feeCurrency);
+      const exchangeRate = getCoinRate(tradeCoin, feeCurrency);
       console.log('exchangeRate: ', exchangeRate);
 
       // Расчет суммы, равной 1% от суммы сделки

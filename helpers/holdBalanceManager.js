@@ -5,12 +5,12 @@ class BalanceManager {
     try {
       await BalanceUserModel.updateOne(
         { id: userId },
-        JSON.parse(`{"$inc": { "main.${coin}": -${amount} } }`)
+        JSON.parse(`{"$inc": { "main.${coin.toLowerCase()}": -${amount} } }`)
       );
 
       await BalanceUserModel.updateOne(
         { id: userId },
-        JSON.parse(`{"$inc": { "hold.${coin}": ${amount} } }`)
+        JSON.parse(`{"$inc": { "hold.${coin.toLowerCase()}": ${amount} } }`)
       );
     } catch (error) {
       console.error(error)
@@ -21,12 +21,12 @@ class BalanceManager {
     try {
       await BalanceUserModel.updateOne(
         { id: userId },
-        JSON.parse(`{"$inc": { "main.${coin}": ${amount} } }`)
+        JSON.parse(`{"$inc": { "main.${coin.toLowerCase()}": ${amount} } }`)
       );
   
       await BalanceUserModel.updateOne(
         { id: userId },
-        JSON.parse(`{"$inc": { "hold.${coin}": -${amount} } }`)
+        JSON.parse(`{"$inc": { "hold.${coin.toLowerCase()}": -${amount} } }`)
       );
     } catch (error) {
       console.error(error)

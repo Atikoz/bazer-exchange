@@ -172,7 +172,7 @@ const minimalSum = {
   mine: 2,
   plex: 2,
   ddao: 5,
-  mpx: 5,
+  mpx: 10,
   xfi: 3,
   artery: 2,
   cashback: 50,
@@ -191,6 +191,7 @@ const minimalSum = {
 };
 
 const choice = ['accept', 'cancel'];
+const comissionCoin = 'CASHBSC';
 
 //text
 bot.on('text', async (msg) => {
@@ -205,8 +206,8 @@ bot.on('text', async (msg) => {
     const selectedLang = getInfoUser?.user?.lang || 'eng';
     let selectedMail = getInfoUser?.user?.mail || null;
 
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    // const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+    // if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
@@ -385,12 +386,12 @@ bot.on('text', async (msg) => {
           return bot.sendMessage(userId, getTranslation(selectedLang, "incorrectNumberAlert"), { replyMarkup: RM_Home(selectedLang) });
         };
 
-        const feePaymentCurrencyBalance = getInfoUser.userBalance.main.cashback;
+        const feePaymentCurrencyBalance = getInfoUser.userBalance.main.cashbsc;
         comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
 
         if (comissionExchanger[userId] > feePaymentCurrencyBalance) {
           setState(userId, 0);
-          return await bot.sendMessage(userId, `${getTranslation(selectedLang, 'insufficientFundsForCommissionAlert')} ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home(selectedLang) });
+          return await bot.sendMessage(userId, `${getTranslation(selectedLang, 'insufficientFundsForCommissionAlert')} ${comissionExchanger[userId]} ${comissionCoin}`, { replyMarkup: RM_Home(selectedLang) });
         }
 
         if (amount[userId] > balanceUserCoin[userId]) {
@@ -404,7 +405,7 @@ ${getTranslation(selectedLang, 'buyCoin')}: ${buyCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'sellingRate')}: 1 ${sellCoin[userId].toUpperCase()} = ${userRate[userId]} ${buyCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'amountToSellData')}: ${amount[userId]} ${sellCoin[userId].toUpperCase()},
 ${getTranslation(selectedLang, 'amountToBuyData')}: ${sum[userId]} ${buyCoin[userId].toUpperCase()},
-${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'spotTrade') });
+${getTranslation(selectedLang, 'transactionFee')}: ${comissionExchanger[userId]} ${comissionCoin}.`, { replyMarkup: generateButton(choice, 'spotTrade') });
         break;
 
       case 18:
@@ -754,12 +755,12 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         if (validationSellResult.success) {
           if (amount[userId] > number[userId]) return bot.sendMessage(userId, 'Сумма покупки монеты указана больше чем в ордере!');
 
-          const balanceCashback = getInfoUser.userBalance.main.cashback;
+          const balanceCashback = getInfoUser.userBalance.main.cashbsc;
           comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], sellCoin[userId]);
 
           if (comissionExchanger[userId] > balanceCashback) {
             setState(userId, 0);
-            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} CASHBACK`, { replyMarkup: RM_Home(selectedLang) });
+            return await bot.sendMessage(userId, `На вашем балансе не достаточно средств для оплаты комиссии!\nКомиссия составляет ${comissionExchanger[userId]} ${comissionCoin}`, { replyMarkup: RM_Home(selectedLang) });
           };
 
           sum[userId] = circumcisionAmount(amount[userId] * userRate[userId]);
@@ -789,7 +790,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         const createPoolMesg = `Торговля осуществляется по рыночной цене. Проскальзывание составляет 5%.
 Пара: ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()},
 Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.
-Комиссия: ${comissionExchanger[userId]} CASHBACK.`;
+Комиссия: ${comissionExchanger[userId]} ${comissionCoin}.`;
         bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(acceptCancelPoolArr, 'createPool') });
         break;
 
@@ -841,13 +842,13 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
       case 16:
         setState(userId, 0);
         amount[userId] = +text;
-        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], coin[userId])
+        comissionExchanger[userId] = await calculateSpotTradeFee(amount[userId], coin[userId]);
 
         const validationWithdrawPoolInv = await withdrawInvestmentsPoolValidator(sellCoin[userId], buyCoin[userId], coin[userId], amount[userId], userId, comissionExchanger[userId]);
 
         if (!validationWithdrawPoolInv.status) return bot.sendMessage(userId, validationWithdrawPoolInv.message);
 
-        bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет ${comissionExchanger[userId]} CASHBACK.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
+        bot.sendMessage(userId, `Вы хотите вывести средства из пула ликвидности в объеме ${amount[userId]} ${coin[userId].toUpperCase()}. Комиссия составляет ${comissionExchanger[userId]} ${comissionCoin}.`, { replyMarkup: generateButton(choice, 'withdrawInvestPool') })
         break;
 
       case 22:
@@ -1325,7 +1326,7 @@ bot.on('callbackQuery', async (msg) => {
         });
 
         await freezeBalance(userId, amount[userId], sellCoin[userId]);
-        await freezeBalance(userId, comissionExchanger[userId], 'cashback');
+        await freezeBalance(userId, comissionExchanger[userId], comissionCoin);
         await bot.sendMessage(userId, `Ордер №${spotTradeOrderNumber} успешно создан ✅`, { replyMarkup: RM_Home(selectedLang) });
         await sendLog(`Пользователь ${userId} создал ордер спотовой торговли №${spotTradeOrderNumber}`)
 
@@ -2122,7 +2123,7 @@ bot.on('callbackQuery', async (msg) => {
       );
 
       await unfreezeBalance(userId, deleteOrder.sellAmount, deleteOrder.sellCoin);
-      await unfreezeBalance(userId, deleteOrder.comission, 'cashback');
+      await unfreezeBalance(userId, deleteOrder.comission, comissionCoin);
 
       await bot.sendMessage(userId, `Ордер №${numberDeleteOrder} был успешно удалён ✅`);
     }

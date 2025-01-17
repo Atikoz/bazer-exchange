@@ -1,463 +1,189 @@
-const axios = require('axios');
 const CoinGecko = require('coingecko-api');
 const { apiKeyCoinMarketCap } = require('../config');
-
+const fromBaseUnit = require('../helpers/count/fromBaseUnit');
+const BalanceUserModel = require('../model/user/modelBalance');
 const CoinGeckoClient = new CoinGecko();
 
-const getMinterCoinRate = async () => {
-  try {
-    const rateHub = {
-      uah: 135.40,
-      try: 109.54,
-      rub: 285.16
-    };
 
-    const rateMonsterHub = {
-      uah: 229.06,
-      try: 189.67,
-      rub: 542.15
-    };
+class RateService {
+  async getMinterCoinPrice() {
+    try {
+      const rates = {
+        hub: { uah: 86.76, try: 73.25, rub: 211.15 },
+        monsterhub: { uah: 103.47, try: 87.36, rub: 251.82 },
+        bipkakaxa: { uah: 0.042, try: 0.035, rub: 0.10 },
+        cashbsc: { uah: 0.010, try: 0.0085, rub: 0.024 },
+        ruble: { uah: 0.41, try: 0.34, rub: 0.99 },
+        minterBazercoin: { uah: 0.11, try: 0.092, rub: 0.27 },
+      };
 
-    const rateBipkakxa = {
-      uah: 0.026,
-      try: 0.022,
-      rub: 0.061
-    };
+      const convertId = {
+        uah: 2824,
+        try: 2810,
+        rub: 2806
+      };
 
-    const rateCashbsc = {
-      uah: 0.0035,
-      try: 0.0028,
-      rub: 0.0075
-    };
+      const priceBip = await this.fetchBipPrice(convertId);
 
-    const rateRuble = {
-      uah: 0.11,
-      try: 0.094,
-      rub: 0.26
-    };
+      rates.bip = priceBip
 
-    const rateMinterBazerCoin = {
-      uah: 0.0099,
-      try: 0.0081,
-      rub: 0.023
-    };
+      return rates
 
-    const convertId = {
-      uah: 2824,
-      try: 2810,
-      rub: 2806
-    };
+    } catch (error) {
+      console.error(`error geting minter coin price: ${error.message}`);
+    }
+  }
 
-    const priceBip = {
-      uah: null,
-      try: null,
-      rub: null
-    };
+  async fetchBipPrice(currencyIdObject) {
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("X-CMC_PRO_API_KEY", apiKeyCoinMarketCap);
 
+      const requestOptions = {
+        method: "GET",
+        headers: myHeaders,
+        redirect: "follow"
+      };
 
-    for (const currency of Object.keys(convertId)) {
-      const config = {
-        method: 'get',
-        url: `https://pro-api.coinmarketcap.com/v1/cryptocurrency/category?id=604f2762ebccdd50cd175fcc&convert_id=${convertId[currency]}`,
-        headers: {
-          'X-CMC_PRO_API_KEY': apiKeyCoinMarketCap
+      const bipRate = {}
+
+      for (const currency in currencyIdObject) {
+        const response = await fetch(`https://pro-api.coinmarketcap.com/v1/cryptocurrency/category?id=604f2762ebccdd50cd175fcc&convert_id=${currencyIdObject[currency]}`, requestOptions);
+        const resultApi = await response.json();
+
+        const dataBip = resultApi.data.coins.filter(el => el.id === 4957);
+        const priceBip = dataBip[0].quote[currencyIdObject[currency]].price;
+
+        bipRate[currency] = priceBip
+      }
+
+      return bipRate
+    } catch (error) {
+      console.error(`error fetching bip price: ${error.message}`);
+
+      return {
+        uah: 0,
+        try: 0,
+        rub: 0
+      }
+    }
+  }
+
+  async getDecimalCoinPrice() {
+    try {
+      const requestOptions = {
+        method: "GET",
+        redirect: "follow"
+      };
+
+      const response = await fetch('https://api.decimalchain.com/api/v1/coins/coins?limit=1000&offset=0', requestOptions)
+      const resultApi = await response.json();
+
+      const coinList = resultApi.Result[0].coins;
+
+      return coinList
+    } catch (error) {
+      console.error(`error geting decimal coin price: ${error.message}`);
+
+      return []
+    }
+  }
+
+  async getCoinPrice() {
+    try {
+      const data = await CoinGeckoClient.simple.price({
+        ids: ['plex', 'crossfi-2', 'artery', 'decimal', 'tether', 'binancecoin'],
+        vs_currencies: ['rub', 'uah', 'try']
+      });
+
+      const coinGecPrice = data.data;
+      const decimalCoinPrice = await this.getDecimalCoinPrice();
+      const priceMinterCoin = await this.getMinterCoinPrice();
+
+      const rateToCurr = {
+        rub: {
+          del: coinGecPrice.decimal.rub,
+          usdt: coinGecPrice.tether.rub,
+          mine: 0.000092,
+          plex: coinGecPrice.plex.rub,
+          mpx: 2.05,
+          xfi: coinGecPrice['crossfi-2'].rub,
+          artery: coinGecPrice.artery.rub,
+          bip: priceMinterCoin.bip.rub,
+          usdtbsc: coinGecPrice.tether.rub,
+          monsterhub: priceMinterCoin.monsterhub.rub,
+          bnb: coinGecPrice.binancecoin.rub,
+          hub: priceMinterCoin.hub.rub,
+          bipkakaxa: priceMinterCoin.bipkakaxa.rub,
+          cashbsc: priceMinterCoin.cashbsc.rub,
+          minterBazercoin: priceMinterCoin.minterBazercoin.rub,
+          ruble: priceMinterCoin.ruble.rub,
+          bazerhub: priceMinterCoin.hub.rub,
+        },
+        uah: {
+          del: coinGecPrice.decimal.uah,
+          usdt: coinGecPrice.tether.uah,
+          mine: 0.000092,
+          plex: coinGecPrice.plex.uah,
+          mpx: 0.8422,
+          xfi: coinGecPrice['crossfi-2'].uah,
+          artery: coinGecPrice.artery.uah,
+          bip: priceMinterCoin.bip.uah,
+          usdtbsc: coinGecPrice.tether.uah,
+          monsterhub: priceMinterCoin.monsterhub.uah,
+          bnb: coinGecPrice.binancecoin.uah,
+          hub: priceMinterCoin.hub.uah,
+          bipkakaxa: priceMinterCoin.bipkakaxa.uah,
+          cashbsc: priceMinterCoin.cashbsc.uah,
+          minterBazercoin: priceMinterCoin.minterBazercoin.uah,
+          ruble: priceMinterCoin.ruble.uah,
+          bazerhub: priceMinterCoin.hub.uah
+        },
+        try: {
+          del: coinGecPrice.decimal.try,
+          usdt: coinGecPrice.tether.try,
+          mine: 0.000092,
+          plex: coinGecPrice.plex.try,
+          mpx: 0.7114,
+          xfi: coinGecPrice['crossfi-2'].try,
+          artery: coinGecPrice.artery.try,
+          bip: priceMinterCoin.bip.try,
+          usdtbsc: coinGecPrice.tether.try,
+          monsterhub: priceMinterCoin.monsterhub.try,
+          bnb: coinGecPrice.binancecoin.try,
+          hub: priceMinterCoin.hub.try,
+          bipkakaxa: priceMinterCoin.bipkakaxa.try,
+          cashbsc: priceMinterCoin.cashbsc.try,
+          minterBazercoin: priceMinterCoin.minterBazercoin.try,
+          ruble: priceMinterCoin.ruble.try,
+          bazerhub: priceMinterCoin.hub.try,
         }
       };
 
-      const response = await axios.request(config);
-      const dataBip = response.data.data.coins.filter(el => el.id === 4957);
-      priceBip[currency] = dataBip[0].quote[convertId[currency]].price;
-    }
+      const balanceUser = await BalanceUserModel.findOne();
+      const coinList = Object.keys(balanceUser.main);
 
-    const priceAllCoin = {
-      bip: {
-        rub: priceBip.rub,
-        try: priceBip.try,
-        uah: priceBip.uah,
-      },
+      for (const currency in rateToCurr) {
+        const currencyObject = rateToCurr[currency];
 
-      hub: {
-        rub: rateHub.rub,
-        try: rateHub.try,
-        uah: rateHub.uah,
-      },
+        for (const coin of coinList) {
+          if (currencyObject.hasOwnProperty(coin)) {
+            continue;
+          }
 
-      monsterhub: {
-        rub: rateMonsterHub.rub,
-        try: rateMonsterHub.try,
-        uah: rateMonsterHub.uah,
-      },
+          const foundItem = decimalCoinPrice.find(item => item.symbol === coin);
 
-      bipkakaxa: {
-        rub: rateBipkakxa.rub,
-        try: rateBipkakxa.try,
-        uah: rateBipkakxa.uah,
-      },
-
-      cashbsc: {
-        rub: rateCashbsc.rub,
-        try: rateCashbsc.try,
-        uah: rateCashbsc.uah,
-      },
-
-      minterBazercoin: {
-        rub: rateMinterBazerCoin.rub,
-        try: rateMinterBazerCoin.try,
-        uah: rateMinterBazerCoin.uah,
-      },
-
-      ruble: {
-        rub: rateRuble.rub,
-        try: rateRuble.try,
-        uah: rateRuble.uah,
-      },
-
-      bazerhub: {
-        rub: rateHub.rub,
-        try: rateHub.try,
-        uah: rateHub.uah,
-      }
-    }
-
-    return priceAllCoin
-
-  } catch (error) {
-    console.error(error);
-    return {
-      bip: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      hub: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      monsterhub: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      bipkakaxa: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      cashbsc: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      minterBazercoin: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      ruble: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      },
-
-      bazerhub: {
-        rub: 0,
-        try: 0,
-        uah: 0,
-      }
-    }
-  }
-};
-
-const getAllCoinRate = async () => {
-  try {
-    const data = await CoinGeckoClient.simple.price({
-      ids: ['plex', 'crossfi-2', 'artery', 'decimal', 'tether', 'binancecoin'],
-      vs_currencies: ['rub', 'uah', 'try']
-    });
-
-    const coinGecRate = data.data;
-    const priceMinterCoin = await getMinterCoinRate();
-
-    const responce = await axios.get('https://mainnet-explorer-api.decimalchain.com/api/coins?limit=1000');
-    const rateDecimalCoin = responce.data.result.coins;
-
-    const rateToCurr = {
-      rub: {
-        cashback: null,
-        ddao: null,
-        del: coinGecRate.decimal.rub,
-        delkakaxa: null,
-        converter: null,
-        dar: null,
-        pro: null,
-        sbt: null,
-        reboot: null,
-        makarovsky: null,
-        btt: null,
-        dixwell: null,
-        avt: null,
-        kharat: null,
-        byacademy: null,
-        patrick: null,
-        itcoin: null,
-        messege: null,
-        rrunion: null,
-        vegvisir: null,
-        fbworld: null,
-        dcschool: null,
-        comcoin: null,
-        mintcandy: null,
-        sirius: null,
-        cgttoken: null,
-        genesis: null,
-        taxicoin: null,
-        prosmm: null,
-        sharafi: null,
-        safecoin: null,
-        dtradecoin: null,
-        izicoin: null,
-        gzacademy: null,
-        workout: null,
-        zaruba: null,
-        magnetar: null,
-        candypop: null,
-        randomx: null,
-        ekology: null,
-        emelyanov: null,
-        belymag: null,
-        doorhan: null,
-        lakshmi: null,
-        ryabinin: null,
-        related: null,
-        monopoly: null,
-        baroncoin: null,
-        nashidela: null,
-        irmacoin: null,
-        maritime: null,
-        business: null,
-        randice: null,
-        alleluia: null,
-        hosanna: null,
-        cbgrewards: null,
-        novoselka: null,
-        monkeyclub: null,
-        grandpay: null,
-        magnate: null,
-        crypton: null,
-        iloveyou: null,
-        bazercoin: null,
-        bazerusd: null,
-        usdt: coinGecRate.tether.rub,
-        mine: 0.000092,
-        plex: coinGecRate.plex.rub,
-        mpx: 1.84,
-        xfi: coinGecRate['crossfi-2'].rub,
-        artery: coinGecRate.artery.rub,
-        bip: priceMinterCoin.bip.rub,
-        usdtbsc: coinGecRate.tether.rub,
-        monsterhub: priceMinterCoin.monsterhub.rub,
-        bnb: coinGecRate.binancecoin.rub,
-        hub: priceMinterCoin.hub.rub,
-        bipkakaxa: priceMinterCoin.bipkakaxa.rub,
-        cashbsc: priceMinterCoin.cashbsc.rub,
-        minterBazercoin: priceMinterCoin.minterBazercoin.rub,
-        ruble: priceMinterCoin.ruble.rub,
-        bazerhub: priceMinterCoin.hub.rub,
-
-      },
-      uah: {
-        cashback: null,
-        ddao: null,
-        del: coinGecRate.decimal.uah,
-        delkakaxa: null,
-        converter: null,
-        dar: null,
-        pro: null,
-        sbt: null,
-        reboot: null,
-        makarovsky: null,
-        btt: null,
-        dixwell: null,
-        avt: null,
-        kharat: null,
-        byacademy: null,
-        patrick: null,
-        itcoin: null,
-        messege: null,
-        rrunion: null,
-        vegvisir: null,
-        fbworld: null,
-        dcschool: null,
-        comcoin: null,
-        mintcandy: null,
-        sirius: null,
-        cgttoken: null,
-        genesis: null,
-        taxicoin: null,
-        prosmm: null,
-        sharafi: null,
-        safecoin: null,
-        dtradecoin: null,
-        izicoin: null,
-        gzacademy: null,
-        workout: null,
-        zaruba: null,
-        magnetar: null,
-        candypop: null,
-        randomx: null,
-        ekology: null,
-        emelyanov: null,
-        belymag: null,
-        doorhan: null,
-        lakshmi: null,
-        ryabinin: null,
-        related: null,
-        monopoly: null,
-        baroncoin: null,
-        nashidela: null,
-        irmacoin: null,
-        maritime: null,
-        business: null,
-        randice: null,
-        alleluia: null,
-        hosanna: null,
-        cbgrewards: null,
-        novoselka: null,
-        monkeyclub: null,
-        grandpay: null,
-        magnate: null,
-        crypton: null,
-        iloveyou: null,
-        bazercoin: null,
-        bazerusd: null,
-        usdt: coinGecRate.tether.uah,
-        mine: 0.000092,
-        plex: coinGecRate.plex.uah,
-        mpx: 1.84,
-        xfi: coinGecRate['crossfi-2'].uah,
-        artery: coinGecRate.artery.uah,
-        bip: priceMinterCoin.bip.uah,
-        usdtbsc: coinGecRate.tether.uah,
-        monsterhub: priceMinterCoin.monsterhub.uah,
-        bnb: coinGecRate.binancecoin.uah,
-        hub: priceMinterCoin.hub.uah,
-        bipkakaxa: priceMinterCoin.bipkakaxa.uah,
-        cashbsc: priceMinterCoin.cashbsc.uah,
-        minterBazercoin: priceMinterCoin.minterBazercoin.uah,
-        ruble: priceMinterCoin.ruble.uah,
-        bazerhub: priceMinterCoin.hub.uah
-      },
-      try: {
-        cashback: null,
-        ddao: null,
-        del: coinGecRate.decimal.try,
-        delkakaxa: null,
-        converter: null,
-        dar: null,
-        pro: null,
-        sbt: null,
-        reboot: null,
-        makarovsky: null,
-        btt: null,
-        dixwell: null,
-        avt: null,
-        kharat: null,
-        byacademy: null,
-        patrick: null,
-        itcoin: null,
-        messege: null,
-        rrunion: null,
-        vegvisir: null,
-        fbworld: null,
-        dcschool: null,
-        comcoin: null,
-        mintcandy: null,
-        sirius: null,
-        cgttoken: null,
-        genesis: null,
-        taxicoin: null,
-        prosmm: null,
-        sharafi: null,
-        safecoin: null,
-        dtradecoin: null,
-        izicoin: null,
-        gzacademy: null,
-        workout: null,
-        zaruba: null,
-        magnetar: null,
-        candypop: null,
-        randomx: null,
-        ekology: null,
-        emelyanov: null,
-        belymag: null,
-        doorhan: null,
-        lakshmi: null,
-        ryabinin: null,
-        related: null,
-        monopoly: null,
-        baroncoin: null,
-        nashidela: null,
-        irmacoin: null,
-        maritime: null,
-        business: null,
-        randice: null,
-        alleluia: null,
-        hosanna: null,
-        cbgrewards: null,
-        novoselka: null,
-        monkeyclub: null,
-        grandpay: null,
-        magnate: null,
-        crypton: null,
-        iloveyou: null,
-        bazercoin: null,
-        bazerusd: null,
-        usdt: coinGecRate.tether.try,
-        mine: 0.000092,
-        plex: coinGecRate.plex.try,
-        mpx: 1.84,
-        xfi: coinGecRate['crossfi-2'].try,
-        artery: coinGecRate.artery.try,
-        bip: priceMinterCoin.bip.try,
-        usdtbsc: coinGecRate.tether.try,
-        monsterhub: priceMinterCoin.monsterhub.try,
-        bnb: coinGecRate.binancecoin.try,
-        hub: priceMinterCoin.hub.try,
-        bipkakaxa: priceMinterCoin.bipkakaxa.try,
-        cashbsc: priceMinterCoin.cashbsc.try,
-        minterBazercoin: priceMinterCoin.minterBazercoin.try,
-        ruble: priceMinterCoin.ruble.try,
-        bazerhub: priceMinterCoin.hub.try,
-
-      }
-    };
-
-    for (const currency in rateToCurr) {
-      const currencyObject = rateToCurr[currency];
-
-      for (const symbol in currencyObject) {
-        // Пошук об'єкта в масиві rateDecimalCoin з відповідним title
-        const foundItem = rateDecimalCoin.find(item => item.symbol === symbol);
-
-        // Якщо об'єкт знайдено, обчислити нове значення та присвоїти його до відповідного символу в об'єкті currencyObject
-        if (foundItem) {
-          currencyObject[symbol] = Number(foundItem.price) * currencyObject.del;
+          if (foundItem) {
+            currencyObject[coin] = +fromBaseUnit(foundItem.current_price) * currencyObject.del;
+          }
         }
       }
+
+      return rateToCurr
+    } catch (error) {
+      console.error(`error geting coin price: ${error.message}`)
     }
-
-    return rateToCurr
-
-  } catch (error) {
-    console.error('get currency rate', error.message);
   }
-};
+}
 
-module.exports = getAllCoinRate;
+module.exports = new RateService;
