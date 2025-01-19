@@ -1,53 +1,35 @@
 const circumcisionAmount = require('../helpers/circumcisionAmount.js');
 const { getCoinRate } = require('../helpers/getCoinRate.js');
 
-class calculateFee {
+class CalculateFee {
+  #commissionPercent = 0.15;
+  commissionCoin = 'cashbsc';
+
   //функция для вычисления комиссии за всю сделку
   calculateSpotTradeFee = async (tradeAmount, tradeCoin) => {
-    try {
-      // Валюта, в которой взимается комиссия
-      const feeCurrency = 'cashbsc';
+    const exchangeRate = getCoinRate(tradeCoin, this.commissionCoin);
 
-      // Процент комиссии
-      const percentFee = 1;
+    const amountOnePercent = tradeAmount / 100;
+    const amountPercentFee = this.#commissionPercent * amountOnePercent;
+    const feeInTradeCurrency = amountPercentFee * exchangeRate;
 
-      // Получение обменного курса между торговой валютой и валютой комиссии
-      const exchangeRate = getCoinRate(tradeCoin, feeCurrency);
-      console.log('exchangeRate: ', exchangeRate);
-
-      // Расчет суммы, равной 1% от суммы сделки
-      const amountOnePercent = tradeAmount / 100;
-
-      // Расчет суммы комиссии в валюте комиссии
-      const amountPercentFee = percentFee * amountOnePercent;
-
-      // Расчет суммы комиссии в торговой валюте
-      const feeInTradeCurrency = amountPercentFee * exchangeRate;
-
-      return Number(feeInTradeCurrency.toFixed(6));
-    } catch (error) {
-      console.error(error);
-    }
+    return +feeInTradeCurrency.toFixed(6);
   };
 
   //функция для вычисления комиссии за часть сделки
   calculateFeeTrade = (amountSell, amountBuy, comission) => {
-    try {
-      if (amountSell === amountBuy) return comission;
-      
-      const onePercentSellAmount = circumcisionAmount(amountSell / 100);
+    if (amountSell === amountBuy) return comission;
 
-      const percentBuy = circumcisionAmount(amountBuy / onePercentSellAmount);
+    const onePercentSellAmount = circumcisionAmount(amountSell / (100 / this.#commissionPercent));
 
-      const onePercentComission = circumcisionAmount(comission / 100);
+    const percentBuy = circumcisionAmount(amountBuy / onePercentSellAmount);
 
-      const feeTrade = percentBuy * onePercentComission;
+    const onePercentComission = circumcisionAmount(comission / (100 / this.#commissionPercent));
 
-      return +feeTrade.toFixed(6)
-    } catch (error) {
-      console.error(error)
-    }
+    const feeTrade = percentBuy * onePercentComission;
+
+    return +feeTrade.toFixed(6)
   }
 }
 
-module.exports = new calculateFee();
+module.exports = new CalculateFee;

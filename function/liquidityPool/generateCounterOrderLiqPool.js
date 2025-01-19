@@ -5,7 +5,7 @@ const { sendMessage } = require("../../helpers/tgFunction.js");
 const BalanceUserModel = require("../../model/user/modelBalance.js");
 const LiquidityPoolModel = require("../../model/modelLiquidityPool");
 const CustomOrder = require("../../model/modelOrder");
-const { calculateFeeTrade } = require("../calculateSpotTradeFee.js");
+const CalculateFee = require("../calculateSpotTradeFee.js");
 const DistributeSecondCoin = require("./DistributeSecondCoin.js");
 const PercentInvestor = require("./percentInvestor");
 const ProfitInvestor = require("./ProfitInvestor.js");
@@ -80,7 +80,7 @@ const generateCounterOrderLiqPool = async () => {
 
         } else {
           const buySum = sumPool / order.rate;
-          const feeTrade = calculateFeeTrade(order.sellAmount, buySum, order.comission);
+          const feeTrade = CalculateFee.calculateFeeTrade(order.sellAmount, buySum, order.comission);
           const profitAdmin = (feeTrade / 100) * 15;
           const profitInvestors = feeTrade - profitAdmin;
           await PoolProfitManagement(1511153147, profitAdmin);

@@ -80,11 +80,11 @@ class ReplenishmentMinter {
             })
           } else {
             const objectBip = (await getBalance(userAddress)).find((element) => element.coin.symbol === 'BIP') ?? null;
-            const balanceBip = objectBip.value / 1e18;
+            const balanceBip = objectBip?.value / 1e18 || 0;
             console.log(balanceBip);
             if (commissionTransfer > balanceBip) {
               const numberOfNeededCoins = commissionTransfer - balanceBip;
-              await sendMinter(userAddress, numberOfNeededCoins, config.adminMinterMnemonic, 'bip').then(async () => await sleep(10000));
+              await sendMinter(userAddress, numberOfNeededCoins, config.mnemoic, 'bip').then(async () => await sleep(10000));
             }
             const sendCoinAdminWallet = await sendMinter(config.adminMinterWallet, transaction.data.value, userSeed, coin);
 

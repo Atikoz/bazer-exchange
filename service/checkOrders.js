@@ -1,6 +1,6 @@
 const CustomOrder = require('../model/modelOrder.js');
 const BalanceUser = require('../model/user/modelBalance.js');
-const { calculateFeeTrade } = require('../function/calculateSpotTradeFee.js');
+const CalculateFee = require('../function/calculateSpotTradeFee.js');
 const sendLogs = require('../helpers/sendLog.js');
 const { sendMessage } = require('../helpers/tgFunction.js');
 
@@ -57,7 +57,7 @@ const CheckOrders = async () => {
             const buySumm = firstOrder.buyAmount;
             const sellSumm = firstOrder.sellAmount;
 
-            const feeTrade = calculateFeeTrade(secondOrder.sellAmount, buySumm, secondOrder.comission);
+            const feeTrade = CalculateFee.calculateFeeTrade(secondOrder.sellAmount, buySumm, secondOrder.comission);
 
 
             //начисление денег на балансы
@@ -119,7 +119,7 @@ const CheckOrders = async () => {
 
             const buySumm = secondOrder.buyAmount;
             const sellSumm = secondOrder.sellAmount;
-            const feeTrade = calculateFeeTrade(firstOrder.sellAmount, buySumm, firstOrder.comission);
+            const feeTrade = CalculateFee.calculateFeeTrade(firstOrder.sellAmount, buySumm, firstOrder.comission);
 
             //начисление денег на балансы
             await BalanceUser.updateOne(

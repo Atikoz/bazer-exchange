@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
-const RateService = require('../function/getCurrencyRate');
 const config = require('../config');
+const MinterService = require('../service/minter/MinterService');
 
 const main = async () => {
   try {
     console.log('test start');
     mongoose.connect(config.dataBaseUrl);
 
-    await RateService.getCoinPrice()
+    await MinterService.getCommissionTx()
   } catch (error) {
     console.error(error);
     console.log('test error');

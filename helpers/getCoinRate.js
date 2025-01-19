@@ -21,7 +21,6 @@ class GetRate {
       const result = this.rateObj.rub[sellCoin.toLowerCase()] / this.rateObj.rub[buyCoin.toLowerCase()];
 
       return result;
-
     } catch (error) {
       console.error(error.message)
       console.log('Rate data not available. Please try again later.')
