@@ -1,4 +1,4 @@
-const { ControlUserBalance } = require("../../helpers/userControl");
+const ControlUserBalance = require("../../controlFunction/userControl.js");
 const userManagement = require("../../service/userManagement");
 const { registerUser } = require('../../service/register/createNewAccAndRegister.js');
 const encryptionService = require('../../function/encryptionService.js');

@@ -11,4 +11,4 @@ async function ControlUserBalance(id, coin, amount) {
   }
 };
 
-module.exports = { ControlUserBalance };
+module.exports = ControlUserBalance;

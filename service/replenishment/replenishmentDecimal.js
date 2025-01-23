@@ -11,6 +11,7 @@ const TransactionStatus = require('../../model/modelTransactionStatus.js');
 const sendLogs = require('../../helpers/sendLog.js');
 const { sendMessage } = require('../../helpers/tgFunction.js');
 const sleep = require('../../helpers/sleepFunction.js');
+const ControlUserBalance = require('../../controlFunction/userControl.js');
 
 
 const minimalWithdrawal = {
@@ -148,7 +149,7 @@ class ReplenishmentDecimal {
       if (infoTransaction.data.result.status === 'Success') {
         const replenishmentCoin = infoTransaction.data.result.data.coin;
 
-        ControlUserBalance(userId, replenishmentCoin, amount)
+        await ControlUserBalance(userId, replenishmentCoin, amount)
 
 
         await TransactionStatus.updateOne(

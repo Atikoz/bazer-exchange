@@ -1,4 +1,4 @@
-const { ControlUserBalance } = require("../../helpers/userControl");
+const ControlUserBalance = require("../../controlFunction/userControl.js");
 const userManagement = require("../../service/userManagement");
 const getInfo = userManagement.getInfoUser;
 

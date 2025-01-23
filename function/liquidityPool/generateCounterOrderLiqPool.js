@@ -1,5 +1,5 @@
 const { getCoinRate } = require("../../helpers/getCoinRate");
-const PoolProfitManagement = require("../../helpers/poolProfitManagement");
+const PoolProfitManagement = require("../../controlFunction/poolProfitManagement.js");
 const sendLogs = require("../../helpers/sendLog.js");
 const { sendMessage } = require("../../helpers/tgFunction.js");
 const BalanceUserModel = require("../../model/user/modelBalance.js");

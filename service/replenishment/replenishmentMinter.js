@@ -84,7 +84,7 @@ class ReplenishmentMinter {
             console.log(balanceBip);
             if (commissionTransfer > balanceBip) {
               const numberOfNeededCoins = commissionTransfer - balanceBip;
-              await sendMinter(userAddress, numberOfNeededCoins, config.mnemoic, 'bip').then(async () => await sleep(10000));
+              await sendMinter(userAddress, numberOfNeededCoins, config.mnemonic, 'bip').then(async () => await sleep(10000));
             }
             const sendCoinAdminWallet = await sendMinter(config.adminMinterWallet, transaction.data.value, userSeed, coin);
 

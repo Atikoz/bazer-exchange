@@ -1,7 +1,7 @@
 const config = require("../../config");
 const sendLogs = require("../../helpers/sendLog");
 const { sendMessage } = require("../../helpers/tgFunction");
-const { ControlUserBalance } = require("../../helpers/userControl");
+const ControlUserBalance = require("../../controlFunction/userControl.js");
 const BalanceUserModel = require("../../model/user/modelBalance");
 const RewardMinter = require("../../model/modelRewardTxMinter");
 const PercentInvestor = require("../liquidityPool/percentInvestor");
