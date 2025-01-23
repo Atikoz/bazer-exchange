@@ -1,3 +1,4 @@
+const { commissionCoin } = require('../function/calculateSpotTradeFee.js');
 const userManagement = require('../service/userManagement.js');
 
 const poolDataValidation = async (userId, data, coin, comission) => {
@@ -5,7 +6,7 @@ const poolDataValidation = async (userId, data, coin, comission) => {
     let userBalance = [];
     const infoUser = await userManagement.getInfoUser(userId);
     userBalance[userId] = infoUser.userBalance.main[coin];
-    const balanceCashback = infoUser.userBalance.main.cashback;
+    const balanceComissionCoin = infoUser.userBalance.main[commissionCoin];
 
     if (isNaN(data)) {
       return { status: false, errorMessage: 'Введено не корректное число!' };
@@ -23,8 +24,8 @@ const poolDataValidation = async (userId, data, coin, comission) => {
       return { status: false, errorMessage: `На вашем балансе не достаточно средств для создания резерва! Доступно: ${userBalance[userId]} ${coin.toUpperCase()}.` };
     }
 
-    if (comission > balanceCashback) {
-      return { status: false, errorMessage: `На вашем балансе не достаточно средств для оплаты комиссии! Необходимо ${comission} CASHBACK. Доступно: ${balanceCashback} CASHBACK.` };
+    if (comission > balanceComissionCoin) {
+      return { status: false, errorMessage: `На вашем балансе не достаточно средств для оплаты комиссии! Необходимо ${comission} ${commissionCoin}. Доступно: ${balanceComissionCoin} ${commissionCoin}.` };
     }
 
     return { status: true }

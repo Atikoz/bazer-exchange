@@ -37,8 +37,6 @@ class ReplenishmentMinter {
 
         const coin = transaction.data.coin.symbol;
         const minimumAmount = minimumAmounts[coin];
-        console.log('coin', coin)
-
 
         const requirements =
           !(await MinterReplenishment.findOne({ id: id, hash: transaction.hash })) &&
@@ -81,11 +79,12 @@ class ReplenishmentMinter {
           } else {
             const objectBip = (await getBalance(userAddress)).find((element) => element.coin.symbol === 'BIP') ?? null;
             const balanceBip = objectBip?.value / 1e18 || 0;
-            console.log(balanceBip);
+
             if (commissionTransfer > balanceBip) {
               const numberOfNeededCoins = commissionTransfer - balanceBip;
               await sendMinter(userAddress, numberOfNeededCoins, config.mnemonic, 'bip').then(async () => await sleep(10000));
             }
+
             const sendCoinAdminWallet = await sendMinter(config.adminMinterWallet, transaction.data.value, userSeed, coin);
 
             await TransactionMinterStatus.create({

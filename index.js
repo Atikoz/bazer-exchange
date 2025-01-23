@@ -1758,7 +1758,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
         );
         coinSellArray[userId] = Array.from(bazerCoinList);
 
-        await bot.sendMessage(userId, `Вы перейшли в раздел конвертации в сети <b>Bazer</>.\nОплата комисии производится в монете <b>${CalculateFee.commissionCoin}</b>.`, { parseMode: 'html' });
+        await bot.sendMessage(userId, `Вы перейшли в раздел конвертации в сети <b>Bazer</>.\nОплата комисии производится в монете <b>${CalculateFee.commissionCoin.toUpperCase()}</b>.`, { parseMode: 'html' });
         await bot.sendMessage(userId, 'Выберите монету которую хотите продать:', { replyMarkup: generateButton(bazerCoinList, 'sellBazerExchange') });
         break;
 

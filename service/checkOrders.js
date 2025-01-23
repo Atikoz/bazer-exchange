@@ -80,18 +80,18 @@ const CheckOrders = async () => {
             );
             await BalanceUser.updateOne(
               { id: firstOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${firstOrder.comission} } }`)
             );
 
 
             //комиссия
             await BalanceUser.updateOne(
               { id: secondOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${feeTrade} } }`)
             );
             await BalanceUser.updateOne(
               { id: firstOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${firstOrder.comission} } }`)
             );
 
 
@@ -144,11 +144,11 @@ const CheckOrders = async () => {
             //комиссия
             await BalanceUser.updateOne(
               { id: secondOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${secondOrder.comission} } }`)
             );
             await BalanceUser.updateOne(
               { id: firstOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${feeTrade} } }`)
             );
 
 
@@ -196,11 +196,11 @@ const CheckOrders = async () => {
             //комиссия
             await BalanceUser.updateOne(
               { id: firstOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${firstOrder.comission} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${firstOrder.comission} } }`)
             );
             await BalanceUser.updateOne(
               { id: secondOrder.id },
-              JSON.parse(`{"$inc": { "hold.cashback": -${secondOrder.comission} } }`)
+              JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${secondOrder.comission} } }`)
             );
 
 

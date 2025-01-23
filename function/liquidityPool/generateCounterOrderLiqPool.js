@@ -37,15 +37,15 @@ const generateCounterOrderLiqPool = async () => {
           const profitAdmin = (order.comission / 100) * 15;
           const profitInvestors = order.comission - profitAdmin;
           await PoolProfitManagement(1511153147, profitAdmin);
-          logMessage.push(` Пользователю 1511153147 начислено ${profitAdmin} CASHBACK за вознаграждение в пуле,`);
-          sendMessage(1511153147, `Вам начислено ${profitAdmin} CASHBACK за вознаграждение в пуле`)
+          logMessage.push(` Пользователю 1511153147 начислено ${profitAdmin} ${CalculateFee.commissionCoin} за вознаграждение в пуле,`);
+          sendMessage(1511153147, `Вам начислено ${profitAdmin} ${CalculateFee.commissionCoin} за вознаграждение в пуле`)
 
           for (let i = 0; i < pool.poolUser.length; i++) {
             const investorPercent = PercentInvestor(sumPool, pool.poolUser[i].amountFirstCoin);
             const investorProfit = ProfitInvestor(investorPercent, profitInvestors);
             await PoolProfitManagement(pool.poolUser[i].id, investorProfit);
-            logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} CASHBACK за вознаграждение в пуле,`);
-            sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} CASHBACK за вознаграждение в пуле`)
+            logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} ${CalculateFee.commissionCoin} за вознаграждение в пуле,`);
+            sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} ${CalculateFee.commissionCoin} за вознаграждение в пуле`)
 
 
             await SubtractFirstCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, order.buyAmount);
@@ -64,7 +64,7 @@ const generateCounterOrderLiqPool = async () => {
 
           await BalanceUserModel.updateOne(
             { id: order.id },
-            JSON.parse(`{"$inc": { "hold.cashback": -${order.comission} } }`)
+            JSON.parse(`{"$inc": { "hold.$${CalculateFee.commissionCoin}": -${order.comission} } }`)
           );
 
           await CustomOrder.updateOne(
@@ -84,15 +84,15 @@ const generateCounterOrderLiqPool = async () => {
           const profitAdmin = (feeTrade / 100) * 15;
           const profitInvestors = feeTrade - profitAdmin;
           await PoolProfitManagement(1511153147, profitAdmin);
-          logMessage.push(` Пользователю 1511153147 начислено ${profitAdmin} CASHBACK за вознаграждение в пуле,`);
-          sendMessage(1511153147, `Вам начислено ${profitAdmin} CASHBACK за вознаграждение в пуле`)
+          logMessage.push(` Пользователю 1511153147 начислено ${profitAdmin} ${CalculateFee.commissionCoin} за вознаграждение в пуле,`);
+          sendMessage(1511153147, `Вам начислено ${profitAdmin} ${CalculateFee.commissionCoin} за вознаграждение в пуле`)
 
           for (let i = 0; i < pool.poolUser.length; i++) {
             const investorPercent = PercentInvestor(sumPool, pool.poolUser[i].amountFirstCoin);
             const investorProfit = ProfitInvestor(investorPercent, profitInvestors);
             await PoolProfitManagement(pool.poolUser[i].id, investorProfit);
-            logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} CASHBACK за вознаграждение в пуле,`);
-            sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} CASHBACK за вознаграждение в пуле`)
+            logMessage.push(` Пользователю ${pool.poolUser[i].id} начислено ${investorProfit} ${CalculateFee.commissionCoin} за вознаграждение в пуле,`);
+            sendMessage(pool.poolUser[i].id, `Вам начислено ${investorProfit} ${CalculateFee.commissionCoin} за вознаграждение в пуле`)
 
 
             await SubtractFirstCoin(pool.firstCoin, pool.secondCoin, pool.poolUser[i].id, investorPercent, sumPool);
@@ -111,7 +111,7 @@ const generateCounterOrderLiqPool = async () => {
 
           await BalanceUserModel.updateOne(
             { id: order.id },
-            JSON.parse(`{"$inc": { "hold.cashback": -${feeTrade} } }`)
+            JSON.parse(`{"$inc": { "hold.${CalculateFee.commissionCoin}": -${feeTrade} } }`)
           );
 
           await CustomOrder.updateOne(
