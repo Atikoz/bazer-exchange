@@ -3,22 +3,21 @@ const PoolProfitManagement = require("../../controlFunction/poolProfitManagement
 const sendLogs = require("../../helpers/sendLog.js");
 const { sendMessage } = require("../../helpers/tgFunction.js");
 const BalanceUserModel = require("../../model/user/modelBalance.js");
-const LiquidityPoolModel = require("../../model/modelLiquidityPool");
 const CustomOrder = require("../../model/modelOrder");
 const CalculateFee = require("../calculateSpotTradeFee.js");
 const DistributeSecondCoin = require("./DistributeSecondCoin.js");
 const PercentInvestor = require("./percentInvestor");
 const ProfitInvestor = require("./ProfitInvestor.js");
 const SubtractFirstCoin = require("./SubtractFirstCoin.js");
+const SingleLiquidityPool = require("../../model/liquidityPools/modelSingleLiquidityPool.js");
 
 const generateCounterOrderLiqPool = async () => {
   const ordersSpotTrade = (await CustomOrder.find()).filter(order => order.status !== 'Done' && order.status !== 'Deleted');
-  const liquidityPools = await LiquidityPoolModel.find();
+  const liquidityPools = await SingleLiquidityPool.find();
 
   for (const pool of liquidityPools) {
-    console.log(pool);
     for (const order of ordersSpotTrade) {
-      const poolMarketRate = await getCoinRate(pool.firstCoin, pool.secondCoin);
+      const poolMarketRate = getCoinRate(pool.firstCoin, pool.secondCoin);
       const roundedRateClosing = 1 / poolMarketRate;
       const spreadPercentage = 5; // % разброса
 

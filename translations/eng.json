@@ -25,7 +25,8 @@
   "createOrder": "Create order ➕",
   "listOrders": "Orders on the platform",
   "completeOrders": "Orders on the platform",
-  "liquidityPools": "Liquidity pools",
+  "singleLiquidityPoolsIK": "Single-sided liquidity pools",
+  "dualLiquidityPoolsIK": "Liquidity pools with quotes",
   "existingPools": "Existing pools",
   "createPool": "Create pool",
   "investInPoolButton": "Invest in a pool",
@@ -61,7 +62,7 @@
   "coinSaleAmountPrompt": "Enter the amount of coins to sell:",
   "minimumPurchaseAmountBuyPrompt": "Enter the minimum amount to purchase the coin:",
   "minimumPurchaseAmountSellPrompt": "Enter the minimum amount to sell the coin:",
-  "p2pTradeButton":"P2P Trade",
+  "p2pTradeButton": "P2P Trade",
   "p2pDealButton": "P2P Deal",
   "p2pTypeText": "Select the type to use P2P:",
   "p2pDealText": "Все сделки совершаются на нашем маркетплейсе",
@@ -104,7 +105,8 @@
   "buyDelForRub": "Byu DEL for ruble",
   "buyDelForRubText": "Here you can buy DEL for rubles:",
   "buyDelForRubButton": "Buy DEL",
-  "buyDelForRubInstrtuctionButton": "instruction"
-
-
+  "buyDelForRubInstrtuctionButton": "instruction",
+  "buyCashbsc": "Buy CASHBSC",
+  "textBuyCashbsc": "CASHBSC coin is necessary for payment of commissions in our service. You can buy it in the BAZER WALLET exchange.",
+  "pools": "Pools"
 }

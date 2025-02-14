@@ -10,18 +10,18 @@ const RM_Home = (lang = "eng") => bot.keyboard([
   [getTranslation(lang, "converting"), getTranslation(lang, "staking")],
   [getTranslation(lang, 'purchasingBazerHub'), getTranslation(lang, "referrals")],
   [getTranslation(lang, "settings"), getTranslation(lang, "instructions")],
-  [getTranslation(lang, "buyDelForRub")]
+  [getTranslation(lang, "buyDelForRub"), getTranslation(lang, "buyCashbsc")]
 ], { resize: true });
 
 const RM_Trade = (lang = "eng") => bot.keyboard([
   [getTranslation(lang, "spotTrading"), 'P2P'],
+  [getTranslation(lang, "pools")],
   [getTranslation(lang, "mainMenuButton")]
 ], { resize: true });
 
 const spotOrderMenu = (lang = "eng") => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, "currentOrders"), { callback: 'created_SpotOrders' }), bot.inlineButton(getTranslation(lang, "createOrder"), { callback: 'new_SpotOrders' })],
   [bot.inlineButton(getTranslation(lang, "listOrders"), { callback: 'list_SpotOrders' }), bot.inlineButton(getTranslation(lang, "completeOrders"), { callback: 'completed_SpotOrders' })],
-  [bot.inlineButton(getTranslation(lang, "liquidityPools"), { callback: 'liquidity_pools' })]
 ]);
 
 const settingsIK = (lang = 'eng') => bot.inlineKeyboard([
@@ -119,19 +119,36 @@ const buyDelForRubIK = (lang = 'eng') => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'buyDelForRubInstrtuctionButton'), { url: 'https://decimalchain.com/blog/ru/kak-kupit-del-za-rubli/' })]
 ]);
 
-const liquidityPoolsIK = bot.inlineKeyboard([
-  [bot.inlineButton('Инвестировать в пул', { callback: 'invest_in_pool' }), bot.inlineButton('Мои инвестиции', { callback: 'my_liquidityPools' })],
-  [bot.inlineButton('Снять прибыль с пулов', { callback: 'profit_liquidityPools' }), bot.inlineButton('Информация о пулах', { callback: 'info_liquidityPools' })]
+const buyCashbscIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'buyCashbsc'), { url: 'https://t.me/+RseklArJALAwMDQy' })],
+  [bot.inlineButton(getTranslation(lang, 'instructions'), { url: 'https://google.com' })]
 ]);
 
-const investInPoolIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'createPool'), { callback: 'create_liquidityPools' }), bot.inlineButton(getTranslation(lang, 'existingPools'), { callback: 'existingPools' })]
+const singleLiquidityPoolsIK = bot.inlineKeyboard([
+  [bot.inlineButton('Инвестировать в пул', { callback: 'invest_in_single_pool' }), bot.inlineButton('Мои инвестиции', { callback: 'my_single_liquidityPools' })],
+  [bot.inlineButton('Информация о пулах', { callback: 'info_single_liquidityPools' })]
+]);
+
+const doubleLiquidityPoolsIK = bot.inlineKeyboard([
+  [bot.inlineButton('Инвестировать в пул', { callback: 'invest_in_double_pool' }), bot.inlineButton('Мои инвестиции', { callback: 'my_doubleLiquidityPools' })],
+  [bot.inlineButton('Информация о пулах', { callback: 'info_doubleLiquidityPools' })]
+]);
+
+const investInSinglePoolIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'createPool'), { callback: 'create_single_liquidity-pool' }), bot.inlineButton(getTranslation(lang, 'existingPools'), { callback: 'existing-single-pool' })]
+]);
+
+const investInDoublePoolIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'createPool'), { callback: 'create_duoble_liquidity_pool' }), bot.inlineButton(getTranslation(lang, 'existingPools'), { callback: 'existing_duoble_pool' })]
 ]);
 
 const investInPoolButtonIK = (firstCoin, secondCoin, lang = 'eng') => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'investInPoolButton'), { callback: `investInSelectPool_${firstCoin}_${secondCoin}` })]
 ]);
 
+const investInDublePoolButtonIK = (firstCoin, secondCoin, lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, 'investInPoolButton'), { callback: `investInSelectDublePool_${firstCoin}_${secondCoin}` })]
+]);
 const exchangeIK = bot.inlineKeyboard([
   [bot.inlineButton('Decimal', { callback: 'decimalExchange' }), bot.inlineButton('Minter', { callback: 'minterExchange' })],
   [bot.inlineButton('Bazer', { callback: 'bazerExchange' })]
@@ -165,6 +182,15 @@ const instructionsLiuidityPoolMenuIK = (lang = 'eng') => bot.inlineKeyboard([
   [bot.inlineButton(getTranslation(lang, 'instructionsInvestInLiqPool'), { callback: 'instructions_investIn_LiqPool' })]
 ]);
 
+const poolMenuIK = (lang = 'eng') => bot.inlineKeyboard([
+  [bot.inlineButton(getTranslation(lang, "singleLiquidityPoolsIK"), { callback: 'single_liquidity_pools' }), bot.inlineButton(getTranslation(lang, "dualLiquidityPoolsIK"), { callback: 'dual_liquidity_pool' })],
+  [bot.inlineButton('Снять прибыль с пулов', { callback: 'profit_liquidityPools' })]
+]);
+
+const cancelButton = bot.inlineKeyboard([
+  [bot.inlineButton('Отмена', { callback: 'cancel' })],
+]);
+
 
 module.exports = {
   RM_Home,
@@ -172,17 +198,21 @@ module.exports = {
   RM_Trade,
   payOrder,
   bazerStackingIK,
+  cancelButton,
   currency,
   settingsIK,
   languageIK,
   tradeP2PMenuIK,
   cabinetIK,
+  poolMenuIK,
   exchangeIK,
   payOrderCoin,
   typeP2POrder,
+  buyCashbscIK,
   buyerPayOrder,
   spotOrderMenu,
-  investInPoolIK,
+  investInSinglePoolIK,
+  investInDoublePoolIK,
   balancePage2IK,
   balancePage3IK,
   buyDelForRubIK,
@@ -192,13 +222,15 @@ module.exports = {
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
-  liquidityPoolsIK,
+  singleLiquidityPoolsIK,
+  doubleLiquidityPoolsIK,
   balanceStartPageIK,
   filterSpotOrdersIK,
   instructionsMenuIK,
   investInPoolButtonIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
+  investInDublePoolButtonIK,
   filterCompleteSpotOrdersIK,
   instructionsLiuidityPoolMenuIK
 

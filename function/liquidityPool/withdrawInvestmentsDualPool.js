@@ -1,8 +1,8 @@
-const SingleLiquidityPool = require("../../model/liquidityPools/modelSingleLiquidityPool");
+const DoubleLiquidityPool = require("../../model/liquidityPools/modelDoubleLiqPools");
 
-const WithdrawInvestments = async (firstCoin, secondCoin, withdrawCoin, userId, amount) => {
+const withdrawInvestmentsDualPool = async (firstCoin, secondCoin, withdrawCoin, userId, amount) => {
   try {
-    const findPool = await SingleLiquidityPool.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
+    const findPool = await DoubleLiquidityPool.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
     
     if (!findPool) {
       throw new Error('Profit pool not found');
@@ -40,4 +40,4 @@ const WithdrawInvestments = async (firstCoin, secondCoin, withdrawCoin, userId, 
   }
 };
 
-module.exports = WithdrawInvestments;
+module.exports = withdrawInvestmentsDualPool;

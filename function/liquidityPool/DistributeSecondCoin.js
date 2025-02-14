@@ -1,8 +1,8 @@
-const LiquidityPoolModel = require("../../model/modelLiquidityPool");
+const SingleLiquidityPool = require("../../model/liquidityPools/modelSingleLiquidityPool");
 
 const DistributeSecondCoin = async (firstCoin, secondCoin, userId, percent, amount) => {
   try {
-    const findPool = await LiquidityPoolModel.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
+    const findPool = await SingleLiquidityPool.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
     if (!findPool) {
       throw new Error('Profit pool not found');
     }

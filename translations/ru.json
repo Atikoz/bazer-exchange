@@ -25,7 +25,8 @@
   "createOrder": "Создать ордер ➕",
   "listOrders": "Ордера на площадке",
   "completeOrders": "Выполненные ордера ✔️",
-  "liquidityPools": "Пулы ликвидности",
+  "singleLiquidityPoolsIK": "Лимитные пулы ликвидности",
+  "dualLiquidityPoolsIK": "Пулы ликвидности с котировками",
   "existingPools": "Существующие пулы",
   "createPool": "Создать пул",
   "investInPoolButton": "Инвестировать в пул",
@@ -102,6 +103,8 @@
   "buyDelForRub": "Купить DEL за рубли",
   "buyDelForRubText": "Здесь вы можете купить DEL за рубли:",
   "buyDelForRubButton": "Купить DEL",
-  "buyDelForRubInstrtuctionButton": "Инстукция"
-  
+  "buyDelForRubInstrtuctionButton": "Инстукция",
+  "buyCashbsc": "Купить CASHBSC",
+  "textBuyCashbsc": "Монета CASHBSC необходима для оплаты комисcий в нашем сервисе. Купить еe вы можете в обменнике BAZER WALLET.",
+  "pools": "Пулы"
 }

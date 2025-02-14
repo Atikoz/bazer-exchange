@@ -21,7 +21,7 @@ const {
   paymentSystemUA,
   paymentSystemRU,
   paymentSystemTUR,
-  liquidityPoolsIK,
+  singleLiquidityPoolsIK,
   balanceStartPageIK,
   acceptCancelExchangeIK,
   acceptCancelWithdrawalIK,
@@ -34,12 +34,15 @@ const {
   languageIK,
   typeP2P,
   p2pBetType,
-  investInPoolIK,
+  investInSinglePoolIK,
   investInPoolButtonIK,
   instructionsMenuIK,
   instructionsLiuidityPoolMenuIK,
   RM_Trade,
-  buyDelForRubIK
+  buyDelForRubIK,
+  buyCashbscIK,
+  poolMenuIK,
+  doubleLiquidityPoolsIK
 } = require('./keyboard.js');
 
 const {
@@ -74,15 +77,14 @@ const dataValidation = require('./validator/dataValidation.js');
 const { freezeBalance, unfreezeBalance } = require('./controlFunction/holdBalanceManager.js');
 const CalculateFee = require('./function/calculateSpotTradeFee.js');
 const { getCoinRate, getCurrencyRate } = require('./helpers/getCoinRate.js');
-const poolDataValidation = require('./validator/poolDataValidation.js');
+const poolDataValidation = require('./validator/pool/poolDataValidation.js');
 const { sendMinter, getCoinId, getRouteExchange, getFeeExchange, exchangeMinterTransaction, getPriceCoinInBip } = require('./function/minterTransaction.js');
 const exchangeValidator = require('./validator/minterExchangeValidator.js');
 const getBalanceCoin = require('./helpers/getBalanceCoin.js');
 const ProfitPoolModel = require('./model/user/modelProfitPool.js');
-const poolProfitDValidator = require('./validator/withdrawPoolProfirValidator.js');
+const poolProfitDValidator = require('./validator/pool/withdrawPoolProfirValidator.js');
 const poolProfitManagement = require('./controlFunction/poolProfitManagement.js');
-const LiquidityPoolModel = require('./model/modelLiquidityPool.js');
-const withdrawInvestmentsPoolValidator = require('./validator/withdrawInvestmentsPool.js');
+const withdrawInvestmentsPoolValidator = require('./validator/pool/withdrawInvestmentsPool.js');
 const WithdrawInvestments = require('./function/liquidityPool/withdrawInvestments.js');
 const saveUserLanguage = require('./helpers/lang/saveUserLanguage.js');
 const getTranslation = require('./translations/index.js');
@@ -94,6 +96,9 @@ const chackUserSubscribeChannel = require('./function/ckeckUserSubscribeChannel.
 const { registerUser } = require('./service/register/createNewAccAndRegister.js');
 const crossfiService = require('./service/crossfi/crossfiService.js');
 const setState = require('./controlFunction/setState.js');
+const SingleLiquidityPool = require('./model/liquidityPools/modelSingleLiquidityPool.js');
+const callbackHandler = require('./handler/callback/callbackHandler.js');
+const stateHandler = require('./handler/state/stateHandler.js');
 const CrossfiService = new crossfiService;
 
 
@@ -208,6 +213,14 @@ bot.on('text', async (msg) => {
         bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSection'), { replyMarkup: buyDelForRubIK(selectedLang) });
         break;
 
+      case getTranslation(selectedLang, "buyCashbsc"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'textBuyCashbsc'), { replyMarkup: buyCashbscIK(selectedLang) });
+        break;
+
+      case getTranslation(selectedLang, "pools"):
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: poolMenuIK(selectedLang) });
+        break;
+
       default:
         break;
     };
@@ -215,9 +228,13 @@ bot.on('text', async (msg) => {
     //states
     if (!getInfoUser.status) return;
 
-    console.log(`пользователь ${userId} на ${getInfoUser.user.status} стейте`);
+    const state = getInfoUser.user.status;
 
-    switch (getInfoUser.user.status) {
+    console.log(`пользователь ${userId} на ${state} стейте`);
+
+    await stateHandler(bot, msg, state)
+
+    switch (state) {
       case 10:
         setState(userId, 11);
         amount[userId] = Number(text);
@@ -561,33 +578,33 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         try {
           amount[userId] = Number(text);
 
-          if(!validator.isNumeric(text)) {
+          if (!validator.isNumeric(text)) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'Введено не корректное число!');
           }
 
-          if(!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
+          if (!validator.isFloat(text, { min: minimalWithdrawAmount[userId] })) {
             setState(userId, 0);
             return bot.sendMessage(userId, 'Вы ввели сумму вывода ниже минимальной!', { replyMarkup: RM_Home(selectedLang) });
           }
 
-          if((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
+          if ((coin[userId] === 'plex' && amount[userId] > balanceUserCoin[userId] && getInfoUser.userBalance.main.mine < 2) || (coin[userId] === 'mine' && (amount[userId] + 2) > balanceUserCoin[userId])) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 2 MINE з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if(coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId]) {
+          if (coin[userId] === 'usdt' && (amount[userId] + 2) > balanceUserCoin[userId]) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} USDT + 2 USDT з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if(coin[userId] === 'mpx' && (amount[userId] + 4) > balanceUserCoin[userId]) {
+          if (coin[userId] === 'mpx' && (amount[userId] + 4) > balanceUserCoin[userId]) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 4 MPX з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           };
-          if(coin[userId] === 'xfi' && (amount[userId] + 0.5) > balanceUserCoin[userId]) {
+          if (coin[userId] === 'xfi' && (amount[userId] + 0.5) > balanceUserCoin[userId]) {
             setState(userId, 0);
             return bot.sendMessage(userId, `На вашем балансе не достаточно средств для вывода!\nСумма вывода составляет ${amount[userId]} ${coin[userId].toUpperCase()} + 0.5 XFI з уплату комиссии`, { replyMarkup: RM_Home(selectedLang) });
           }
-          if((coin[userId] === 'bip' && (amount[userId] + 70) > balanceUserCoin[userId]) ||
+          if ((coin[userId] === 'bip' && (amount[userId] + 70) > balanceUserCoin[userId]) ||
             (coin[userId] === 'hub' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'monsterhub' && getInfoUser.userBalance.main.bip < 70) ||
             (coin[userId] === 'bnb' && getInfoUser.userBalance.main.bip < 70) ||
@@ -700,13 +717,11 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (!isValidPoolData.status) return bot.sendMessage(userId, isValidPoolData.errorMessage);
 
-        const acceptCancelPoolArr = ['accept', 'cancel'];
-
         const createPoolMesg = `Торговля осуществляется по рыночной цене. Проскальзывание составляет 5%.
 Пара: ${sellCoin[userId].toUpperCase()}/${buyCoin[userId].toUpperCase()},
 Количество монет для пула: ${amount[userId]} ${sellCoin[userId].toUpperCase()}.
 Комиссия: ${comissionExchanger[userId]} ${CalculateFee.commissionCoin.toUpperCase()}.`;
-        bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(acceptCancelPoolArr, 'createPool') });
+        bot.sendMessage(userId, createPoolMesg, { replyMarkup: generateButton(choice, 'createPool') });
         break;
 
       case 17:
@@ -739,8 +754,7 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
           `Комиссия составляет ${comissionExchanger[userId]} BIP.`
         ].join('\n');
 
-        const arrAnswer = ['accept', 'cancel']
-        bot.sendMessage(userId, textMinterExchange, { replyMarkup: generateButton(arrAnswer, 'minterExchange') });
+        bot.sendMessage(userId, textMinterExchange, { replyMarkup: generateButton(choice, 'minterExchange') });
         break;
 
 
@@ -774,11 +788,11 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
             const sendCrossfi = await CrossfiService.sendCoin(wallet[userId], config.mnemonic, coin[userId], amount[userId]);
 
-            if(!sendCrossfi.status) {
+            if (!sendCrossfi.status) {
               return bot.sendMessage(userId, `Ошибка при выводе! Попробуйте попытку позже, или обратитесь в поддержку.`, { parseMode: 'html' });
             }
 
-            if(coin[userId] === 'mpx') {
+            if (coin[userId] === 'mpx') {
               await ControlUserBalance(userId, coin[userId], -(amount[userId] + 4))
             } else {
               await ControlUserBalance(userId, coin[userId], -(amount[userId] + 0.5))
@@ -1024,11 +1038,13 @@ bot.on('callbackQuery', async (msg) => {
     for (const key in getInfoUser.userBalance.main) {
       const balance = getInfoUser.userBalance.main[key];
 
-      if(typeof balance === 'number') {
+      if (typeof balance === 'number') {
         const msg = `${key.toUpperCase()}: ${circumcisionAmount(balance)}`;
         textBalance.push(msg);
       }
     }
+
+    await callbackHandler(bot, msg);
 
     switch (data) {
       case 'balance':
@@ -1547,73 +1563,84 @@ bot.on('callbackQuery', async (msg) => {
         bot.sendMessage(userId, 'Торговля отменена!', { replyMarkup: RM_Home(selectedLang) })
         break;
 
-      case 'liquidity_pools':
+      case 'single_liquidity_pools':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, `Доход начисляется в монете <b>${CalculateFee.commissionCoin.toUpperCase()}</b>. Выберите действие:`, { replyMarkup: liquidityPoolsIK, parseMode: 'html' })
+        bot.sendMessage(userId, `Доход начисляется в монете <b>${CalculateFee.commissionCoin.toUpperCase()}</b>. Выберите действие:`, { replyMarkup: singleLiquidityPoolsIK, parseMode: 'html' })
         break;
 
-      case 'info_liquidityPools':
+      case 'dual_liquidity_pool':
+        bot.deleteMessage(userId, messageId);
+        bot.sendMessage(userId, `Доход начисляется в монете <b>${CalculateFee.commissionCoin.toUpperCase()}</b>. Выберите действие:`, { replyMarkup: doubleLiquidityPoolsIK, parseMode: 'html' })
+        break;
+
+      case 'info_single_liquidityPools':
         bot.deleteMessage(userId, messageId)
-        const allPoolUsers = await LiquidityPoolModel.find();
+        const allPoolUsers = await SingleLiquidityPool.find();
 
         for (const pool of allPoolUsers) {
-          let sumFirstCoinPool = 0;
-          let sumSecondCoinPool = 0;
           const usersArray = pool.poolUser;
 
-          for (const user of usersArray) {
-            sumFirstCoinPool += user.amountFirstCoin;
-            sumSecondCoinPool += user.amountSecondCoin;
-          };
+          const totalAmount = usersArray.reduce((acc, user) => {
+            acc.totalFirstCoin += user.amountFirstCoin
+            acc.totalSecondCoin += user.amountSecondCoin
 
-          if (sumFirstCoinPool <= 0 && sumSecondCoinPool <= 0) return
+            return acc
+          }, { totalFirstCoin: 0, totalSecondCoin: 0 });
+
+          if (totalAmount.totalFirstCoin <= 0 && totalAmount.totalSecondCoin <= 0) {
+            return
+          }
+
           bot.sendMessage(userId, `Пул: ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}
 Количество монет в пуле: 
-${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
-${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
+${totalAmount.totalFirstCoin.toFixed(10)} ${pool.firstCoin.toUpperCase()},
+${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
         }
         break;
 
-      case 'invest_in_pool':
+      case 'invest_in_single_pool':
         bot.deleteMessage(userId, messageId);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: investInPoolIK(selectedLang) })
+        bot.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: investInSinglePoolIK(selectedLang) })
         break;
 
-      case 'existingPools':
+      case 'existing-single-pool':
         bot.deleteMessage(userId, messageId);
-        const availablePools = await LiquidityPoolModel.find();
+        const availablePools = await SingleLiquidityPool.find();
 
         for (const pool of availablePools) {
-          let sumFirstCoinPool = 0;
-          let sumSecondCoinPool = 0;
-          let quantityInvestors = 0;
           const usersArray = pool.poolUser;
 
-          for (const user of usersArray) {
-            sumFirstCoinPool += user.amountFirstCoin;
-            sumSecondCoinPool += user.amountSecondCoin;
-            quantityInvestors++
-          };
+          const totalAmount = usersArray.reduce((acc, user) => {
+            acc.totalFirstCoin += user.amountFirstCoin
+            acc.totalSecondCoin += user.amountSecondCoin
+            acc.quantityInvestors++
 
-          if (sumFirstCoinPool <= 0 && sumSecondCoinPool <= 0) return
+            return acc
+          }, { totalFirstCoin: 0, totalSecondCoin: 0, quantityInvestors: 0 });
+
+
+          if (totalAmount.totalFirstCoin <= 0 && totalAmount.totalSecondCoin <= 0) {
+            return
+          }
+
           bot.sendMessage(userId, `Пул: ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}
 Количество монет в пуле: 
-${sumFirstCoinPool.toFixed(10)} ${pool.firstCoin.toUpperCase()},
-${sumSecondCoinPool.toFixed(10)} ${pool.secondCoin.toUpperCase()}.
-Количество инвесторов: ${quantityInvestors}`, { replyMarkup: investInPoolButtonIK(pool.firstCoin, pool.secondCoin, selectedLang) })
+${totalAmount.totalFirstCoin.toFixed(10)} ${pool.firstCoin.toUpperCase()},
+${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.
+Количество инвесторов: ${totalAmount.quantityInvestors}`, { replyMarkup: investInPoolButtonIK(pool.firstCoin, pool.secondCoin, selectedLang) })
         }
         break;
 
-      case 'create_liquidityPools':
+      case 'create_single_liquidity-pool':
         bot.deleteMessage(userId, messageId);
         firstPage.push('Page2');
         coinSellArray[userId] = Array.from(allCoin);
         bot.sendMessage(userId, 'Вы перешли в раздел инвестиции в пул ликвидности. В случае если выбраная пара для создания существует, будет выполнена обычная инвестиция в пул. Выберите первую монету:', { replyMarkup: generateButton(firstPage, 'firstCoinPool') })
         break;
 
-      case 'my_liquidityPools':
+      case 'my_single_liquidityPools':
         bot.deleteMessage(userId, messageId)
-        const allUserPool = await LiquidityPoolModel.find();
+        const allUserPool = await SingleLiquidityPool.find();
         const userInvestment = []; /* {
           id: Number,
           firstCoin: String,
@@ -1660,11 +1687,11 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
       case 'createPool_accept':
         bot.deleteMessage(userId, messageId);
         // const createdToken = v4();
-        const foundPool = await LiquidityPoolModel.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
+        const foundPool = await SingleLiquidityPool.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
 
         if (!foundPool) {
           // Если пул не найден, создаем новый пул с пользователем
-          await LiquidityPoolModel.create({
+          await SingleLiquidityPool.create({
             firstCoin: sellCoin[userId],
             secondCoin: buyCoin[userId],
             poolUser: [{
@@ -2183,7 +2210,7 @@ bot.on('callbackQuery', async (msg) => {
           bot.sendMessage(userId, 'Возникла ошибка');
         }
       }
-      else if(data.split('_')[1] === 'xfi') {
+      else if (data.split('_')[1] === 'xfi') {
         try {
           coin[userId] = data.split('_')[1];
           balanceUserCoin[userId] = getInfoUser.userBalance.main[data.split('_')[1]];
@@ -2669,7 +2696,7 @@ bot.on('callbackQuery', async (msg) => {
       sellCoin[userId] = data.split('_')[1]; // монета которую инвестировал пользователь
       buyCoin[userId] = data.split('_')[2]; // монета которую получает пользователь
 
-      const selectedPools = await LiquidityPoolModel.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
+      const selectedPools = await SingleLiquidityPool.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
       const userPool = selectedPools.poolUser.find(user => user.id === userId);
 
       const withdrawInvestmentsIK = bot.inlineKeyboard([
@@ -2687,7 +2714,7 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
       bot.deleteMessage(userId, messageId);
       coin[userId] = data.split('_')[1]; // монета которую пользователь хочет вывести
 
-      const selectedPools = await LiquidityPoolModel.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
+      const selectedPools = await SingleLiquidityPool.findOne({ firstCoin: sellCoin[userId], secondCoin: buyCoin[userId] });
       const userPool = selectedPools.poolUser.find(user => user.id === userId);
 
       if (selectedPools.firstCoin === coin[userId]) {

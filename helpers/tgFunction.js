@@ -3,8 +3,8 @@ const TeleBot = require('telebot');
 
 const bot = new TeleBot(config.token);
 
-const sendMessage = (id, message) => {
-  bot.sendMessage(id, message, { parseMode: 'html' });
+const sendMessage = (id, message, options = { parseMode: 'html' }) => {
+  bot.sendMessage(id, message, options).catch((e) => console.log(e));
 };
 
 const getChatMember = async (channel, userId) => {

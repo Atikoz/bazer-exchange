@@ -15,21 +15,27 @@ class ReplenishmentUSDT {
       const getInfoUser = await UserManagement.getInfoUser(userId);
       const userUsdtAdress = getInfoUser.userWallet.usdt.address;
       const userUsdtPrivatKey = getInfoUser.userWallet.usdt.privateKey;
-      await sleep(10000)
       const userTransaction = await getTransaction(userUsdtAdress);
 
       if (userTransaction.length === 0) return;
 
       for (let i = 0; i < userTransaction.length; i++) {
-        const examinationIf = !await UsdtReplenishment.findOne({ hash: userTransaction[i].hash }) && userTransaction[i].coin === 'usdt' && userTransaction[i].amount >= 2 && userTransaction[i].status === 'SUCCESS' && userTransaction[i].sender !== userUsdtAdress;
+        const examinationIf =
+          !await UsdtReplenishment.findOne({ hash: userTransaction[i].hash }) &&
+          userTransaction[i].coin === 'usdt' &&
+          userTransaction[i].amount >= 2 &&
+          userTransaction[i].status === 'SUCCESS' &&
+          userTransaction[i].sender !== userUsdtAdress;
+
         if (examinationIf) {
           console.log('transaction processed');
-          await sleep(10000)
-          const balanceTronUser = async () => await getBalanceTron(userUsdtAdress, userUsdtPrivatKey);
+          await sleep(5000)
+          const balanceTronUser = await getBalanceTron(userUsdtAdress, userUsdtPrivatKey);
 
           if (balanceTronUser < 30) {
             await TransferTronwebTrx(config.privatKeyUsdt, config.adminWalletUsdt, userUsdtAdress, 30 - balanceTronUser);
             console.log('tron send user wallet');
+
             return
           };
 
@@ -39,9 +45,11 @@ class ReplenishmentUSDT {
             hash: userTransaction[i].hash,
             amount: userTransaction[i].amount
           });
+
           console.log('model user send created');
 
           const hashTransactionAdminWallet = await TransferTronNet(getInfoUser.userWallet.usdt.privateKey, config.contractUsdt, config.adminWalletUsdt, userTransaction[i].amount);
+          
           await TransactionUsdtStatus.create({
             id: userId,
             coin: userTransaction[i].coin,
@@ -60,25 +68,35 @@ class ReplenishmentUSDT {
   };
 
   async CheckUsdtTransactionAmin(replenishment) {
+    if (replenishment.status === 'Done' || replenishment.status === 'Fail') {
+      return
+    }
+
     try {
-      if (replenishment.status === 'Done' || replenishment.status === 'Fail') return
-      const checkHash = await sleep(5000).then(async () => (await transactionTronNetworkInfo(replenishment.hash)).contractRet);
+      await sleep(5000);
+      const checkHash = (await transactionTronNetworkInfo(replenishment.hash)).contractRet;
 
       if (checkHash === 'SUCCESS') {
         await TransactionUsdtStatus.updateOne(
           { hash: replenishment.hash },
           { status: 'Done', processed: true }
         );
+
         await BalanceUserModel.updateOne(
           { id: replenishment.id },
           JSON.parse(`{"$inc": { "main.${replenishment.coin}": ${replenishment.amount} } }`)
         );
+
         sendMessage(replenishment.id, `Вас счет пополнено на ${replenishment.amount} ${replenishment.coin}`);
         await sendLog(`Пользователь ${replenishment.id} пополнил баланс на ${replenishment.amount} ${replenishment.coin}`);
       }
+
       else if (checkHash === "OUT_OF_ENERGY") {
-        //изменение статуса проверки траназакции
-        await TransactionUsdtStatus.updateOne({ hash: replenishment.hash }, { $set: { processed: true, status: "Fail" } });
+        await TransactionUsdtStatus.updateOne(
+          { hash: replenishment.hash },
+          { $set: { processed: true, status: "Fail" } }
+        );
+
         sendMessage(replenishment.id, `При пополнении возникла ошибка... Сообщите администрации!`);
       };
 
