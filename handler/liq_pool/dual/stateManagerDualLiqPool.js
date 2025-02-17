@@ -23,7 +23,7 @@ async function stateManagerDualLiqPool(bot, ctx, state) {
 
         const data = getSelectedInvestCoinDualLiqPool(userId);
 
-        if (!selectedInvestCoin) {
+        if (!data.selectedInvestCoin) {
           throw new Error('selected Invest Coin is null')
         }
 

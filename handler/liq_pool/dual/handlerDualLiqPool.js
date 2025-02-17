@@ -212,7 +212,15 @@ ${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
           return sendMessage(userId, 'Операция отменена.');
         } else {
           const { firstCoin, secondCoin, selectedInvestCoin, amount, comissionExchanger } = getDualPoolData(userId);
-          const foundPool = await DoubleLiquidityPool.findOne({ firstCoin, secondCoin });
+
+          const foundPool = await DoubleLiquidityPool.findOne({
+            $or: [
+              { firstCoin, secondCoin },
+              { firstCoin: secondCoin, secondCoin: firstCoin }
+            ]
+          });
+
+          console.log(foundPool)
 
           if (!foundPool) {
             await DoubleLiquidityPool.create({
@@ -228,10 +236,13 @@ ${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
             const existingUser = foundPool.poolUser.find(user => user.id === userId);
 
             if (existingUser) {
-              // Если пользователь существует, обновляем его сумму инвестиции
-              if (selectedInvestCoin === firstCoin) {
+              console.log(selectedInvestCoin)
+              console.log(firstCoin)
+              console.log(secondCoin)
+
+              if (selectedInvestCoin === foundPool.firstCoin) {
                 existingUser.amountFirstCoin += +amount;
-              } else if (selectedInvestCoin === secondCoin) {
+              } else if (selectedInvestCoin === foundPool.secondCoin) {
                 existingUser.amountSecondCoin += +amount;
               }
             } else {
