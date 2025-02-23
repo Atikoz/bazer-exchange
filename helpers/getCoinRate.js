@@ -32,7 +32,7 @@ class GetRate {
 
       const orderBook = await getOrderBook(sellCoin, buyCoin);
 
-      if (orderBook) {
+      if (orderBook?.price) {
         return orderBook.price
       } else {
         const result = this.rateObj.rub[sellCoin.toLowerCase()] / this.rateObj.rub[buyCoin.toLowerCase()];

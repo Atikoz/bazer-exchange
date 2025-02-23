@@ -42,7 +42,7 @@ async function getOrderBook(coinA, coinB) {
   
     return { bids, asks, price };
   } catch (error) {
-    console.error(`error geting order book: ${error.mesage}`);
+    console.error(`error geting order book: ${error.message}`);
     
     return null
   }
