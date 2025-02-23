@@ -126,8 +126,13 @@ bot.on('text', async (msg) => {
     const selectedLang = getInfoUser?.user?.lang || 'eng';
     let selectedMail = getInfoUser?.user?.mail || null;
 
-    const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-    if (!checkUserSubscribe.status) return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+    if (config.APP_ENV === 'prod') {
+      const checkUserSubscribe = await chackUserSubscribeChannel(userId);
+      
+      if (!checkUserSubscribe.status) {
+        return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
+      }
+    }
 
     console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
