@@ -220,8 +220,6 @@ ${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
             ]
           });
 
-          console.log(foundPool)
-
           if (!foundPool) {
             await DoubleLiquidityPool.create({
               firstCoin,
@@ -236,17 +234,12 @@ ${totalAmount.totalSecondCoin.toFixed(10)} ${pool.secondCoin.toUpperCase()}.`)
             const existingUser = foundPool.poolUser.find(user => user.id === userId);
 
             if (existingUser) {
-              console.log(selectedInvestCoin)
-              console.log(firstCoin)
-              console.log(secondCoin)
-
               if (selectedInvestCoin === foundPool.firstCoin) {
                 existingUser.amountFirstCoin += +amount;
               } else if (selectedInvestCoin === foundPool.secondCoin) {
                 existingUser.amountSecondCoin += +amount;
               }
             } else {
-              // Если пользователь не существует, добавляем его в массив poolUser
               foundPool.poolUser.push({
                 id: userId,
                 amountFirstCoin: selectedInvestCoin === firstCoin ? +amount : 0,

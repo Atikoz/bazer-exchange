@@ -1,22 +1,27 @@
-const SingleLiquidityPool = require("../../model/liquidityPools/modelSingleLiquidityPool");
+const DoubleLiquidityPool = require("../../../model/liquidityPools/modelDoubleLiqPools");
 
-const SubtractFirstCoin = async (firstCoin, secondCoin, userId, percent, amount) => {
+async function SubtractCoinDualPool(firstCoin, secondCoin, buyCoin, userId, percent, amount) {
   try {
-    const findPool = await SingleLiquidityPool.findOne({ firstCoin: firstCoin, secondCoin: secondCoin });
+    const findPool = await DoubleLiquidityPool.findOne({
+      $or: [
+        { firstCoin, secondCoin },
+        { firstCoin: secondCoin, secondCoin: firstCoin }
+      ]
+    });
+
     if (!findPool) {
       throw new Error('Profit pool not found');
     }
 
     const findUser = findPool.poolUser.find(user => user.id === userId);
+
     if (!findUser) {
       throw new Error('User not found in the profit pool');
     }
 
-    let sumPool = 0;
-
-    findPool.poolUser.forEach(element => {
-      sumPool += element.amountFirstCoin
-    });
+    const sumPool = findPool.poolUser.reduce((acc, user) => {
+      acc += user.amountFirstCoin
+    }, 0)
 
 
     // Проверка, что количество первой монеты после вычета не станет отрицательным
@@ -32,16 +37,16 @@ const SubtractFirstCoin = async (firstCoin, secondCoin, userId, percent, amount)
       throw new Error('Insufficient first coin amount in user');
     }
 
-    findUser.amountFirstCoin -= sumInvestor;
+    firstCoin === buyCoin
+      ? findUser.amountFirstCoin -= sumInvestor
+      : findUser.amountSecondCoin -= sumInvestor
+     
     findPool.markModified('poolUser');
 
     await findPool.save();
-    
-    // return { success: true, message: 'First coin subtracted successfully' };
   } catch (error) {
-    console.error(error);
-    // return { success: false, message: error.message };
+    console.error(`error subtract coin in dual liq pool: ${error.message}`)
   }
-};
+}
 
-module.exports = SubtractFirstCoin;
+module.exports = SubtractCoinDualPool

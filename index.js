@@ -195,7 +195,7 @@ bot.on('text', async (msg) => {
       case getTranslation(selectedLang, 'purchasingBazerHub'):
         setState(userId, 36);
         balanceUserCoin[userId] = getInfoUser.userBalance.main.cashbsc;
-        userRate[userId] = getCoinRate('cashbsc', 'bazerhub');
+        userRate[userId] = await getCoinRate('cashbsc', 'bazerhub');
 
         bot.sendMessage(userId, `<b>${getTranslation(selectedLang, 'minimalAmountBuyBazerHub')}!</b>  ${getTranslation(selectedLang, 'rate')}: 1 CASHBSC ≈ <code>${userRate[userId].toFixed(9)}</code> BAZERHUB. ${getTranslation(selectedLang, 'available')}: ${circumcisionAmount(balanceUserCoin[userId])} CASHBSC. ${getTranslation(selectedLang, 'coinSaleAmountPrompt')}`, { parseMode: 'html' });
         break;
@@ -2024,7 +2024,7 @@ bot.on('callbackQuery', async (msg) => {
       setState(userId, 13);
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const rate = getCoinRate(sellCoin[userId], buyCoin[userId]);
+      const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
       await bot.sendMessage(userId, `Курс: 1 ${sellCoin[userId].toUpperCase()} ≈ <code>${rateExchange[userId]}</code> ${buyCoin[userId].toUpperCase()}. Комиссия сделки оплачивается в монете ${CalculateFee.commissionCoin.toUpperCase()}.`, { parseMode: 'html' });
       await bot.sendMessage(userId, 'Введите курс по какому будет осуществлена торговля, курс должен быть в стиле <i>0.0001</i>:', { parseMode: "html" });
@@ -2739,7 +2739,7 @@ ${userPool.amountSecondCoin} ${buyCoin[userId].toUpperCase()}`, { replyMarkup: w
     else if (data.split('_')[0] === 'buyMinterExchange') {
       bot.deleteMessage(userId, messageId);
       buyCoin[userId] = data.split('_')[1];
-      const rate = getCoinRate(sellCoin[userId], buyCoin[userId]);
+      const rate = await getCoinRate(sellCoin[userId], buyCoin[userId]);
       rateExchange[userId] = circumcisionAmount(rate);
       const balanceSellCoin = await getBalanceCoin(userId, sellCoin[userId]);
       bot.sendMessage(userId, `Курс 1 ${sellCoin[userId].toUpperCase()} = ${rateExchange[userId]} ${buyCoin[userId]}. Введите количество продажи ${sellCoin[userId].toUpperCase()} (доступно ${balanceSellCoin}):`);

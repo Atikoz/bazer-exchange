@@ -17,7 +17,7 @@ const generateCounterOrderLiqPool = async () => {
 
   for (const pool of liquidityPools) {
     for (const order of ordersSpotTrade) {
-      const poolMarketRate = getCoinRate(pool.firstCoin, pool.secondCoin);
+      const poolMarketRate = await getCoinRate(pool.firstCoin, pool.secondCoin);
       const roundedRateClosing = 1 / poolMarketRate;
       const spreadPercentage = 5; // % разброса
 
@@ -31,7 +31,10 @@ const generateCounterOrderLiqPool = async () => {
         const logMessage = [];
         pool.poolUser.forEach(el => { sumPool += el.amountFirstCoin });
 
-        if (sumPool <= 0 || isNaN(sumPool)) return
+        if (sumPool <= 0 || isNaN(sumPool)) {
+          continue
+        }
+
         if (sumPool >= order.buyAmount) {
           const profitAdmin = (order.comission / 100) * 15;
           const profitInvestors = order.comission - profitAdmin;
@@ -75,11 +78,9 @@ const generateCounterOrderLiqPool = async () => {
           sendLogs(`Ордер №${order.orderNumber} был выполнен ✅.`);
           sendLogs(`Была выполнена торговля через пул ликвидности ${pool.firstCoin.toUpperCase()}/${pool.secondCoin.toUpperCase()}.`);
           sendLogs(logMessage.join('\n'));
-
-
         } else {
           const buySum = sumPool / order.rate;
-          const feeTrade = CalculateFee.calculateFeeTrade(order.sellAmount, buySum, order.comission);
+          const feeTrade = CalculateFee.calculateFeeTrade(order.sellAmount, buySum, order.comission, order.sellAmount, order.buyAmount);
           const profitAdmin = (feeTrade / 100) * 15;
           const profitInvestors = feeTrade - profitAdmin;
           await PoolProfitManagement(1511153147, profitAdmin);

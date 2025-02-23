@@ -51,13 +51,12 @@ const CheckOrders = async () => {
 
 
           if (conditionSellAmountBigger) {
-
             console.log('1');
 
             const buySumm = firstOrder.buyAmount;
             const sellSumm = firstOrder.sellAmount;
 
-            const feeTrade = CalculateFee.calculateFeeTrade(secondOrder.sellAmount, buySumm, secondOrder.comission);
+            const feeTrade = CalculateFee.calculateFeeTrade(secondOrder.sellAmount, buySumm, secondOrder.comission, secondOrder.sellAmount, secondOrder.byuAmount);
 
 
             //начисление денег на балансы
@@ -114,12 +113,11 @@ const CheckOrders = async () => {
             return
           }
           else if (conditionBuyAmountBigger) {
-
             console.log('2');
 
             const buySumm = secondOrder.buyAmount;
             const sellSumm = secondOrder.sellAmount;
-            const feeTrade = CalculateFee.calculateFeeTrade(firstOrder.sellAmount, buySumm, firstOrder.comission);
+            const feeTrade = CalculateFee.calculateFeeTrade(firstOrder.sellAmount, buySumm, firstOrder.comission, firstOrder.sellAmount, firstOrder.buyAmount);
 
             //начисление денег на балансы
             await BalanceUser.updateOne(

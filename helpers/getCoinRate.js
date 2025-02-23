@@ -1,11 +1,11 @@
 const RateService = require("../function/getCurrencyRate");
+const getOrderBook = require("../orderBook/getOrderBook");
 
 class GetRate {
   constructor() {
     this.rateObj = null;  // Зберігаємо останні дані getAllCoinRate
     this.updateInterval = 30 * 60 * 1000;  // Оновлюємо кожні 30 хвилин
-    this.updateRateObj();  // Викликаємо один раз при створенні об'єкту
-    setInterval(() => this.updateRateObj(), this.updateInterval);  // Оновлюємо по інтервалу
+    setInterval(async () => await this.updateRateObj(), this.updateInterval);  // Оновлюємо по інтервалу
   }
 
   updateRateObj = async () => {
@@ -16,11 +16,29 @@ class GetRate {
     }
   };
 
-  getCoinRate = (sellCoin, buyCoin) => {
+  initRateObj = async () => {
     try {
-      const result = this.rateObj.rub[sellCoin.toLowerCase()] / this.rateObj.rub[buyCoin.toLowerCase()];
+      if (!this.rateObj) {
+        await this.updateRateObj();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-      return result;
+  getCoinRate = async (sellCoin, buyCoin) => {
+    try {
+      await this.initRateObj();
+
+      const orderBook = await getOrderBook(sellCoin, buyCoin);
+
+      if (orderBook) {
+        return orderBook.price
+      } else {
+        const result = this.rateObj.rub[sellCoin.toLowerCase()] / this.rateObj.rub[buyCoin.toLowerCase()];
+
+        return result;
+      }
     } catch (error) {
       console.error(error.message)
       console.log('Rate data not available. Please try again later.')
@@ -29,6 +47,8 @@ class GetRate {
 
   getCurrencyRate = (coin, currency) => {
     try {
+      this.initRateObj();
+
       const currObj = this.rateObj[currency.toLowerCase()];
 
       return +(currObj[coin]).toFixed(2)
