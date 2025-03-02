@@ -1902,7 +1902,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
       case 'instructions_p2p':
         bot.deleteMessage(userId, messageId);
 
-        const pathVideoInstructionP2P = path.join(__dirname, 'ts/instructions', 'InstructionP2P.MOV');
+        const pathVideoInstructionP2P = path.join(__dirname, 'instructions', 'InstructionP2P.MOV');
 
         bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
         bot.sendVideo(userId, pathVideoInstructionP2P);
@@ -1910,7 +1910,7 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'instructions_investIn_LiqPool':
         bot.deleteMessage(userId, messageId);
-        const pathVideoInstructionInvestLiqPool = path.join(__dirname, 'ts/instructions', 'InstructionInvestLiqPool.MOV');
+        const pathVideoInstructionInvestLiqPool = path.join(__dirname, 'instructions', 'InstructionInvestLiqPool.MOV');
 
         bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
         bot.sendVideo(userId, pathVideoInstructionInvestLiqPool);
