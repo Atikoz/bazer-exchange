@@ -175,7 +175,8 @@ const adminPanelIK = bot.inlineKeyboard([
 ]);
 
 const instructionsMenuIK = (lang = 'eng') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'pools'), { callback: 'instructions_liquidityPools' }), bot.inlineButton('P2P', { callback: 'instructions_p2p' })]
+  [bot.inlineButton(getTranslation(lang, 'pools'), { callback: 'instructions_liquidityPools' }), bot.inlineButton('P2P', { callback: 'instructions_p2p' })],
+  [bot.inlineButton(getTranslation(lang, 'spotTrading'), { callback: 'instructions_spotTrade' })]
 ]);
 
 const instructionsLiuidityPoolMenuIK = (lang = 'eng') => bot.inlineKeyboard([

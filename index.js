@@ -99,6 +99,7 @@ const setState = require('./controlFunction/setState.js');
 const SingleLiquidityPool = require('./model/liquidityPools/modelSingleLiquidityPool.js');
 const callbackHandler = require('./handler/callback/callbackHandler.js');
 const stateHandler = require('./handler/state/stateHandler.js');
+const instructionLinks = require('./instructions/instructionLinks.js');
 const CrossfiService = new crossfiService;
 
 
@@ -1901,19 +1902,18 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
 
       case 'instructions_p2p':
         bot.deleteMessage(userId, messageId);
-
-        const pathVideoInstructionP2P = path.join(__dirname, 'instructions', 'InstructionP2P.MOV');
-
-        bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
-        bot.sendVideo(userId, pathVideoInstructionP2P);
+        bot.sendMessage(userId, `${getTranslation(selectedLang, 'textSendingInstructions')}\n${instructionLinks[data]}`);
         break;
 
       case 'instructions_investIn_LiqPool':
         bot.deleteMessage(userId, messageId);
-        const pathVideoInstructionInvestLiqPool = path.join(__dirname, 'instructions', 'InstructionInvestLiqPool.MOV');
+        await bot.sendMessage(userId, `${getTranslation(selectedLang, 'textSendingInstructions')}\n${instructionLinks[data][0]}`);
+        await bot.sendMessage(userId, instructionLinks[data][1])
+        break;
 
-        bot.sendMessage(userId, getTranslation(selectedLang, 'textSendingInstructions'));
-        bot.sendVideo(userId, pathVideoInstructionInvestLiqPool);
+      case 'instructions_spotTrade':
+        bot.deleteMessage(userId, messageId);
+        await bot.sendMessage(userId, `${getTranslation(selectedLang, 'textSendingInstructions')}\n${instructionLinks[data]}`);
         break;
 
       case 'buyBazerhub_accept':
