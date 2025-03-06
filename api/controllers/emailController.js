@@ -11,7 +11,6 @@ class VerificationService {
       const sendCode = await MailService.sendConfirmationEmail(email);
 
       const statusSend = sendCode.status;
-      const code = sendCode.code;
       const message = sendCode.message;
 
       if (statusSend) {
@@ -19,27 +18,18 @@ class VerificationService {
 
         res.status(200).json({
           error: '',
-          message: message,
-          data: {
-            code: code,
-          },
+          message: message
         });
       } else {
         res.status(500).json({
           error: 'Error send code',
-          message: message,
-          data: {
-            code: ''
-          }
+          message: message
         });
       }
     } catch (error) {
       res.status(500).json({
         error: 'Error send code',
-        message: error.message,
-        data: {
-          code: ''
-        }
+        message: error.message
       });
     }
   };
