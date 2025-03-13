@@ -7,6 +7,7 @@ const { createUserArteryWallet } = require('../../function/createArteryWallet.js
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
 const crossfiService = require('../../service/crossfi/crossfiService.js');
+const encryptionService = require('../../function/encryptionService.js');
 const CrossfiService = new crossfiService;
 
 async function Authentication(userId, email = null) {

@@ -20,24 +20,6 @@ const UserModel = mongoose.model('Users', {
   lang: {
     type: String,
     default: 'eng'
-  },
-
-  referrer: {
-    type: Number,
-    required: true,
-    index: true
-  },
-
-  referrer2: {
-    type: Number,
-    required: true,
-    index: true
-  },
-
-  referrer3: {
-    type: Number,
-    required: true,
-    index: true
   }
 });
 

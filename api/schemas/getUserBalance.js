@@ -2,8 +2,7 @@ const Joi = require('joi');
 
 
 const getUserBalanceSchema = Joi.object({
-  userId: Joi.number().required(),
-  mnemonic: Joi.string().required()
+  userId: Joi.number().required()
 });
 
 module.exports = {
