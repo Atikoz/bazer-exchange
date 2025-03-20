@@ -17,7 +17,7 @@ const io = new Server(server, {
   cors: {
     origin: '*',
     methods: ['GET', 'POST'],
-    patch: '/socket.io/'
+    path: '/socket.io/'
   }
 })
 
