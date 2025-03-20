@@ -15,8 +15,9 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: '*', // Дозволяє всі домени, налаштуйте для безпеки
-    methods: ['GET', 'POST']
+    origin: '*',
+    methods: ['GET', 'POST'],
+    patch: '/socket.io/'
   }
 })
 
