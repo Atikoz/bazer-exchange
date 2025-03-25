@@ -6,7 +6,7 @@ const { mongoose } = require('mongoose');
 const config = require('../config');
 const http = require('http');
 const { Server } = require('socket.io');
-const socketHandler = require('./socketHandler');
+const socketHandler = require('./ws/socketHandler');
 
 mongoose.connect(config.dataBaseUrl);
 
