@@ -4,17 +4,20 @@ const sendMessageHandler = async (socket, io, { socketId, senderId, message }) =
   try {
     if (!message.trim()) return; // Перевірка на пусте повідомлення
 
-    // Створюємо нове повідомлення в базі
-    const newMessage = new ChatMessage({ socketId, senderId, message });
-    await newMessage.save();
+    const chat = await ChatMessage.findOneAndUpdate(
+      { socketId },
+      { $push: { messages: { senderId, message } } },
+      { new: true, upsert: true }
+    );
+
 
     // Відправляємо повідомлення всім у кімнаті
-    io.to(socketId).emit('newMessage', newMessage);
+    io.to(socketId).emit('NEW_MESSAGE', chat.messages.at(-1));
 
-    console.log(`Message sent to order ${socketId}:`, message);
+    console.log(`Message sent to order ${socketId}:`, chat.messages.at(-1));
   } catch (error) {
     console.error(error);
-    socket.emit('error', { message: `Error sending message: ${error.message}` });
+    socket.emit('ERROR', { message: `Error sending message: ${error.message}` });
   }
 };
 

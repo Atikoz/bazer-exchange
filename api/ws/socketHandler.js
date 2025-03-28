@@ -8,23 +8,23 @@ module.exports = (io) => {
     console.log('New client connected:', socket.id);
 
     try {
-    socket.on('joinOrder', async (data) => {
-      handleJoinOrder(socket, data)
+    socket.on('JOIN_THE_DEAL', async (data) => {
+      await handleJoinOrder(socket, data)
     });
 
-    socket.on('updateOrder', async (data) => {
-      updateOrderHandler(socket, io, data)
+    socket.on('UPDATE_ORDER', async (data) => {
+      await updateOrderHandler(socket, io, data)
     });
 
-    socket.on('sendMessage', async (data) => {
-      sendMessageHandler(socket, io, data)
+    socket.on('SEND_MESSAGE', async (data) => {
+      await sendMessageHandler(socket, io, data)
     });
 
-    socket.on('fetchChatHistory', async (data) => {
-      fetchChatHistoryHandler(socket, data)
+    socket.on('FETCH_CHAT_HISTORY', async (data) => {
+      await fetchChatHistoryHandler(socket, data)
     });
 
-    socket.on('disconnect', () => {
+    socket.on('DISKONNECT', () => {
       console.log('Client disconnected:', socket.id);
     });
     } catch (error) {

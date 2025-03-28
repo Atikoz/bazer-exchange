@@ -2,12 +2,14 @@ const ChatMessage = require("../../../../model/ws/ChatMessage");
 
 const fetchChatHistoryHandler = async (socket, { socketId }) => {
   try {
-    const messages = await ChatMessage.find({ socketId }).sort({ timestamp: 1 });
+    const chat = await ChatMessage.findOne({ socketId });
 
-    // Відправляємо історію чату клієнту
-    socket.emit('chatHistory', messages);
+    // Відправити історію чату клієнту
+    socket.emit("CHAT_HISTORY", chat?.messages || []);
   } catch (error) {
     console.error(error);
-    socket.emit('error', { message: `Error fetching chat history: ${error.message}` });
+    socket.emit('ERROR', { message: `Error fetching chat history: ${error.message}` });
   }
 };
+
+module.exports = fetchChatHistoryHandler
