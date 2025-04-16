@@ -10,6 +10,7 @@ const sendMessage = (id, message, options = { parseMode: 'html' }) => {
 const getChatMember = async (channel, userId) => {
   try {
     const chatMemberInfo = await bot.getChatMember(channel, userId).catch((e) => { console.log('channel', channel, 'error', e) });
+    
     return chatMemberInfo
   } catch (error) {
     console.log(error)

@@ -1,14 +1,15 @@
 const UserModel = require('../../model/user/modelUser.js');
 const WalletUserModel = require('../../model/user/modelWallet.js');
 const BalanceUserModel = require('../../model/user/modelBalance.js');
-const CreateUsdtWallet = require('../../function/createUsdtWallet.js');
 const createDecimalWallet = require('../../function/decimal/createDecimalWallet.js');
 const { createUserArteryWallet } = require('../../function/createArteryWallet.js');
 const ProfitPoolModel = require('../../model/user/modelProfitPool.js');
 const createMinterWallet = require('../../function/createMinterWallet.js');
 const crossfiService = require('../../service/crossfi/crossfiService.js');
 const encryptionService = require('../../function/encryptionService.js');
-const CrossfiService = new crossfiService;
+const Trc20Service = require('../trc20/Trc20Service.js');
+const CrossfiService = new crossfiService();
+const Trc20 = new Trc20Service();
 
 async function Authentication(userId, email = null) {
   try {
@@ -16,7 +17,7 @@ async function Authentication(userId, email = null) {
     
     if (!createDelWallet.status) return this.Authentication(userId);
 
-    const createUsdt = await CreateUsdtWallet();
+    const createUsdt = await Trc20.createWallet();
     const createCrossfi = await CrossfiService.createWallet(createDelWallet.mnemonic);
     const createArtery = await createUserArteryWallet(createDelWallet.mnemonic);
     const createMinter = createMinterWallet(createDelWallet.mnemonic);

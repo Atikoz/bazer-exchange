@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const { Schema, model } = require('mongoose');
 
-const UsdtReplenishment = mongoose.model('UsdtReplenishment', {
+const UsdtReplenishmentSchema = new Schema({
   id: {
     type: String,
     required: true
@@ -11,12 +11,15 @@ const UsdtReplenishment = mongoose.model('UsdtReplenishment', {
   },
   hash: {
     type: String,
-    required: true
+    required: true,
+    uniq: true
   },
   amount: {
     type: Number,
     required: true
   }
-});
+})
+
+const UsdtReplenishment = model('UsdtReplenishment', UsdtReplenishmentSchema);
 
 module.exports = UsdtReplenishment;

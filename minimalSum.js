@@ -61,7 +61,7 @@ module.exports =
     iloveyou: 200,
     bazercoin: 20,
     bazerusd: 20000,
-    usdt: 2,
+    usdt: 1,
     mine: 2,
     plex: 2,
     ddao: 5,

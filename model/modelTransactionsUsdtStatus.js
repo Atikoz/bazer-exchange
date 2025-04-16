@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+const { Schema, model } = require('mongoose');
 
-const TransactionUsdtStatus = mongoose.model('TransactionUsdtStatus', {
+const TransactionUsdtStatusSchema = new Schema({
   id: {
     type: String,
     required: true
@@ -11,7 +11,8 @@ const TransactionUsdtStatus = mongoose.model('TransactionUsdtStatus', {
   },
   hash: {
     type: String,
-    required: true
+    required: true,
+    uniq: true
   },
   status: {
     type: String,
@@ -20,11 +21,9 @@ const TransactionUsdtStatus = mongoose.model('TransactionUsdtStatus', {
   amount: {
     type: Number,
     required: true
-  },
-  processed: {
-    type: Boolean,
-    required: true
-  },
+  }
 })
+
+const TransactionUsdtStatus = model('TransactionUsdtStatus', TransactionUsdtStatusSchema)
 
 module.exports = TransactionUsdtStatus;

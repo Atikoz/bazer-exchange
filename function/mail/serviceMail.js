@@ -3,7 +3,6 @@ const { botEmail, emailPassword } = require('../../config');
 
 class MailService {
   constructor() {
-    this.verificationCode = null;
     this.transporter = nodemailer.createTransport({
       service: 'Gmail',
       auth: {
@@ -81,6 +80,7 @@ class MailService {
 
       const info = await this.transporter.sendMail(mailOptions);
       console.log('Email sent: ' + info.response);
+
       return {
         status: true,
         code: code,
@@ -88,9 +88,10 @@ class MailService {
       };
     } catch (error) {
       console.log(error);
+
       return {
         status: false,
-        code: code,
+        code: null,
         message: `Error sending email: ${error}`,
       };
     }
@@ -150,9 +151,7 @@ class MailService {
   }
 
   generateVerificationCode() {
-    const code = Math.floor(100000 + Math.random() * 900000);
-    this.verificationCode = code;
-    return code;
+    return Math.floor(100000 + Math.random() * 900000);
   }
 }
 

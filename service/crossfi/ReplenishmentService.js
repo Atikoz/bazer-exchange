@@ -11,6 +11,10 @@ const encryptionService = require("../../function/encryptionService");
 
 
 class ReplenishmentCrossfi extends crossfiService {
+  constructor() {
+    super();
+  };
+
   async CheckUserWallet(userId) {
     try {
       const getInfoUser = await userManagement.getInfoUser(userId);

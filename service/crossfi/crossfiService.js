@@ -18,8 +18,7 @@ const GAS_PRICE = {
 class CrossfiService {
   rpcUrl
   client
-
-
+  
   constructor() {
     this.rpcUrl = config.crossfiRpcUrl;
     this.client = null;

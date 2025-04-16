@@ -65,7 +65,6 @@ const ExchangeRateCoin = require('./exchanger/exchangeRate.js');
 const ExchangeCoinTransaction = require('./exchanger/exchangeTransaction.js');
 const ExchangeStatus = require('./model/modelExchangeStatus.js');
 const OrderFilling = require('./model/modelOrderFilling.js');
-const { TransferTronNet } = require('./function/usdtTransactions.js');
 
 const sendLog = require('./helpers/sendLog.js');
 const generateButton = require('./helpers/generateButton.js');
@@ -100,6 +99,9 @@ const SingleLiquidityPool = require('./model/liquidityPools/modelSingleLiquidity
 const callbackHandler = require('./handler/callback/callbackHandler.js');
 const stateHandler = require('./handler/state/stateHandler.js');
 const instructionLinks = require('./instructions/instructionLinks.js');
+const Trc20 = require('./service/trc20/Trc20Service.js');
+const AuthCodeService = require('./function/mail/AuthCodeService.js');
+const Trc20Service = new Trc20;
 const CrossfiService = new crossfiService;
 
 
@@ -129,7 +131,7 @@ bot.on('text', async (msg) => {
 
     if (config.APP_ENV === 'prod') {
       const checkUserSubscribe = await chackUserSubscribeChannel(userId);
-      
+
       if (!checkUserSubscribe.status) {
         return bot.sendMessage(userId, `Кажется вы не подписались на эти каналы: \n${checkUserSubscribe.data.join('\n')}`);
       }
@@ -789,8 +791,19 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
       case 22:
         setState(userId, 0);
         const userCode = +text;
+        const verifyCode = await AuthCodeService.verifyCode(selectedMail, userCode);
+        
+        if (!verifyCode.status && verifyCode.message === 'invalid code') {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
 
-        if (!isNaN(userCode) && MailService.verificationCode === userCode) {
+        if (!verifyCode.status) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
+
+        if (verifyCode.status) {
+          bot.sendMessage(userId, `Личность подтвержденна ✅`);
+
           if (coin[userId] === 'mpx' || coin[userId] === 'xfi') {
             const sendCrossfi = await CrossfiService.sendCoin(wallet[userId], config.mnemonic, coin[userId], amount[userId]);
 
@@ -808,10 +821,15 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCrossfi.tx.transactionHash}</code>`)
           }
           if (coin[userId] === 'usdt') {
-            const sendUsdtHash = await TransferTronNet(config.privatKeyUsdt, config.contractUsdt, wallet[userId], amount[userId]);
-            await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
-            await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdtHash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
-            return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdtHash}</code>`)
+            const sendUsdt = await Trc20Service.withdrawCoins(wallet[userId], amount[userId]);
+
+            if (sendUsdt.status) {
+              await ControlUserBalance(userId, coin[userId], -(amount[userId] + 2));
+              await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendUsdt.hash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
+              return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendUsdt.hash}</code>`)
+            } else {
+              return await bot.sendMessage(userId, `Ошибка при выводе средств, попробуйте позже`, { parseMode: 'html' });
+            }
           }
           if (coin[userId] === 'artery') {
             const sendArteryHash = await ReplenishmentArtery.sendArtery(config.adminArteryMnemonic, wallet[userId], amount[userId]);
@@ -870,16 +888,25 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             await bot.sendMessage(userId, `Вывод успешный ✅\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>\nОжидайте, средства прийдут в течении нескольких минут.`, { parseMode: 'html' });
             return await sendLog(`Пользователь ${userId} успешно вывел ${amount[userId]} ${coin[userId]}\nTxHash: <code>${sendCoinUser.data.result.result.tx_response.txhash}</code>`)
           }
-        } else {
-          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
         }
         break;
 
       case 30:
         setState(userId, 0);
         const codeUser = +text;
+        const verifyUserCode = await AuthCodeService.verifyCode(selectedMail, codeUser);
+        
+        if (!verifyUserCode.status && verifyUserCode.message === 'invalid code') {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
 
-        if (!isNaN(codeUser) && MailService.verificationCode === codeUser) {
+        if (!verifyUserCode.status) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
+
+        if (verifyUserCode.status) {
+          bot.sendMessage(userId, `Личность подтвержденна ✅`);
+
           CustomP2POrder.create({
             id: userId,
             orderNumber: orderNumber[userId],
@@ -911,8 +938,6 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
           await bot.sendMessage(userId, 'Ордер успешно создан ✅', { replyMarkup: RM_Home(selectedLang) });
           await sendLog(logMsgCreateP2PSellOrder);
-        } else {
-          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
         }
         break;
 
@@ -921,8 +946,14 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
 
         if (isValidEmail(email[userId])) {
           setState(userId, 32);
-          MailService.sendConfirmationEmail(email[userId]);
-          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+          const sendCodeUser = await AuthCodeService.sendEmailVerifyCode(email[userId]);
+
+          if (sendCodeUser.status) {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+          } else {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+            setState(userId, 0);
+          }
         } else {
           setState(userId, 0);
           bot.sendMessage(userId, getTranslation(selectedLang, 'invalidEmailErrorMessage'), { parseMode: 'html' })
@@ -933,35 +964,60 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
         setState(userId, 0);
         const emailCode = +text;
 
-        if (!isNaN(emailCode) && MailService.verificationCode === emailCode) {
+        const responseVerifyUserCode = await AuthCodeService.verifyCode(selectedMail, emailCode);
+        
+        if (!responseVerifyUserCode.status && responseVerifyUserCode.message === 'invalid code') {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+
+        if (!responseVerifyUserCode.status) {
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
+
+        if (!responseVerifyUserCode.status) {
+          bot.sendMessage(userId, `Личность подтвержденна ✅`);
+
           await UserModel.updateOne(
             { id: userId },
             JSON.parse(`{ "$set": { "mail": "${email[userId]}"} }`)
           );
-          bot.sendMessage(userId, getTranslation(selectedLang, 'emailChangeSuccessMessage'));
-        } else {
-          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+          await bot.sendMessage(userId, getTranslation(selectedLang, 'emailChangeSuccessMessage'));
         }
         break;
 
       case 33:
         const confirmationСode = +text;
 
-        if (!isNaN(confirmationСode) && MailService.verificationCode === confirmationСode) {
-          setState(userId, 31);
-          bot.sendMessage(userId, getTranslation(selectedLang, 'updateMailPrompt'));
-        } else {
+        const authCode = await AuthCodeService.verifyCode(selectedMail, confirmationСode);
+        
+        if (!authCode.status && authCode.message === 'invalid code') {
           setState(userId, 0);
-          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+        }
+
+        if (!authCode.status) {
+          setState(userId, 0);
+          return bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
+
+        if (authCode.status) {
+          setState(userId, 31);
+          await bot.sendMessage(userId, `Личность подтвержденна ✅`);
+          await bot.sendMessage(userId, getTranslation(selectedLang, 'updateMailPrompt'));
         }
         break;
 
       case 34:
         setState(userId, 0);
         const codeConfirmation = +text;
-        const SellOrderData = await OrderFilling.findOne({ orderNumber: selectedOrder[userId].orderNumber });
 
-        if (!isNaN(codeConfirmation) && MailService.verificationCode === codeConfirmation) {
+        const responceAuthCode = await AuthCodeService.verifyCode(selectedMail, codeConfirmation);
+        
+        if (responceAuthCode.status) {
+          bot.sendMessage(userId, `Личность подтвержденна ✅`);
+
+          const SellOrderData = await OrderFilling.findOne({ orderNumber: selectedOrder[userId].orderNumber });
+
           await OrderFilling.updateOne(
             { orderNumber: selectedOrder[userId].orderNumber },
             { $set: { status: "Approve" } }
@@ -982,7 +1038,12 @@ ${getTranslation(selectedLang, 'purchaseQuantity')} ${amount[userId]} ${coin[use
             { orderNumber: selectedOrder[userId].orderNumber },
             { $set: { status: 'Selling' } }
           );
-          bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+
+          if (responceAuthCode.message === 'invalid code') {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'invalidConfirmationCodeMessage'));
+          } else {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+          }
         }
         break;
 
@@ -1096,9 +1157,14 @@ bot.on('callbackQuery', async (msg) => {
 
       case 'accept_withdrawal':
         bot.deleteMessage(userId, messageId);
-        setState(userId, 22);
-        MailService.sendConfirmationEmail(userMail);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
+        const sendCodeUser = await AuthCodeService.sendEmailVerifyCode(userMail);
+
+        if (sendCodeUser.status) {
+          setState(userId, 22);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
         break;
 
       case 'cancel':
@@ -1454,9 +1520,14 @@ bot.on('callbackQuery', async (msg) => {
       case 'p2p_accept':
         bot.deleteMessage(userId, messageId);
         if (orderType[userId] === 'sell') {
-          setState(userId, 30);
-          MailService.sendConfirmationEmail(userMail);
-          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
+          const sendCodeUser = await AuthCodeService.sendEmailVerifyCode(userMail);
+
+          if (sendCodeUser.status) {
+            setState(userId, 30);
+            bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+          } else {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+          }
         } else {
           CustomP2POrder.create({
             id: userId,
@@ -1551,11 +1622,15 @@ bot.on('callbackQuery', async (msg) => {
         break;
 
       case 'p2pTradeSell_accept':
-        setState(userId, 34);
         bot.deleteMessage(userId, messageId);
+        const sendCode = await AuthCodeService.sendEmailVerifyCode(userMail);
 
-        MailService.sendConfirmationEmail(userMail);
-        bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
+        if (sendCode.status) {
+          setState(userId, 34);
+          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+        } else {
+          bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+        }
         break;
 
       case 'p2pTradeSell_cancel':
@@ -1879,9 +1954,14 @@ ${circumcisionAmount(pool.amountSecondCoin)} ${pool.secondCoin.toUpperCase()}`, 
           setState(userId, 31);
           bot.sendMessage(userId, getTranslation(selectedLang, 'updateMailPrompt'));
         } else {
-          setState(userId, 33);
-          MailService.sendConfirmationEmail(userMail);
-          bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'));
+          const sendCode = await AuthCodeService.sendEmailVerifyCode(userMail);
+
+          if (sendCode.status) {
+            setState(userId, 33);
+            bot.sendMessage(userId, getTranslation(selectedLang, 'confirmationPromptText'))
+          } else {
+            bot.sendMessage(userId, getTranslation(selectedLang, 'unexpectedError'));
+          }
         }
         break;
 
