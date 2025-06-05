@@ -64,7 +64,7 @@ class OrdersController {
         status: 'ok',
         error: '',
         message: 'order created',
-        socketUrl: `http://localhost:3001/socket/${socketId}`
+        socketUrl: `https://p2p.bazerwallet.com/socket/${socketId}`
       });
     } catch (error) {
       res.status(500).json({
