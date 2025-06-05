@@ -1,4 +1,4 @@
 node_modules/
 config.js
-backup_bp/
+backup_db/
 .env
