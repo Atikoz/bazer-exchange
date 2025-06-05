@@ -1,11 +1,11 @@
 import { Message } from "telebot";
-import BotService from "../../service/telegram/BotService";
-import getTranslation, { Language } from "../../translations";
-import UserManagement from "../../service/user/UserManagement";
-import { ValidatorService } from "../../validator";
-import AuthCodeService from "../../service/mail/AuthCodeService";
-import { UserContext } from "../../context/userContext";
-import User from "../../models/user/UserModel";
+import BotService from "../../../service/telegram/BotService";
+import getTranslation, { Language } from "../../../translations";
+import UserManagement from "../../../service/user/UserManagement";
+import { ValidatorService } from "../../../validator";
+import AuthCodeService from "../../../service/mail/AuthCodeService";
+import { UserContext } from "../../../context/userContext";
+import User from "../../../models/user/UserModel";
 
 async function stateManagerSettings(msg: Message, state: number): Promise<void> {
   const userId = msg.from.id;

@@ -1,12 +1,11 @@
 import { Message } from "telebot";
-import BotService from "../../service/telegram/BotService";
-import UserManagement from "../../service/user/UserManagement";
-import { ValidatorService } from "../../validator";
-import { UserContext } from "../../context/userContext";
-import { CHOICE } from "../../utils/constans";
-import { generateButton } from "../../keyboards/generators/generateButton";
-import MinterService from "../../service/blockchain/minter/minterService";
-import User from "../../models/user/UserModel";
+import BotService from "../../../service/telegram/BotService";
+import UserManagement from "../../../service/user/UserManagement";
+import { ValidatorService } from "../../../validator";
+import { UserContext } from "../../../context/userContext";
+import { CHOICE } from "../../../utils/constans";
+import { generateButton } from "../../../keyboards/generators/generateButton";
+import MinterService from "../../../service/blockchain/minter/minterService";
 const MinterServiceInstance = new MinterService();
 
 

@@ -1,14 +1,14 @@
 import { Message } from "telebot";
-import BotService from "../../service/telegram/BotService";
-import UserManagement from "../../service/user/UserManagement";
-import getTranslation, { Language } from "../../translations";
-import { UserContext } from "../../context/userContext";
-import { minimalSum } from "../../config/minimalSum";
-import { ValidatorService } from "../../validator";
-import { acceptCancelWithdrawalIK } from "../../keyboards";
-import buildWithdrawalSummary from "../../function/buildWithdrawalSummary";
-import AuthCodeService from "../../service/mail/AuthCodeService";
-import { processWithdrawal } from "../../service/withdraw/processWithdrawal";
+import BotService from "../../../service/telegram/BotService";
+import UserManagement from "../../../service/user/UserManagement";
+import getTranslation, { Language } from "../../../translations";
+import { UserContext } from "../../../context/userContext";
+import { minimalSum } from "../../../config/minimalSum";
+import { ValidatorService } from "../../../validator";
+import { acceptCancelWithdrawalIK } from "../../../keyboards";
+import buildWithdrawalSummary from "../../../function/buildWithdrawalSummary";
+import AuthCodeService from "../../../service/mail/AuthCodeService";
+import { processWithdrawal } from "../../../service/withdraw/processWithdrawal";
 
 async function stateManagerUserPanel(msg: Message, state: number): Promise<void> {
   const userId = msg.from.id;

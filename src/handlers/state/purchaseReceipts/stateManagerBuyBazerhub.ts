@@ -1,11 +1,11 @@
 import { Message } from "telebot";
-import UserManagement from "../../service/user/UserManagement";
-import { Language } from "../../translations";
-import { UserContext } from "../../context/userContext";
-import BotService from "../../service/telegram/BotService";
-import { CHOICE } from "../../utils/constans";
-import { generateButton } from "../../keyboards/generators/generateButton";
-import { ValidatorService } from "../../validator";
+import UserManagement from "../../../service/user/UserManagement";
+import { Language } from "../../../translations";
+import { UserContext } from "../../../context/userContext";
+import BotService from "../../../service/telegram/BotService";
+import { CHOICE } from "../../../utils/constans";
+import { generateButton } from "../../../keyboards/generators/generateButton";
+import { ValidatorService } from "../../../validator";
 
 async function stateManagerBuyBazerhub(msg: Message, state: number): Promise<void> {
   const userId = msg.from.id;

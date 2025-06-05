@@ -1,14 +1,14 @@
 import { Message } from "telebot";
-import BotService from "../../service/telegram/BotService";
-import UserManagement from "../../service/user/UserManagement";
-import getTranslation, { Language } from "../../translations";
-import { parseAction } from "../../utils/parseAction";
-import { bot } from "../../bot";
-import { RM_Home } from "../../keyboards";
-import BuyBazerhubMinter from "../../models/minter/modelBuyBazerhubMinter";
-import BalanceService from "../../service/balance/BalanceService";
-import { UserContext } from "../../context/userContext";
-import MinterService from "../../service/blockchain/minter/minterService";
+import BotService from "../../../service/telegram/BotService";
+import UserManagement from "../../../service/user/UserManagement";
+import getTranslation, { Language } from "../../../translations";
+import { parseAction } from "../../../utils/parseAction";
+import { bot } from "../../../bot";
+import { RM_Home } from "../../../keyboards";
+import BuyBazerhubMinter from "../../../models/minter/modelBuyBazerhubMinter";
+import BalanceService from "../../../service/balance/BalanceService";
+import { UserContext } from "../../../context/userContext";
+import MinterService from "../../../service/blockchain/minter/minterService";
 
 const MinterServiceInstanse = new MinterService();
 
