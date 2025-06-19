@@ -160,6 +160,11 @@ export class SingleLiquidityPoolService {
     for (const pool of liquidityPools) {
       for (const order of ordersSpotTrade) {
         const poolMarketRate = await RateAggregator.getCoinRate(pool.firstCoin, pool.secondCoin);
+
+        if (!poolMarketRate) {
+          continue
+        }
+
         const roundedRateClosing = 1 / poolMarketRate;
         const spreadPercentage = 5; // % разброса
 

@@ -1,7 +1,7 @@
 import { Message } from "telebot";
 import { parseAction } from "../../../utils/parseAction";
 import BotService from "../../../service/telegram/BotService";
-import { Language } from "../../../translations";
+import getTranslation, { Language } from "../../../translations";
 import UserManagement from "../../../service/user/UserManagement";
 import { filterCompleteSpotOrdersIK, filterSpotOrdersIK, RM_Trade, spotOrderMenu } from "../../../keyboards";
 import CustomOrder from "../../../models/spotTrade/modelOrder";
@@ -479,6 +479,11 @@ async function handleSpotTrade(msg: Message) {
         const buyCoin = params[0];
 
         const rate = await RateAggregator.getCoinRate(sellCoin, buyCoin);
+
+        if (!rate) {
+          BotService.sendMessage(userId, `${getTranslation(lang, 'unexpectedError')}`, { parseMode: 'html' });
+          return
+        }
 
         UserContext.setMany(userId, {
           rate: trimNumber(rate),

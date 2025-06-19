@@ -108,6 +108,12 @@ export const textHandler = async (msg: Message) => {
       UserContext.set(userId, 'balanceComissionCoin', userBalanceComissionCoin);
 
       const rateCoins = await RateAggregator.getCoinRate('cashbsc', 'bazerhub');
+
+      if (!rateCoins) {
+        BotService.sendMessage(userId, `${getTranslation(selectedLang, 'unexpectedError')}`, { parseMode: 'html' });
+        return
+      }
+
       UserContext.set(userId, 'rateCoins', rateCoins);
 
       BotService.sendMessage(userId, `<b>${getTranslation(selectedLang, 'minimalAmountBuyBazerHub')}!</b> ${getTranslation(selectedLang, 'rate')}: 1 CASHBSC ≈ <code>${rateCoins.toFixed(9)}</code> BAZERHUB. ${getTranslation(selectedLang, 'available')}: ${trimNumber(userBalanceComissionCoin)} CASHBSC. ${getTranslation(selectedLang, 'coinSaleAmountPrompt')}`, { parseMode: 'html' });

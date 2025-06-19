@@ -18,7 +18,7 @@ interface SpotOrder {
 
 
 class SpotOrderMatcher {
-  async processOrders(): Promise<void> {
+  public async processOrders(): Promise<void> {
     try {
       const listOrders = await CustomOrder.find({});
       const filtered = listOrders.filter(o => o.status !== 'Done' && o.status !== 'Deleted');

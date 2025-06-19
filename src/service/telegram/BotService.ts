@@ -2,6 +2,8 @@ import TeleBot from "telebot";
 
 const BOT_TOKEN = process.env.BOT_TOKEN as string;
 const APP_ENV = process.env.APP_ENV
+const LOG_CHANNEL = process.env.LOG_CHANNEL_ID;
+
 
 class BotService {
   private readonly bot: TeleBot = new TeleBot(BOT_TOKEN);
@@ -10,11 +12,10 @@ class BotService {
     this.bot.sendMessage(id, text, options).catch((e) => console.log(`error sending message: ${e}`));
   }
 
-  async sendLog(text: string) {
-    const LOG_CHANNEL = process.env.LOG_CHANNEL_ID;
+  async sendLog(text: string, channelId: string | number = LOG_CHANNEL) {
 
     if (APP_ENV === 'prod') {
-      await this.sendMessage(LOG_CHANNEL, text);
+      await this.sendMessage(channelId, text);
     }
 
     console.log(text);

@@ -7,9 +7,18 @@ import { SingleLiquidityPoolService } from '../service/liquidityPools/SingleLiqu
 
 const checkMatchingOrders = new CronJob('0 */1 * * * *', async () => {
   try {
+    // 1. Спроба автоматичної торгівлі
     await SpotOrderMatcher.processOrders();
     await SingleLiquidityPoolService.generateCounterOrderLiqPool();
     await DoubleLiquidityPoolService.generateCounterOrderDoubleLiqPool();
+
+    // 2. Долив ліквідності адміном
+    console.log('add liq')
+    await DoubleLiquidityPoolService.adminProvideLiquidityIfNeeded();
+
+    // 3. Повторна спроба автоматичної торгівлі
+    await DoubleLiquidityPoolService.generateCounterOrderDoubleLiqPool();
+
   } catch (error) {
     console.error(error)
   }

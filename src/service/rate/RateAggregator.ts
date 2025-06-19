@@ -55,14 +55,13 @@ class RateAggregator {
     const sellRate = this.rateObj?.rub[sellCoin.toLowerCase()];
     const buyRate = this.rateObj?.rub[buyCoin.toLowerCase()];
 
-    console.log(this.rateObj?.rub);
     console.log(`sellRate: ${sellRate}, buyRate: ${buyRate}`);
 
     if (sellRate && buyRate) {
       return +(sellRate / buyRate).toFixed(6);
     } else {
-      console.log(`sellcoin: ${sellCoin}, buyCoin: ${buyCoin}`);
-      throw new Error(`Rate for sellRate: ${sellRate} or buyRate: ${buyRate} not found`);
+      console.warn(`⚠️ Rate not found: ${sellCoin}=${sellRate}, ${buyCoin}=${buyRate}`);
+      return null;
     }
   }
 

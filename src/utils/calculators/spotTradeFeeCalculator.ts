@@ -9,6 +9,10 @@ export class SpotTradeFeeCalculator {
   public static async calculateFull(coin: string, amount: number): Promise<number> {
     const exchangeRate = await RateAggregator.getCoinRate(coin, this.commissionCoin);
 
+    if (!exchangeRate) {
+      return null
+    }
+
     const amountOnePercent = amount / 100;
     const amountPercentFee = this.commissionPercent * amountOnePercent;
     const feeInTradeCurrency = amountPercentFee * exchangeRate;

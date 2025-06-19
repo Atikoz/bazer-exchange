@@ -6,6 +6,10 @@ import RateAggregator from "../rate/RateAggregator";
 import BotService from "../telegram/BotService";
 import { SpotTradeFeeCalculator } from "../../utils/calculators/spotTradeFeeCalculator";
 import { LiquidityCalculator } from "../../utils/calculators/LiquidityCalculator";
+import BalanceService from "../balance/BalanceService";
+
+const ADMIN_ID = process.env.ADMIN_ID;
+const LIQUIDITY_LOG_CHANNEL_ID = process.env.LIQUIDITY_LOG_CHANNEL_ID;
 
 
 export class DoubleLiquidityPoolService {
@@ -27,31 +31,31 @@ export class DoubleLiquidityPoolService {
         throw new Error('User not found in the profit pool');
       }
 
-      const sumPool = findPool.poolUser.reduce((acc, user) => {
-        return acc += user.amountFirstCoin
-      }, 0)
+      const coinSide = buyCoin === firstCoin ? 'amountFirstCoin' : 'amountSecondCoin';
 
+      const poolSum = findPool.poolUser.reduce((acc, user) => {
+        return acc + (coinSide === 'amountFirstCoin' ? user.amountFirstCoin : user.amountSecondCoin);
+      }, 0);
 
-      // Проверка, что количество первой монеты после вычета не станет отрицательным
-      if (sumPool < amount) {
-        throw new Error('Insufficient first coin amount');
+      const sumInvestor = (percent / 100) * amount;
+
+      if (poolSum < amount - 1e-8) {
+        throw new Error(`Insufficient total liquidity in pool for ${buyCoin}`);
       }
 
-      const onePercent = amount / 100;
-      const sumInvestor = percent * onePercent;
+      const userBalanceBefore = findUser[coinSide];
 
-      // Проверка, что количество первой монеты у пользователя после вычета не станет отрицательным
-      if (findUser.amountFirstCoin < sumInvestor) {
-        throw new Error('Insufficient first coin amount in user');
+      if (userBalanceBefore < sumInvestor - 1e-8) {
+        throw new Error(`User ${userId} has insufficient ${buyCoin} balance in pool (have: ${userBalanceBefore}, need: ${sumInvestor})`);
       }
 
-      firstCoin === buyCoin
-        ? findUser.amountFirstCoin -= sumInvestor
-        : findUser.amountSecondCoin -= sumInvestor
+      findUser[coinSide] -= sumInvestor;
 
       findPool.markModified('poolUser');
-
       await findPool.save();
+
+      const userBalanceAfter = findUser[coinSide];
+      console.log(`[Double POOL] Subtracted ${sumInvestor.toFixed(8)} ${buyCoin} from user ${userId}. Balance: ${userBalanceBefore.toFixed(8)} → ${userBalanceAfter.toFixed(8)}`);
     } catch (error) {
       console.error(`Error in subtracting first coin double liq pool: ${error.message}`);
       throw error
@@ -72,21 +76,25 @@ export class DoubleLiquidityPoolService {
       }
 
       const findUser = findPool.poolUser.find(user => user.id === userId);
-
       if (!findUser) {
         throw new Error('User not found in the profit pool');
       }
 
-      const onePercent = amount / 100;
-      const sumInvestor = percent * onePercent;
+      const coinSide = sellCoin === firstCoin ? 'amountFirstCoin' : 'amountSecondCoin';
+      const sumInvestor = (percent / 100) * amount;
 
-      firstCoin === sellCoin
-        ? findUser.amountFirstCoin += sumInvestor
-        : findUser.amountSecondCoin += sumInvestor
+      if (!isFinite(sumInvestor) || sumInvestor <= 0) {
+        throw new Error(`Invalid sum to distribute: ${sumInvestor}`);
+      }
+
+      const userBalanceBefore = findUser[coinSide];
+      findUser[coinSide] += sumInvestor;
 
       findPool.markModified('poolUser');
-
       await findPool.save();
+
+      const userBalanceAfter = findUser[coinSide];
+      console.log(`[Double POOL] Distributed ${sumInvestor.toFixed(8)} ${sellCoin} to user ${userId}. Balance: ${userBalanceBefore.toFixed(8)} → ${userBalanceAfter.toFixed(8)}`);
     } catch (error) {
       console.error(`Error in distributing second coin double liq pool: ${error.message}`);
       throw error
@@ -141,9 +149,9 @@ export class DoubleLiquidityPoolService {
     profitInvestors: number,
     logMessage: string[]
   ): Promise<void> {
-    await poolProfitManagement(1511153147, profitAdmin);
-    logMessage.push(`Пользователю 1511153147 начислено ${profitAdmin} ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}`);
-    await BotService.sendMessage(1511153147, `Вам начислено ${profitAdmin} ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}`);
+    await poolProfitManagement(+ADMIN_ID, profitAdmin);
+    logMessage.push(`Пользователю ${ADMIN_ID} начислено ${profitAdmin} ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}`);
+    await BotService.sendMessage(ADMIN_ID, `Вам начислено ${profitAdmin} ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}`);
 
     for (const user of pool.poolUser) {
       const investorPercent = order.buyCoin === pool.firstCoin
@@ -151,6 +159,9 @@ export class DoubleLiquidityPoolService {
         : LiquidityCalculator.percentInvestor(sumPoolBuyCoin, user.amountSecondCoin);
 
       const investorProfit = LiquidityCalculator.profitInvestor(investorPercent, profitInvestors);
+
+      console.log('investorPercent', investorPercent)
+      console.log('investorProfit', investorProfit)
 
       await poolProfitManagement(user.id, investorProfit);
       logMessage.push(`Пользователю ${user.id} начислено ${investorProfit} ${SpotTradeFeeCalculator.commissionCoin}`);
@@ -203,6 +214,8 @@ export class DoubleLiquidityPoolService {
 
         const poolMarketRate = await RateAggregator.getCoinRate(order.sellCoin, order.buyCoin);
 
+        console.log('poolMarketRate', poolMarketRate)
+
         if (!poolMarketRate) {
           continue
         };
@@ -220,6 +233,8 @@ export class DoubleLiquidityPoolService {
 
             return acc
           }, { [pool.firstCoin]: 0, [pool.secondCoin]: 0 });
+
+          console.log(sumPool)
 
           if (sumPool[order.buyCoin] <= 0) {
             continue
@@ -273,7 +288,7 @@ export class DoubleLiquidityPoolService {
   static async depositToPool(firstCoin: string, secondCoin: string, investCoin: string, userId: number, amount: number): Promise<void> {
     const pool = await DoubleLiquidityPool.findOne({
       $or: [
-        { firstCoin, secondCoin},
+        { firstCoin, secondCoin },
         { firstCoin: secondCoin, secondCoin: firstCoin }
       ]
     });
@@ -307,6 +322,72 @@ export class DoubleLiquidityPoolService {
 
       pool.markModified('poolUser');
       await pool.save();
+    }
+  };
+
+  static async adminProvideLiquidityIfNeeded(): Promise<void> {
+    try {
+      const bufferPercent = 0.05; // +5% як страховка
+      const orders = await CustomOrder.find({ status: { $nin: ['Done', 'Deleted'] } });
+
+      for (const order of orders) {
+        const firstCoin = order.sellCoin;
+        const secondCoin = order.buyCoin;
+
+        const pool = await DoubleLiquidityPool.findOne({
+          $or: [
+            { firstCoin, secondCoin },
+            { firstCoin: secondCoin, secondCoin: firstCoin }
+          ]
+        });
+
+        // Якщо пулу ще немає — створимо з 0 ліквідністю
+        const poolData = pool || await DoubleLiquidityPool.create({
+          firstCoin,
+          secondCoin,
+          poolUser: []
+        });
+
+        // Підрахунок існуючої ліквідності
+        const sumPool = poolData.poolUser.reduce((acc, user) => {
+          acc[firstCoin] += user.amountFirstCoin;
+          acc[secondCoin] += user.amountSecondCoin;
+          return acc;
+        }, { [firstCoin]: 0, [secondCoin]: 0 });
+
+        const coinNeeded = order.buyCoin.toLowerCase();
+        const deficit = order.buyAmount - sumPool[coinNeeded];
+
+        if (deficit <= 0) {
+          continue; // ліквідність достатня
+        }
+
+        const bufferAmount = deficit * (1 + bufferPercent); // з надбавкою
+
+        // Читаємо баланс адміна
+        const adminBalance = await BalanceService.getBalance(+ADMIN_ID, coinNeeded);
+
+        if (adminBalance < bufferAmount) {
+          await BotService.sendLog(
+            `❌ Недостаточно резервов у админа для ${coinNeeded.toUpperCase()} — необходимо ${bufferAmount.toFixed(8)}, в наличии ${adminBalance.toFixed(8)}`,
+            LIQUIDITY_LOG_CHANNEL_ID
+          );
+          continue;
+        }
+
+        // Списання з балансу
+        await BalanceService.updateBalance(+ADMIN_ID, coinNeeded, -bufferAmount);
+
+        // Додавання до пулу
+        await this.depositToPool(firstCoin, secondCoin, coinNeeded, +ADMIN_ID, bufferAmount);
+
+        await BotService.sendLog(
+          `✅ Админ ${ADMIN_ID} добавил ${bufferAmount.toFixed(8)} ${coinNeeded.toUpperCase()} в пул ликвидности ${firstCoin.toUpperCase()}/${secondCoin.toUpperCase()} для ордера №${order.orderNumber}`
+        );
+      }
+    } catch (error) {
+      console.error('error provide liquidity');
+      BotService.sendLog(`Ошибка пополнения ликвидности: ${error.message}`)
     }
   }
 }

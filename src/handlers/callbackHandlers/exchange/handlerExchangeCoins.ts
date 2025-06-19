@@ -1,6 +1,6 @@
 import { Message } from "telebot";
 import UserManagement from "../../../service/user/UserManagement";
-import { Language } from "../../../translations";
+import getTranslation, { Language } from "../../../translations";
 import { parseAction } from "../../../utils/parseAction";
 import BotService from "../../../service/telegram/BotService";
 import { generateButton } from "../../../keyboards/generators/generateButton";
@@ -54,6 +54,12 @@ async function handlerExchangeCoins(msg: Message): Promise<void> {
         const buyCoinMinter = params[0];
 
         const rate = await RateAggregator.getCoinRate(sellCoinMinter, buyCoinMinter);
+
+        if (!rate) {
+          BotService.sendMessage(userId, `${getTranslation(lang, 'unexpectedError')}`, { parseMode: 'html' });
+          return
+        }
+
         UserContext.set(userId, 'rateExchange', trimNumber(rate));
         const balanceSellCoin = await BalanceService.getBalance(userId, sellCoinMinter);
 

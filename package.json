@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "npx tsx src/index.ts",
-    "api": "node api/server.js",
+    "api": "npx tsx src/api/server.ts",
     "updateData": "node test/update",
+    "test": "npx tsx src/test/test.ts",
     "postinstall": "patch-package"
   },
   "author": "Atikoz",
