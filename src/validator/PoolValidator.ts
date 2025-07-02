@@ -162,7 +162,7 @@ export class PoolValidator {
     }
 
     if (fee > feeBalance) {
-      return { status: false, message: `Недостаточно средств для комиссии (${SpotTradeFeeCalculator.commissionCoin})` };
+      return { status: false, message: `Недостаточно средств для комиссии, необходимо ${fee} ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}` };
     }
 
     return { status: true };

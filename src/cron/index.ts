@@ -21,22 +21,22 @@ checkMatchingOrders.start();
 // checkUserTransaction.start();
 // checkUserExchangeTransaction.start();
 
-// // USDT
-// checkUserUsdtTransaction.start();
-// chechAdminUsdtTransaction.start();
+// USDT
+checkUserUsdtTransaction.start();
+chechAdminUsdtTransaction.start();
 
-// //CROSSFI
-// checkUserCrossfiTransaction.start();
-// checkAdminCrossfiTransaction.start();
+//CROSSFI
+checkUserCrossfiTransaction.start();
+checkAdminCrossfiTransaction.start();
 
 // //ARTERY
 // checkArtrBalance.start();
 // checkArtrAdminHash.start();
 
-// //Minter
-// checkMinterTransaction.start();
-// rewardMinter.start();
-// accrualPurchasesBuyBazerhub.start();
+//Minter
+checkMinterTransaction.start();
+rewardMinter.start();
+accrualPurchasesBuyBazerhub.start();
 
-// //backup database
-// backupDB.start();
+//backup database
+backupDB.start();

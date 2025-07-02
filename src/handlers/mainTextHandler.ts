@@ -40,6 +40,7 @@ export const textHandler = async (msg: Message) => {
   console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
   if (text === '/start') {
+    return BotService.sendMessage(userId, 'Ведутся тех работы, в данный момент создание новых пользователей не доступно. Попробуйте позже.', { replyMarkup: startKeyboard(selectedLang) });
     const isUserExists = await AuthManager.isUserExistsLocally(userId);
 
     console.log(isUserExists)
