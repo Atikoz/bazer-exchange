@@ -1,27 +1,35 @@
+import mongoose from "mongoose";
 import BalanceUser from "../../models/user/BalanceModel";
 import FreeAccount from "../../models/user/FreeAccountModel";
 import ProfitPool from "../../models/user/ProfitPoolModel";
 import User from "../../models/user/UserModel";
 import WalletUser from "../../models/user/WalletUser";
 import BotService from "../telegram/BotService";
-import AuthFallback from "./AuthFallback";
 import { FreeAccountService } from "./FreeAccountService";
+import UserProvisioningService from "./UserProvisioningService";
 
+interface ResultRegisterUser {
+  status: string;
+  message: string;
+  mnemonic: string;
+}
 
 export class UserRegistrationService {
-  static async registerUser(userId: number, email: string | null = null): Promise<{
-    status: string;
-    message: string;
-    mnemonic: string;
-  }> {
+  static async registerUser(userId: number, email: string | null = null): Promise<ResultRegisterUser> {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
       const [existingUser, freeAccount] = await Promise.all([
-        User.findOne({ id: userId }).lean(),
-        FreeAccount.findOne({ busy: false }).lean()
+        User.findOne({ id: userId }).session(session).lean(),
+        FreeAccount.findOneAndUpdate(
+          { busy: false },
+          { busy: true },
+          { session, new: true }).lean()
       ]);
 
       if (existingUser) {
-        const walletUser = await WalletUser.findOne({ id: userId }).lean();
+        const walletUser = await WalletUser.findOne({ id: userId }).session(session).lean();
         return {
           status: 'ok',
           message: 'user registered',
@@ -31,14 +39,13 @@ export class UserRegistrationService {
 
       if (!freeAccount) {
         console.log('karau')
-        return AuthFallback.register(userId, email);
+        return UserProvisioningService.createUserWithWallets(userId, email);
       }
 
-      await FreeAccountService.markAsBusy(freeAccount.mnemonic);
+      await User.create([{ id: userId, mail: email }], { session });
+      await ProfitPool.create([{ id: userId }], { session });
 
-      await User.create({ id: userId, mail: email });
-      await ProfitPool.create({ id: userId });
-      await WalletUser.create({
+      await WalletUser.create([{
         id: userId,
         mnemonic: freeAccount.mnemonic,
         del: freeAccount.del,
@@ -46,11 +53,15 @@ export class UserRegistrationService {
         crossfi: freeAccount.crossfi,
         artery: freeAccount.artery,
         minter: freeAccount.minter
-      });
-      await BalanceUser.create({ id: userId });
-      await FreeAccountService.delete(freeAccount.mnemonic);
+      }], { session });
+      
+      await BalanceUser.create([{ id: userId }], { session });
+      await FreeAccountService.delete(freeAccount.mnemonic, session);
 
-      await BotService.sendLog(`Пользователь ${userId} зарегестрировался в боте. Добро пожаловать!`);
+      await session.commitTransaction();
+      session.endSession();
+
+      await BotService.sendLog(`Пользовaтель ${userId} зaрегестрировaлся в боте. Добро пожaловaть!`);
 
       return {
         status: 'ok',
@@ -58,7 +69,11 @@ export class UserRegistrationService {
         mnemonic: freeAccount.mnemonic
       };
     } catch (error) {
-      console.error(error);
+      await session.abortTransaction();
+      session.endSession();
+
+      console.error('Error in register user', error);
+
       return {
         status: 'error',
         message: 'error register function',

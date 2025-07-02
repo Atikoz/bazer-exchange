@@ -1,10 +1,10 @@
-import bip39 from "bip39";
+import { generateMnemonic } from "bip39";
 import { Wallet } from "dsc-js-sdk";
 
 class DecimalService {
   public createWallet() {
     try {
-      const mnemonic = bip39.generateMnemonic(256);
+      const mnemonic = generateMnemonic(256);
 
       const decimalWalletData = new Wallet(mnemonic);
       const decimalWallet = decimalWalletData.wallet.evmAddress

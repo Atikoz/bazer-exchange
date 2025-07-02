@@ -7,6 +7,7 @@ import stateManagerBuyBazerhub from "./purchaseReceipts/stateManagerBuyBazerhub"
 import stateManagerExchangeCoins from "./exchange/stateManagerExchangeCoins";
 import stateManagerSettings from "./settings/stateManagerSettings";
 import stateManagerUserPanel from "./userPanel/stateManagerUserPanel";
+import stateManagerAuth from "./auth/stateManagerAuth";
 
 export const rangeState = [
   { range: [20, 22], handler: stateManagerUserPanel },
@@ -18,4 +19,5 @@ export const rangeState = [
   { range: [55, 55], handler: stateManagerProfitPool },
   { range: [60, 68], handler: stateManagerP2P },
   { range: [70, 72], handler: stateManagerSpotTrade },
+  { range: [80, 86], handler: stateManagerAuth },
 ];

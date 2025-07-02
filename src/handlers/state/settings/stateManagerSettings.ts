@@ -62,26 +62,6 @@ async function stateManagerSettings(msg: Message, state: number): Promise<void> 
         await BotService.sendMessage(userId, getTranslation(lang, 'emailChangeSuccessMessage'));
         break;
 
-      case 25:
-        const confirmationСode = +text;
-
-        const authCode = await AuthCodeService.verifyCode(user.mail, confirmationСode);
-
-        if (!authCode.status) {
-          UserManagement.setState(userId, 0);
-
-          if (authCode.message === 'invalid code') {
-            return BotService.sendMessage(userId, getTranslation(lang, 'invalidConfirmationCodeMessage'));
-          }
-
-          return BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
-        }
-
-        UserManagement.setState(userId, 23);
-        BotService.sendMessage(userId, `Личность подтвержденна ✅`);
-        await BotService.sendMessage(userId, getTranslation(lang, 'updateMailPrompt'));
-        break;
-
       default:
         break;
     }

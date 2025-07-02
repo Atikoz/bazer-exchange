@@ -1,16 +1,17 @@
 import 'dotenv/config';
-import mongoose from 'mongoose';
-import checkMatchingOrders from '../cron/checkOrders';
+import { connectToMongo } from '../db/connectToMongo';
+import { UserRegistrationService } from '../service/user/UserRegistrationService';
+import UserProvisioningService from '../service/user/UserProvisioningService';
 
 
 const mongoUri = process.env.MONGO_URI as string;
 
 (async () => {
   try {
-    await mongoose.connect(mongoUri);
-    console.log('MongoDB connected ✅');
+    await connectToMongo(mongoUri)
 
-    checkMatchingOrders.start()
+    console.log(await UserRegistrationService.registerUser(9994, 'test@mail.com')
+    )
   } catch (error) {
     console.error('MongoDB connection error :', error);
     process.exit(1);

@@ -1,16 +1,15 @@
-import TeleBot, { Message } from 'telebot';
+import { Message } from 'telebot';
 import UserManagment from '../service/user/UserManagement';
-import checkUserSubscription from '../service/telegram/SubscribeService';
 import BotService from '../service/telegram/BotService';
 import getTranslation, { Language } from '../translations';
-import { bazerStackingIK, buyCashbscIK, buyDelForRubIK, cabinetIK, exchangeIK, instructionsMenuIK, poolMenuIK, RM_Home, RM_Trade, settingsIK, spotOrderMenu, typeP2P } from '../keyboards';
-import AuthFallback from '../service/user/AuthFallback';
+import { bazerStackingIK, buyCashbscIK, buyDelForRubIK, cabinetIK, exchangeIK, instructionsMenuIK, poolMenuIK, RM_Home, RM_Trade, settingsIK, spotOrderMenu, startKeyboard, typeP2P } from '../keyboards';
 import UserManagement from '../service/user/UserManagement';
 import BalanceService from '../service/balance/BalanceService';
 import { UserContext } from '../context/userContext';
 import RateAggregator from '../service/rate/RateAggregator';
 import trimNumber from '../utils/trimNumber';
 import mainStateHandler from './state/mainStateHandler';
+import AuthManager from '../service/user/AuthManager';
 
 const APP_ENV = process.env.APP_ENV;
 
@@ -41,16 +40,16 @@ export const textHandler = async (msg: Message) => {
   console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
   if (text === '/start') {
-    if (!status) {
-      await AuthFallback.register(userId);
-      await UserManagment.setState(userId, 23);
-      await BotService.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertFolowChannel')}`, { replyMarkup: RM_Home(selectedLang) });
-      await BotService.sendMessage(userId, `${userName}, ${getTranslation(selectedLang, 'alertInputEmail')}`, { replyMarkup: RM_Home(selectedLang) });
+    const isUserExists = await AuthManager.isUserExistsLocally(userId);
+
+    console.log(isUserExists)
+
+    if (!isUserExists) {
+      BotService.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: startKeyboard(selectedLang) });
     } else {
       await UserManagment.setState(userId, 0);
-      await BotService.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) }).catch((error) => console.log(error));
+      await BotService.sendMessage(userId, `${getTranslation(selectedLang, 'startText')}, ${userName}!`, { replyMarkup: RM_Home(selectedLang) });
     }
-    return;
   }
 
   if (!msg.from.username) {
@@ -69,6 +68,16 @@ export const textHandler = async (msg: Message) => {
 
       await BotService.sendMessage(userId, getTranslation(selectedLang, 'myAccountText'))
         .then(() => BotService.sendMessage(userId, `${getTranslation(selectedLang, 'name')} ${userName}\n🆔 ID: ${userId}\n✉️ Email: ${userMail}\n${getTranslation(selectedLang, 'status')}...\n${getTranslation(selectedLang, 'quantytyCoin')} ${quantytyCoin}`, { replyMarkup: cabinetIK(selectedLang), parseMode: 'html' }));
+      break;
+
+    case getTranslation(selectedLang, "register"):
+      await UserManagement.setState(userId, 80);
+      await BotService.sendMessage(userId, getTranslation(selectedLang, 'alertInputEmail'));
+      break;
+
+    case getTranslation(selectedLang, "login"):
+      await UserManagement.setState(userId, 84);
+      await BotService.sendMessage(userId, getTranslation(selectedLang, 'alertInputEmail'));
       break;
 
     case getTranslation(selectedLang, "spotTrading"):

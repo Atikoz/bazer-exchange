@@ -19,6 +19,10 @@ const BalanceUserSchema = new Schema({
       type: Number,
       default: 0
     },
+    bzr: {
+      type: Number,
+      default: 0
+    },
     artery: {
       type: Number,
       default: 0
@@ -320,7 +324,7 @@ const BalanceUserSchema = new Schema({
       default: 0
     }
   },
-  hold:{
+  hold: {
     usdt: {
       type: Number,
       default: 0
@@ -338,6 +342,10 @@ const BalanceUserSchema = new Schema({
       default: 0
     },
     xfi: {
+      type: Number,
+      default: 0
+    },
+    bzr: {
       type: Number,
       default: 0
     },

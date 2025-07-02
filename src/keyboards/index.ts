@@ -21,3 +21,6 @@ export * from './static/payments';
 
 // Загальні кнопки
 export * from './static/common';
+
+// Логін та реʼстрація
+export * from './static/start';

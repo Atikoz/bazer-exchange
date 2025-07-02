@@ -12,6 +12,7 @@ import { RM_Home } from "../../../keyboards";
 import trimNumber from "../../../utils/trimNumber";
 import RateAggregator from "../../../service/rate/RateAggregator"
 import MinterService from "../../../service/blockchain/minter/minterService";
+import { sendError } from "../../../utils/sendError";
 const MinterServiceInstance = new MinterService();
 const MNEMONIC = process.env.MNEMONIC;
 
@@ -153,8 +154,7 @@ async function handlerExchangeCoins(msg: Message): Promise<void> {
         break;
     }
   } catch (error) {
-    console.error(`error handler exchange coins: `, error);
-    BotService.sendMessage(userId, 'Произошла ошибка, попробуйте попытку позже. В случае если ошибка останется, свяжитесь с администрацией.');
+    sendError(userId, error as Error, `Error in handler exchange coins (data - ${data}):`)
   }
 }
 

@@ -40,6 +40,7 @@ export const handlerUserPanel = async (msg: Message) => {
         const end = start + coinsPerPage;
 
         const pageCoins = entries.slice(start, end);
+
         const balanceLines = [
           '💵 Балансы:',
           ...pageCoins.map(([coin, value]) => `${coin.toUpperCase()}: ${trimNumber(value)}`)

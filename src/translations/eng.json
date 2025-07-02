@@ -8,7 +8,7 @@
   "converting": "Converting 🔄",
   "staking": "Staking 💲",
   "referrals": "Referrals 👥",
-  "alertInputEmail": "To register, enter your email address:",
+  "alertInputEmail": "✉️ Enter your e-mail address:",
   "alertFolowChannel": "welcome!\nTo continue working with the bot, set a username in your profile and subscribe to the channels below:\nhttps://t.me/linkproject7765\nhttps://t.me/p2plogss\nhttps://t.me/EXPLORER11_bot1\nhttps://t.me/bazer_projects_info\nhttps://t.me/decimalrewardchart\nhttps://t.me/minterbazer\nhttps://t.me/Minter_Chat_Rewardss",
   "startText": "Hi",
   "alertUnknownUserName": "To continue, please provide your username on the account ❗️",
@@ -108,5 +108,14 @@
   "buyDelForRubInstrtuctionButton": "instruction",
   "buyCashbsc": "Buy CASHBSC",
   "textBuyCashbsc": "CASHBSC coin is necessary for payment of commissions in our service. You can buy it in the BAZER WALLET exchange.",
-  "pools": "Pools"
+  "pools": "Pools",
+  "register": "Register",
+  "login": "Login",
+  "identityVerified": "Identity verified ✅",
+  "enterNewPassword": "Create a new password:",
+  "registrationIsComplete": "Registration is complete ✅",
+  "userNotFound": "User not found",
+  "incorrectPassword": "Incorrect password",
+  "enterPassword": "Enter passord:",
+  "loginIsComplete": "Login is complete ✅"
 }

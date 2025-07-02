@@ -260,6 +260,11 @@ ${user.amountSecondCoin} ${upperTarget}`;
 
       case 'createPool':
         BotService.deleteMessage(userId, messageId).catch((e) => console.log(e));
+
+        if (params[0] === 'cancel') {
+          return BotService.sendMessage(userId, 'Операция отменена!')
+        }
+
         const inputCoin = UserContext.get(userId, 'firstCoinSinglePool');
         const outputCoin = UserContext.get(userId, 'secondCoinSinglePool');
         const amount = UserContext.get(userId, 'amountInvestSinglePool');

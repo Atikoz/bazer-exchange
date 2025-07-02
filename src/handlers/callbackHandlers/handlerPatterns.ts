@@ -7,6 +7,7 @@ import handlerProfitPool from "./liq_pool/handlerProfitPool";
 import handlerSinglelLiqPool from "./liq_pool/handlerSingleLiqPool";
 import handleP2P from "./p2p/handleP2P";
 import handleSpotTrade from "./spotTrade/handleSpotTrade";
+import handleAuth from "./auth/handlerAuth";
 
 export const handlerPatterns = [
   {
@@ -155,8 +156,6 @@ export const handlerPatterns = [
       /^createNewSpotOrders$/,
       /^spotTradeNewOrderSelectSellCoin$/,
       /^spotTradeNewOrderSelectBuyCoin$/,
-      
-      
     ],
   },
 ];

@@ -17,6 +17,12 @@ interface DecimalCoin {
   current_price: string;
 }
 
+interface DollarRate {
+  rub: number;
+  uah: number;
+  try: number
+}
+
 class CurrencyRate {
   private staticMinterRates = staticMinterRates;
   private readonly CoinGeckoClient = new CoinGecko();
@@ -30,11 +36,8 @@ class CurrencyRate {
     return data.data.usd;
   }
 
-  async getMinterCoinPrice(): Promise<Record<string, Record<string, number>>> {
-    const [dollarRate, coinsPrice] = await Promise.all([
-      this.getDollarRate(),
-      this.fetchMinterCoinsPriceToUsdt()
-    ]);
+  async getMinterCoinPrice(dollarRate: DollarRate): Promise<Record<string, Record<string, number>>> {
+    const coinsPrice = await this.fetchMinterCoinsPriceToUsdt()
 
     const neededSymbols = ['hub', 'monsterhub', 'cashbsc', 'ruble', 'bazercoin', 'bip'];
 
@@ -86,18 +89,18 @@ class CurrencyRate {
 
   async getCoinPrice(): Promise<RateResponse> {
     try {
-      const [cg, decimalPrice, minterPrice, userBalance] = await Promise.all([
+      const [cg, decimalPrice, userBalance] = await Promise.all([
         this.CoinGeckoClient.simple.price({
-          ids: ['crossfi-2', 'artery', 'decimal', 'tether', 'binancecoin'],
+          ids: ['crossfi-2', 'artery', 'decimal', 'tether', 'binancecoin', 'usd'],
           vs_currencies: ['rub', 'uah', 'try']
         }),
         this.getDecimalCoinPrice(),
-        this.getMinterCoinPrice(),
         BalanceUser.findOne()
       ]);
 
       const coinGecPrice = cg.data;
       const coinList = Object.keys(userBalance.main);
+      const minterPrice = await this.getMinterCoinPrice(coinGecPrice.usd);
 
       console.log(coinGecPrice)
 
@@ -119,7 +122,8 @@ class CurrencyRate {
           cashbsc: safeGet(minterPrice, 'cashbsc', cur),
           minterBazercoin: safeGet(minterPrice, 'bazercoin', cur),
           ruble: safeGet(minterPrice, 'ruble', cur),
-          bazerhub: safeGet(minterPrice, 'hub', cur)
+          bazerhub: safeGet(minterPrice, 'hub', cur),
+          bzr: 0.001 * coinGecPrice.usd[cur]
         };
 
         for (const coin of coinList) {

@@ -1,7 +1,7 @@
 import eng from './eng.json';
 import ru from './ru.json';
 
-type TranslationMap = typeof eng;
+export type TranslationMap = typeof eng;
 export type Language = 'eng' | 'ru';
 
 const translation: Record<Language, TranslationMap> = {
