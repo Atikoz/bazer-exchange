@@ -311,7 +311,7 @@ ${user.amountSecondCoin} ${upperTarget}`;
         UserContext.set(userId, 'firstCoinSinglePool', params[0]) // монета которую инвестировал пользователь
         UserContext.set(userId, 'secondCoinSinglePool', params[1]) // монета которую получает пользователь
 
-        const availableSum = await BalanceService.getBalance(userId, params[1]);
+        const availableSum = await BalanceService.getBalance(userId, params[0]);
         await bot.sendMessage(userId, `Введите количество монет для инвестиции в пул ликвидности. Комиссия составляет 1% от суммы инвестиции, оплата осуществляется в монете ${SpotTradeFeeCalculator.commissionCoin.toUpperCase()}. Доступно ${availableSum} ${params[0].toUpperCase()}: `);
         UserManagement.setState(userId, 51);
         break;

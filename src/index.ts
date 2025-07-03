@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import 'dotenv/config';
 import { textHandler } from './handlers/mainTextHandler';
 import { bot } from './bot';

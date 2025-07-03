@@ -15,6 +15,25 @@ class AuthManager {
     }
   };
 
+  static async isEmailOrTelegramTaken(telegramId: number, email: string): Promise<{ isEmailTaken: boolean, isTelegramIdTaken: boolean }> {
+    const requestOptions: RequestInit = {
+      method: "GET",
+      redirect: "follow" as RequestRedirect
+    };
+
+    const response = await fetch(`https://auth.bazerwallet.com/auth/isUserExists?email=${email}&telegramId=${telegramId}`, requestOptions);
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(`Error checking Email Or Telegram Taken: ${data.error}`)
+    }
+
+    return {
+      isEmailTaken: data.data.userExistsByEmail,
+      isTelegramIdTaken: data.data.userExistsByTelegramId
+    }
+  };
+
   static async registerRemoteUser(userId: number, email: string, password: string, refferId: string = 'bzr92c1frq6ttv') {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");

@@ -117,5 +117,8 @@
   "userNotFound": "User not found",
   "incorrectPassword": "Incorrect password",
   "enterPassword": "Enter passord:",
-  "loginIsComplete": "Login is complete ✅"
+  "loginIsComplete": "Login is complete ✅",
+  "emailAlreadyTaken": "This email is already in use by another user",
+  "telegramIdAlreadyTaken": "This Telegram account is already being used by another user"
+  
 }

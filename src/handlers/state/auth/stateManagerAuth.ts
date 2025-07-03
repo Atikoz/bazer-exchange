@@ -1,6 +1,6 @@
 import { Message } from "telebot";
-import getTranslation, { Language } from "../../../translations";
-import UserManagement from "../../../service/user/UserManagement";
+import getTranslation from "../../../translations";
+import TempStateManager from "../../../service/user/TempStateManager";
 import { sendError } from "../../../utils/sendError";
 import { ValidatorService } from "../../../validator";
 import BotService from "../../../service/telegram/BotService";
@@ -14,55 +14,56 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
   const text = msg.text;
 
   try {
-    const { user } = await UserManagement.getInfoUser(userId);
-    const lang = user.lang as Language;
+    const lang = 'eng';
 
     switch (state) {
       case 80: {
         const enteredEmail = text.trim();
 
-        const isValid = ValidatorService.User.isValidEmail(enteredEmail);
-        if (!isValid) {
-          await BotService.sendMessage(userId, getTranslation(lang, 'invalidEmailErrorMessage'), { parseMode: 'html' });
-          return UserManagement.setState(userId, 0);
+        const isValid = await ValidatorService.User.validateRegisterEnteredEmail(userId, enteredEmail, lang);
+        if (!isValid.status) {
+          await BotService.sendMessage(userId, isValid.message, { parseMode: 'html' });
+          return TempStateManager.setState(userId, 0);
         }
+
+        console.log(enteredEmail)
 
         const sendCodeResult = await AuthCodeService.sendEmailVerifyCode(enteredEmail);
 
         if (sendCodeResult.status) {
           await BotService.sendMessage(userId, getTranslation(lang, 'confirmationPromptText'));
           UserContext.set(userId, 'email', enteredEmail);
-          UserManagement.setState(userId, 81);
+          TempStateManager.setState(userId, 81);
         } else {
           await BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
-          UserManagement.setState(userId, 0);
+          TempStateManager.setState(userId, 0);
         }
         break;
       };
 
       case 81: {
-        UserManagement.setState(userId, 0);
+        TempStateManager.setState(userId, 0);
         const enteredCode = +text.trim();
         const email = UserContext.get(userId, 'email');
 
         const response = await AuthCodeService.verifyCode(email, enteredCode);
 
-        if (!response.status) {
-          if (response.message === 'invalid code') {
-            return BotService.sendMessage(userId, getTranslation(lang, 'invalidConfirmationCodeMessage'));
-          }
+        // if (!response.status) {
+        //   if (response.message === 'invalid code') {
+        //     return BotService.sendMessage(userId, getTranslation(lang, 'invalidConfirmationCodeMessage'));
+        //   }
 
-          return BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
-        }
+        //   return BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
+        // }
 
         await BotService.sendMessage(userId, getTranslation(lang, 'identityVerified'));
-        UserManagement.setState(userId, 82);
+        TempStateManager.setState(userId, 82);
         await BotService.sendMessage(userId, getTranslation(lang, 'enterNewPassword'));
         break;
       }
 
       case 82: {
-        UserManagement.setState(userId, 0);
+        TempStateManager.setState(userId, 0);
         const password = text.trim();
         const email = UserContext.get(userId, 'email');
 
@@ -83,11 +84,11 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
         const isValid = ValidatorService.User.isValidEmail(enteredEmail);
         if (!isValid) {
           await BotService.sendMessage(userId, getTranslation(lang, 'invalidEmailErrorMessage'), { parseMode: 'html' });
-          return UserManagement.setState(userId, 0);
+          return TempStateManager.setState(userId, 0);
         }
 
         UserContext.set(userId, 'email', enteredEmail);
-        UserManagement.setState(userId, 85);
+        TempStateManager.setState(userId, 85);
         await BotService.sendMessage(userId, getTranslation(lang, 'enterPassword'));
         break;
       }
@@ -99,7 +100,7 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
         const verifyRemoteCredentials = await AuthManager.verifyRemoteCredentials(email, password, lang);
 
         if (!verifyRemoteCredentials.status) {
-          UserManagement.setState(userId, 0);
+          TempStateManager.setState(userId, 0);
           BotService.sendMessage(userId, verifyRemoteCredentials.errorMessage);
           return
         }
@@ -109,16 +110,16 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
         if (sendCodeResult.status) {
           BotService.sendMessage(userId, getTranslation(lang, 'confirmationPromptText'));
           UserContext.set(userId, 'password', password);
-          UserManagement.setState(userId, 86);
+          TempStateManager.setState(userId, 86);
         } else {
           BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
-          UserManagement.setState(userId, 0);
+          TempStateManager.setState(userId, 0);
         }
         break;
       }
 
       case 86: {
-        UserManagement.setState(userId, 0);
+        TempStateManager.setState(userId, 0);
         const enteredCode = +text.trim();
         const email = UserContext.get(userId, 'email');
         const password = UserContext.get(userId, 'password');

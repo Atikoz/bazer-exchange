@@ -117,5 +117,7 @@
   "userNotFound": "Пользователь не найден",
   "incorrectPassword": "Неверный пароль",
   "enterPassword": "Введите пароль:",
-  "loginIsComplete": "Регистрация завершена ✅"
+  "loginIsComplete": "Регистрация завершена ✅",
+  "emailAlreadyTaken": "Эта электронная почта уже используется другим пользователем",
+  "telegramIdAlreadyTaken": "Этот аккаунт Telegram уже используется другим пользователем"
 }

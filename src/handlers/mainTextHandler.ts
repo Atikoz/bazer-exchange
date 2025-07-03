@@ -10,6 +10,7 @@ import RateAggregator from '../service/rate/RateAggregator';
 import trimNumber from '../utils/trimNumber';
 import mainStateHandler from './state/mainStateHandler';
 import AuthManager from '../service/user/AuthManager';
+import TempStateManager from '../service/user/TempStateManager';
 
 const APP_ENV = process.env.APP_ENV;
 
@@ -21,9 +22,12 @@ export const textHandler = async (msg: Message) => {
 
   const userId = msg.from?.id;
   const text = msg.text?.trim();
+  let state: number;
   const userName = msg.from?.first_name || 'User';
-  const { status, user, userBalance, userWallet } = await UserManagment.getInfoUser(userId);
+  let isTempStateJustSet = false;
+  const { user, userBalance } = await UserManagment.getInfoUser(userId);
   const selectedLang: Language = (user?.lang as Language) || 'eng';
+  const isUserExists = await AuthManager.isUserExistsLocally(userId);
 
   if (!userId || !text) {
     return;
@@ -40,12 +44,9 @@ export const textHandler = async (msg: Message) => {
   console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
   if (text === '/start') {
-    return BotService.sendMessage(userId, 'Ведутся тех работы, в данный момент создание новых пользователей не доступно. Попробуйте позже.', { replyMarkup: startKeyboard(selectedLang) });
-    const isUserExists = await AuthManager.isUserExistsLocally(userId);
-
     console.log(isUserExists)
 
-    if (!isUserExists) {
+    if (isUserExists) {
       BotService.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: startKeyboard(selectedLang) });
     } else {
       await UserManagment.setState(userId, 0);
@@ -72,13 +73,15 @@ export const textHandler = async (msg: Message) => {
       break;
 
     case getTranslation(selectedLang, "register"):
-      await UserManagement.setState(userId, 80);
+      TempStateManager.setState(userId, 80);
       await BotService.sendMessage(userId, getTranslation(selectedLang, 'alertInputEmail'));
+      isTempStateJustSet = true;
       break;
 
     case getTranslation(selectedLang, "login"):
-      await UserManagement.setState(userId, 84);
+      TempStateManager.setState(userId, 84);
       await BotService.sendMessage(userId, getTranslation(selectedLang, 'alertInputEmail'));
+      isTempStateJustSet = true;
       break;
 
     case getTranslation(selectedLang, "spotTrading"):
@@ -137,7 +140,6 @@ export const textHandler = async (msg: Message) => {
       BotService.sendMessage(userId, getTranslation(selectedLang, 'mainMenuText'), { replyMarkup: RM_Home(selectedLang) })
       break;
 
-
     case getTranslation(selectedLang, "buyDelForRub"):
       BotService.sendMessage(userId, getTranslation(selectedLang, 'chooseSection'), { replyMarkup: buyDelForRubIK(selectedLang) });
       break;
@@ -154,12 +156,16 @@ export const textHandler = async (msg: Message) => {
       break;
   };
 
-  if (!status) {
-    return
+  if (!isUserExists || !user) {
+    state = TempStateManager.getState(userId);
+  } else {
+    state = user.status;
   }
 
-  const state = user.status;
   console.log(`пользователь ${userId} на ${state} стейте`);
 
-  await mainStateHandler(msg, state)
+  if (isTempStateJustSet) return;
+
+
+  await mainStateHandler(msg, state);
 }

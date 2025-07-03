@@ -240,7 +240,7 @@ class Trc20Service {
       const responce = await fetch(`https://apilist.tronscanapi.com/api/token_trc20/transfers?toAddress=${address}`, requestOptions);
       const resultApi = await responce.json();
 
-      const transactions = resultApi.token_transfers;
+      const transactions = resultApi?.token_transfers || [];
 
       console.log(`кошелек: `, address);
       console.log(`количество транзакций: ${transactions.length}`);
