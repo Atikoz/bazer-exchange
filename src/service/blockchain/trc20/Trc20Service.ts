@@ -109,6 +109,8 @@ class Trc20Service {
           throw new Error(`error sending trx for activate acc: ${sendCoin}`)
         }
       }
+
+      return true
     } catch (error) {
       console.error('error activate trc20 acc:', error.message);
       return false;
