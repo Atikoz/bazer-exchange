@@ -46,13 +46,13 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
 
         const response = await AuthCodeService.verifyCode(email, enteredCode);
 
-        // if (!response.status) {
-        //   if (response.message === 'invalid code') {
-        //     return BotService.sendMessage(userId, getTranslation(lang, 'invalidConfirmationCodeMessage'));
-        //   }
+        if (!response.status) {
+          if (response.message === 'invalid code') {
+            return BotService.sendMessage(userId, getTranslation(lang, 'invalidConfirmationCodeMessage'));
+          }
 
-        //   return BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
-        // }
+          return BotService.sendMessage(userId, getTranslation(lang, 'unexpectedError'));
+        }
 
         await BotService.sendMessage(userId, getTranslation(lang, 'identityVerified'));
         TempStateManager.setState(userId, 82);
