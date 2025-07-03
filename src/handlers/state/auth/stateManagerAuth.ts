@@ -26,8 +26,6 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
           return TempStateManager.setState(userId, 0);
         }
 
-        console.log(enteredEmail)
-
         const sendCodeResult = await AuthCodeService.sendEmailVerifyCode(enteredEmail);
 
         if (sendCodeResult.status) {

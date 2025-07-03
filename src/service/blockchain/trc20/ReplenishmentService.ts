@@ -31,6 +31,7 @@ class ReplenishmentTrc20Service extends Trc20Service {
           const isActive = await this.ensureAccountActivated(userUsdtAdress);
 
           if (!isActive) {
+            console.log(`${userWallet} is not active`)
             continue
           }
 
@@ -39,6 +40,7 @@ class ReplenishmentTrc20Service extends Trc20Service {
           const sendCoins = await this.transferCoins(userUsdtPrivatKey, this.contractTypeUsdt, this.adminWalletUsdt, tx.amount);
 
           if (!sendCoins) {
+            console.log('error sending money')
             continue
           }
 
