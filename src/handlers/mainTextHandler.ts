@@ -46,7 +46,7 @@ export const textHandler = async (msg: Message) => {
   if (text === '/start') {
     console.log(isUserExists)
 
-    if (isUserExists) {
+    if (!isUserExists) {
       BotService.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: startKeyboard(selectedLang) });
     } else {
       await UserManagment.setState(userId, 0);
