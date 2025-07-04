@@ -43,7 +43,7 @@ class ReplenishmentMinter extends minterService {
         if (transaction.type !== 1) {
           continue
         }
-        
+
         const coin = transaction.data.coin.symbol;
         const minimumAmount = this.minimumAmounts[coin];
 
@@ -113,7 +113,7 @@ class ReplenishmentMinter extends minterService {
 
   checkAdminWallet = async (): Promise<void> => {
     try {
-      const adminTransactions = (await TransactionMinterStatus.find()).filter(tx => tx.status !== 'Done');
+      const adminTransactions = await TransactionMinterStatus.find({ status: { $ne: 'Done' } })
 
       if (!adminTransactions.length) {
         return

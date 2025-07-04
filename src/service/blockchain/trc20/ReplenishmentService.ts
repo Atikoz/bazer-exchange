@@ -67,10 +67,6 @@ class ReplenishmentTrc20Service extends Trc20Service {
   };
 
   async CheckUsdtTransactionAmin(replenishment: ReplenishmentTrc20): Promise<void> {
-    if (['Done', 'Fail'].includes(replenishment.status)) {
-      return
-    }
-
     try {
       await sleep(5000);
       const { status } = await this.checkTx(replenishment.hash);

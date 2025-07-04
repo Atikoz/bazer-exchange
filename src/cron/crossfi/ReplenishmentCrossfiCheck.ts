@@ -5,11 +5,27 @@ import CrossfiSendAdmin from '../../models/crossfi/CrossfiSendAdmin';
 
 export const checkUserCrossfiTransaction = new CronJob('0 */1 * * * *', async () => {
   try {
-    const wallets = await WalletUser.find({});
+    const activeWallets = await WalletUser.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'id',
+          foreignField: 'id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      { $match: { 'user.isActive': true } }
+    ]);
 
-    await Promise.all(wallets.map(w =>
-      ReplenishmentCrossfi.CheckUserWallet(w.id)
-    ));
+    if (!activeWallets.length) {
+      console.log('ℹ️ Нет активных пользователей для проверки CROSSFI транзакций.');
+      return;
+    }
+
+    for (const user of activeWallets) {
+      await ReplenishmentCrossfi.CheckUserWallet(user.id)
+    }
   } catch (error) {
     console.error(error)
   }
@@ -17,7 +33,7 @@ export const checkUserCrossfiTransaction = new CronJob('0 */1 * * * *', async ()
 
 export const checkAdminCrossfiTransaction = new CronJob('0 */1 * * * *', async () => {
   try {
-    const allTransactions = await CrossfiSendAdmin.find();
+    const allTransactions = await CrossfiSendAdmin.find({ status: { $nin: ['Fail, Done'] } });
 
     for (const tx of allTransactions) {
       await ReplenishmentCrossfi.CheckAdminWallet(tx);

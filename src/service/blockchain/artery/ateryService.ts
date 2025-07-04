@@ -342,16 +342,11 @@ class ArteryService {
 
   public checkAdminWallet = async (transaction: IAdminTransactionArtery): Promise<void> => {
     try {
-      if (transaction.status === 'Done') {
-        return
-      };
-
-      const statusUserTransaction = this.checkHash(transaction.hash);
+      const statusUserTransaction = await this.checkHash(transaction.hash);
 
       if (!statusUserTransaction) {
         return
       };
-
       await ArteryReplenishment.updateOne(
         { hash: transaction.hash },
         { status: 'Done' }

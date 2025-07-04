@@ -6,7 +6,9 @@ const UserModel = new Schema({
   mail: { type: String, default: null, sparse: true },
   lang: { type: String, default: 'eng' },
   accessToken: { type: String, default: null, sparse: true },
-  refreshToken: { type: String, default: null, sparse: true }
+  refreshToken: { type: String, default: null, sparse: true },
+  lastActivity: { type: Date, default: Date.now },
+  isActive: { type: Boolean, default: true }
 },
   {
     timestamps: true

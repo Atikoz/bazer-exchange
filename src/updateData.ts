@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { connectToMongo } from './db/connectToMongo';
-import BalanceUser from './models/user/BalanceModel';
+import User from './models/user/UserModel';
 
 
 const mongoUri = process.env.MONGO_URI as string;
@@ -9,12 +9,39 @@ const mongoUri = process.env.MONGO_URI as string;
   try {
     await connectToMongo(mongoUri);
 
-    const result = await BalanceUser.updateMany(
-      { 'main.bzr': { $exists: false } },
-      { $set: { 'main.bzr': 0 } }
+    const resultCreateStatusActivity = await User.updateMany(
+      {
+        $or: [
+          { lastActivity: { $exists: false } },
+          { isActive: { $exists: false } }
+        ]
+      },
+      {
+        $set: {
+          lastActivity: new Date(),
+          isActive: true
+        }
+      }
     );
 
-    console.log(`✅ Updated ${result.modifiedCount} documents`);
+    console.log(`🔧 Оновлено ${resultCreateStatusActivity.modifiedCount} користувачів`);
+
+    const result = await User.updateMany(
+      {
+        $or: [
+          { accessToken: { $exists: false } },
+          { refreshToken: { $exists: false } }
+        ]
+      },
+      {
+        $set: {
+          accessToken: null,
+          refreshToken: null
+        }
+      }
+    );
+
+    console.log(`🔧 Оновлено ${result.modifiedCount} користувачів (access/refresh tokens)`);
 
   } catch (error) {
     console.error('MongoDB connection error :', error);

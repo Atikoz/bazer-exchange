@@ -87,11 +87,7 @@ class ReplenishmentCrossfi extends CrossfiService {
   }
 
   async CheckAdminWallet(sendAdminTx: CrossfiSendAdminTx): Promise<void> {
-    const { id, coin, amount, status, hash } = sendAdminTx;
-
-    if (status === 'Done' || status === 'Fail') {
-      return
-    }
+    const { id, coin, amount, hash } = sendAdminTx;
 
     try {
       const checkTx = await this.checkTxHash(hash)

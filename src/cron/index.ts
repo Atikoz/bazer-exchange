@@ -8,6 +8,7 @@ import accrualPurchasesBuyBazerhub from "./minter/checkTxBuyBazerhub";
 import checkMinterTransaction from "./minter/ReplenishmentMinterCheck";
 import rewardMinter from "./minter/RewardBazerHUB";
 import { chechAdminUsdtTransaction, checkUserUsdtTransaction } from "./usdt/ReplenishmentUsdtCheck";
+import { markInactiveUsersJob } from "./markInactiveUsersJob";
 
 const MONGO_URI = process.env.MONGO_URI as string;
 
@@ -29,14 +30,17 @@ chechAdminUsdtTransaction.start();
 checkUserCrossfiTransaction.start();
 checkAdminCrossfiTransaction.start();
 
-// //ARTERY
-// checkArtrBalance.start();
-// checkArtrAdminHash.start();
+//ARTERY
+checkArtrBalance.start();
+checkArtrAdminHash.start();
 
 //Minter
 checkMinterTransaction.start();
 rewardMinter.start();
 accrualPurchasesBuyBazerhub.start();
+
+//check active users
+markInactiveUsersJob.start();
 
 //backup database
 backupDB.start();

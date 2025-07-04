@@ -7,11 +7,27 @@ import ReplenishmentTrc20Service from '../../service/blockchain/trc20/Replenishm
 
 export const checkUserUsdtTransaction = new CronJob('0 */1 * * * *', async () => {
   try {
-    const wallets = await WalletUser.find({});
+    const activeWallets = await WalletUser.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'id',
+          foreignField: 'id',
+          as: 'user'
+        }
+      },
+      { $unwind: '$user' },
+      { $match: { 'user.isActive': true } }
+    ]);
 
-    for (const user of wallets) {
+    if (!activeWallets.length) {
+      console.log('ℹ️ Нет активных пользователей для проверки TRC20 транзакций.');
+      return;
+    }
+
+    for (const user of activeWallets) {
       await sleep(10000);
-      await ReplenishmentTrc20Service.ReplenishmentTrc20(user.id);
+      await ReplenishmentTrc20Service.ReplenishmentTrc20(user.id)
     }
   } catch (error) {
     console.error("usdt check error:", error.message);
@@ -20,7 +36,7 @@ export const checkUserUsdtTransaction = new CronJob('0 */1 * * * *', async () =>
 
 export const chechAdminUsdtTransaction = new CronJob('0 */2 * * * *', async () => {
   try {
-    const allTransactions = await TransactionUsdtStatus.find();
+    const allTransactions = await TransactionUsdtStatus.find({ status: { $nin: ['Done', 'Fail'] } });
 
     for (const tx of allTransactions) {
       await ReplenishmentTrc20Service.CheckUsdtTransactionAmin(tx);

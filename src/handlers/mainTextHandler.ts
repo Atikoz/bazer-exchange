@@ -11,6 +11,7 @@ import trimNumber from '../utils/trimNumber';
 import mainStateHandler from './state/mainStateHandler';
 import AuthManager from '../service/user/AuthManager';
 import TempStateManager from '../service/user/TempStateManager';
+import User from '../models/user/UserModel';
 
 const APP_ENV = process.env.APP_ENV;
 
@@ -31,6 +32,13 @@ export const textHandler = async (msg: Message) => {
 
   if (!userId || !text) {
     return;
+  }
+
+  if (userId) {
+    await User.findOneAndUpdate({ id: userId }, {
+      lastActivity: new Date(),
+      isActive: true
+    });
   }
 
   // if (APP_ENV === 'prod') {
