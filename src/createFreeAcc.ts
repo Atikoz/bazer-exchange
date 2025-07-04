@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { connectToMongo } from './db/connectToMongo';
 import BalanceUser from './models/user/BalanceModel';
 import { FreeAccountService } from './service/user/FreeAccountService';
+import sleep from './function/sleepFunction';
 
 
 const mongoUri = process.env.MONGO_URI as string;
@@ -15,6 +16,7 @@ const mongoUri = process.env.MONGO_URI as string;
     for (let i = 1; i < countAcc; i++) {
       const result = await FreeAccountService.createNew()
       console.log(`✅ Updated ${result} documents`);
+      await sleep(5000)
     }
 
   } catch (error) {
