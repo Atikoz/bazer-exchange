@@ -15,21 +15,21 @@ interface ResultRegisterUser {
 }
 
 export class UserRegistrationService {
-  static async registerUser(userId: number, email: string | null = null): Promise<ResultRegisterUser> {
+  static async registerUser(userId: number, email: string | null = null, bazerId: string): Promise<ResultRegisterUser> {
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
       const [existingUser, freeAccount] = await Promise.all([
-        User.findOne({ id: userId }).session(session).lean(),
+        User.findOne({ id: userId }).session(session),
         FreeAccount.findOneAndUpdate(
           { busy: false },
           { busy: true },
-          { session, new: true }).lean()
+          { session, new: true })
       ]);
 
       if (existingUser) {
-        const walletUser = await WalletUser.findOne({ id: userId }).session(session).lean();
+        const walletUser = await WalletUser.findOne({ id: userId }).session(session);
         return {
           status: 'ok',
           message: 'user registered',
@@ -39,10 +39,11 @@ export class UserRegistrationService {
 
       if (!freeAccount) {
         console.log('karau')
-        return UserProvisioningService.createUserWithWallets(userId, email);
+        await session.abortTransaction();
+        return UserProvisioningService.createUserWithWallets(userId, email, bazerId);
       }
 
-      await User.create([{ id: userId, mail: email }], { session });
+      await User.create([{ id: userId, bazerId, mail: email }], { session });
       await ProfitPool.create([{ id: userId }], { session });
 
       await WalletUser.create([{
@@ -54,7 +55,7 @@ export class UserRegistrationService {
         artery: freeAccount.artery,
         minter: freeAccount.minter
       }], { session });
-      
+
       await BalanceUser.create([{ id: userId }], { session });
       await FreeAccountService.delete(freeAccount.mnemonic, session);
 

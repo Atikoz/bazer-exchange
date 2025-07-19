@@ -64,8 +64,9 @@ async function stateManagerAuth(msg: Message, state: number): Promise<void> {
         TempStateManager.setState(userId, 0);
         const password = text.trim();
         const email = UserContext.get(userId, 'email');
+        const refferId = UserContext.get(userId, 'refferId')
 
-        const registerRemoteUser = await AuthManager.registerRemoteUser(userId, email, password);
+        const registerRemoteUser = await AuthManager.registerRemoteUser(userId, email, password, refferId);
 
         if (registerRemoteUser.status === 'success' && !registerRemoteUser.error) {
           await AuthManager.loginAndSaveTokens(email, password);

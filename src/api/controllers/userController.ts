@@ -8,11 +8,7 @@ const ENCRYPTION_KEY_MICROSERVICE = process.env.ENCRYPTION_KEY_MICROSERVICE;
 interface RegisterRequestBody {
   userId: number;
   email: string;
-}
-
-interface RegisterRequestBody {
-  userId: number;
-  email: string;
+  bazerId: string;
 }
 
 class UserController {
@@ -63,9 +59,9 @@ class UserController {
 
   async register(req: Request<{}, {}, RegisterRequestBody>, res: Response): Promise<void> {
     try {
-      const { userId, email } = req.body;
+      const { userId, email, bazerId } = req.body;
 
-      const result = await UserRegistrationService.registerUser(userId, email);
+      const result = await UserRegistrationService.registerUser(userId, email, bazerId);
       const message = result.message;
   
       const mnemonicUser = EncryptionService.decryptSeed(result.mnemonic);

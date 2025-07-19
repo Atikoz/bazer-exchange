@@ -22,14 +22,15 @@ interface ResultCreateUserWithWallets {
 }
 
 class UserProvisioningService {
-  static async createUserWithWallets(userId: number, email: string | null = null): Promise<ResultCreateUserWithWallets> {
+  static async createUserWithWallets(userId: number, email: string | null = null, bazerId: string): Promise<ResultCreateUserWithWallets> {
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
       const createDelWallet = decimalService.createWallet();
       if (!createDelWallet.status) {
-        return this.createUserWithWallets(userId);
+        await session.abortTransaction();
+        return this.createUserWithWallets(userId, email, bazerId);
       }
 
       const createUsdt = await Trc20.createWallet();
@@ -39,8 +40,7 @@ class UserProvisioningService {
 
       const encryptedMnemonic = EncryptionService.encryptSeed(createDelWallet.mnemonic);
 
-      await User.create([{ id: userId, mail: email }], { session });
-      await ProfitPool.create([{ id: userId }], { session });
+      await User.create([{ id: userId, bazerId, mail: email }], { session }); await ProfitPool.create([{ id: userId }], { session });
 
       await WalletUser.create([{
         id: userId,

@@ -12,7 +12,7 @@ async function callbackHandler(msg: Message) {
     });
   }
 
-  const callback = msg.data?.split('_')[0]
+  const callback = msg.data?.split('_')[0];
 
   const entry = handlerPatterns.find(({ patterns }) =>
     patterns.some((pattern) => pattern.test(callback))

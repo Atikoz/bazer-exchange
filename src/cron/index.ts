@@ -8,7 +8,8 @@ import accrualPurchasesBuyBazerhub from "./minter/checkTxBuyBazerhub";
 import checkMinterTransaction from "./minter/ReplenishmentMinterCheck";
 import rewardMinter from "./minter/RewardBazerHUB";
 import { chechAdminUsdtTransaction, checkUserUsdtTransaction } from "./usdt/ReplenishmentUsdtCheck";
-import { markInactiveUsersJob } from "./markInactiveUsersJob";
+import { markInactiveUsersJob } from "./users/markInactiveUsersJob";
+import { startReferralUpdateJob } from "./users/ReferralJob";
 
 const MONGO_URI = process.env.MONGO_URI as string;
 
@@ -42,5 +43,9 @@ accrualPurchasesBuyBazerhub.start();
 //check active users
 markInactiveUsersJob.start();
 
+//update referral system
+startReferralUpdateJob();
+
 //backup database
 backupDB.start();
+

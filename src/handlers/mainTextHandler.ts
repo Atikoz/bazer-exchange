@@ -13,7 +13,9 @@ import AuthManager from '../service/user/AuthManager';
 import TempStateManager from '../service/user/TempStateManager';
 import User from '../models/user/UserModel';
 
-const APP_ENV = process.env.APP_ENV;
+// const APP_ENV = process.env.APP_ENV;
+const BOT_USER_NAME = process.env.BOT_USER_NAME;
+const ADMIN_BAZER_ID = process.env.ADMIN_BAZER_ID;
 
 
 export const textHandler = async (msg: Message) => {
@@ -51,10 +53,14 @@ export const textHandler = async (msg: Message) => {
 
   console.log(`Пользопатель ${userId} отправил сообщение: ${text}`);
 
-  if (text === '/start') {
+  if (text.startsWith('/start')) {
     console.log(isUserExists)
 
+    const parts = text.split(' ');
+    const refferId = parts[1] || ADMIN_BAZER_ID;
+
     if (!isUserExists) {
+      UserContext.set(userId, 'refferId', refferId);
       BotService.sendMessage(userId, getTranslation(selectedLang, 'chooseSectionText'), { replyMarkup: startKeyboard(selectedLang) });
     } else {
       await UserManagment.setState(userId, 0);
@@ -104,7 +110,10 @@ export const textHandler = async (msg: Message) => {
 
     case getTranslation(selectedLang, "referrals"):
       UserManagement.setState(userId, 0);
-      BotService.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
+      const referralUrl = `https://t.me/${BOT_USER_NAME}?start=${userId}`
+
+      // BotService.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
+      BotService.sendMessage(userId, referralUrl);
       break;
 
     case getTranslation(selectedLang, "converting"):

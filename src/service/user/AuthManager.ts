@@ -34,7 +34,7 @@ class AuthManager {
     }
   };
 
-  static async registerRemoteUser(userId: number, email: string, password: string, refferId: string = 'bzr92c1frq6ttv') {
+  static async registerRemoteUser(userId: number, email: string, password: string, refferId: string) {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 

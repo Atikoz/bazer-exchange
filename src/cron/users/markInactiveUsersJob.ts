@@ -1,5 +1,5 @@
 import { CronJob } from 'cron';
-import User from '../models/user/UserModel';
+import User from '../../models/user/UserModel';
 
 
 export const markInactiveUsersJob = new CronJob('0 3 * * *', async () => {

@@ -60,7 +60,7 @@ class ReplenishmentMinter extends minterService {
 
           console.log('transfer commission:', commissionTransfer);
           if (coin === 'BIP') {
-            const amountTransferAdminWallet = +transaction.data.value - 35;
+            const amountTransferAdminWallet = +transaction.data.value - 100
             const sendBipAdminWallet = await sleep(5000).then(() => this.sendMinter(this.adminWallet, amountTransferAdminWallet, userSeed, coin));
 
             if (!sendBipAdminWallet.status) {
