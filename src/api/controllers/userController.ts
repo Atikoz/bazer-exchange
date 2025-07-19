@@ -9,6 +9,7 @@ interface RegisterRequestBody {
   userId: number;
   email: string;
   bazerId: string;
+  refferId: string;
 }
 
 class UserController {
@@ -59,7 +60,7 @@ class UserController {
 
   async register(req: Request<{}, {}, RegisterRequestBody>, res: Response): Promise<void> {
     try {
-      const { userId, email, bazerId } = req.body;
+      const { userId, email, bazerId, refferId } = req.body;
 
       const result = await UserRegistrationService.registerUser(userId, email, bazerId);
       const message = result.message;
