@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { connectToMongo } from '../db/connectToMongo';
-import { UserRegistrationService } from '../service/user/UserRegistrationService';
+import MailService from '../service/mail/serviceMail';
 import UserProvisioningService from '../service/user/UserProvisioningService';
 
 
@@ -10,7 +10,7 @@ const mongoUri = process.env.MONGO_URI as string;
   try {
     await connectToMongo(mongoUri)
 
-    console.log(await UserRegistrationService.registerUser(9994, 'test@mail.com')
+    console.log(await MailService.sendMailPassword('wewefewfewfewf', 'vlasenkovadim2005@gmail.com')
     )
   } catch (error) {
     console.error('MongoDB connection error :', error);
