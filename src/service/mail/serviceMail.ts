@@ -19,6 +19,9 @@ class MailService {
         user: EMAIL_BOT,
         pass: EMAIL_PASSWORD
       },
+      pool: true,
+      maxConnections: 5,
+      rateLimit: 1,
     });
   }
 

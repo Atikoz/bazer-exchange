@@ -34,30 +34,20 @@ async function registerUser(userId: number, email: string, password: string) {
 
 async function createBazerId() {
   try {
-    const users = await User.find({ mail: { $ne: null } });
+    const users = await User.find({ mail: null });
     let count = 0;
 
     for (const user of users) {
-      const { id, mail } = user;
-      const password = generatePassword();
+      const { id } = user;
 
-      const data = await registerUser(id, mail, password);
-      const status = data.status;
+      const a = await User.updateOne(
+        { id },
+        { $set: { bazerId: null } }
+      );
 
-      if (status === 'success') {
-        const bazerId = data.data.id;
-        const a = await User.updateOne(
-          { id },
-          { $set: { bazerId } }
-        );
+      console.log(a)
 
-        await MailService.sendMailPassword(password, mail)
-
-        console.log(bazerId)
-        console.log(a)
-
-        count++
-      }
+      count++
     }
 
     console.log(`updated ${count} bazerId`)
