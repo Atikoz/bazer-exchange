@@ -33,7 +33,7 @@ export const checkUserCrossfiTransaction = new CronJob('0 */1 * * * *', async ()
 
 export const checkAdminCrossfiTransaction = new CronJob('0 */1 * * * *', async () => {
   try {
-    const allTransactions = await CrossfiSendAdmin.find({ status: { $nin: ['Fail, Done'] } });
+    const allTransactions = await CrossfiSendAdmin.find({ status: { $nin: ['Fail', 'Done'] } });
 
     for (const tx of allTransactions) {
       await ReplenishmentCrossfi.CheckAdminWallet(tx);
