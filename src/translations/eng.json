@@ -119,6 +119,11 @@
   "enterPassword": "Enter passord:",
   "loginIsComplete": "Login is complete ✅",
   "emailAlreadyTaken": "This email is already in use by another user",
-  "telegramIdAlreadyTaken": "This Telegram account is already being used by another user"
-  
+  "telegramIdAlreadyTaken": "This Telegram account is already being used by another user",
+  "referral_email_required": "To use the referral system, please provide your email address.",
+  "errorUpdate_failed": "Failed to update data. Please contact support.",
+  "referrals_count_first_level": "Number of 1st level referrals:",
+  "referrals_count_second_level": "Number of 2st level referrals:",
+  "referrals_count_third_level": "Number of 3st level referrals:",
+  "your_referrals_link": "Your referral link:"
 }

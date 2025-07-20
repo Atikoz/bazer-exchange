@@ -1,7 +1,8 @@
 import NodeCache from "node-cache";
+import getTranslation, { Language } from "../../translations";
 
 
-const referralCache = new NodeCache({ stdTTL: 600 }); // 10 хв
+const referralCache = new NodeCache({ stdTTL: 60 }); // 1 хв
 
 interface IReferralCount {
   firstLevel: number;
@@ -76,5 +77,19 @@ export class RefferalService {
     ).length;
 
     return { firstLevel, secondLevel, thirdLevel };
+  }
+
+  static async getReferralText(bazerId: string, lang: Language): Promise<string> {
+    const countReferrals = await this.getReferralCount(bazerId);
+
+    const msg = [
+      `${getTranslation(lang, 'referrals_count_first_level')} ${countReferrals.firstLevel}`,
+      `${getTranslation(lang, 'referrals_count_second_level')} ${countReferrals.firstLevel}`,
+      `${getTranslation(lang, 'referrals_count_third_level')} ${countReferrals.firstLevel}`,
+      '\n',
+      getTranslation(lang, 'your_referrals_link')
+    ];
+
+    return msg.join('\n')
   }
 }

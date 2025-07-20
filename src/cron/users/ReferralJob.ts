@@ -2,7 +2,7 @@ import { CronJob } from "cron";
 import { IReferralUser, RefferalService } from "../../service/user/ReferralService";
 
 export function startReferralUpdateJob() {
-  const job = new CronJob('*/10 * * * *', async () => {
+  const job = new CronJob('*/1 * * * *', async () => {
     console.log('⏰ Updating referral system cache...');
 
     try {

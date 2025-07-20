@@ -1,5 +1,17 @@
 import { model, Schema } from "mongoose";
 
+export interface IUser extends Document {
+  id: string;
+  bazerId: string | null;
+  status: number;
+  mail: string | null;
+  lang: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  lastActivity: Date;
+  isActive: boolean;
+}
+
 const UserModel = new Schema({
   id: { type: String, required: true, unique: true },
   bazerId: { type: String, required: true, unique: true, default: null },

@@ -12,6 +12,8 @@ import mainStateHandler from './state/mainStateHandler';
 import AuthManager from '../service/user/AuthManager';
 import TempStateManager from '../service/user/TempStateManager';
 import User from '../models/user/UserModel';
+import { BazerService } from '../service/user/BazerService';
+import { RefferalService } from '../service/user/ReferralService';
 
 // const APP_ENV = process.env.APP_ENV;
 const BOT_USER_NAME = process.env.BOT_USER_NAME;
@@ -110,10 +112,24 @@ export const textHandler = async (msg: Message) => {
 
     case getTranslation(selectedLang, "referrals"):
       UserManagement.setState(userId, 0);
-      const referralUrl = `https://t.me/${BOT_USER_NAME}?start=${userId}`
 
-      // BotService.sendMessage(userId, getTranslation(selectedLang, 'referralsText'));
-      BotService.sendMessage(userId, referralUrl);
+      if (!user.mail) {
+        BotService.sendMessage(userId, getTranslation(selectedLang, 'referral_email_required'));
+        return
+      }
+
+      if (!user.bazerId) {
+        const result = await BazerService.createBazerId(userId, user.mail);
+
+        if (!result) return BotService.sendMessage(userId, getTranslation(selectedLang, 'errorUpdate_failed'));
+      }
+
+     const msg = await RefferalService.getReferralText(user.bazerId, selectedLang)
+
+      const referralUrl = `https://t.me/${BOT_USER_NAME}?start=${user.bazerId}`
+
+      await BotService.sendMessage(userId, msg);
+      await BotService.sendMessage(userId, `<code>${referralUrl}</code>`);
       break;
 
     case getTranslation(selectedLang, "converting"):

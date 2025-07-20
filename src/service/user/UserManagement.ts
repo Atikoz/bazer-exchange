@@ -1,5 +1,5 @@
 import BalanceUser from "../../models/user/BalanceModel";
-import User from "../../models/user/UserModel";
+import User, { IUser } from "../../models/user/UserModel";
 import WalletUser from "../../models/user/WalletUser";
 import { Language } from "../../translations";
 
@@ -45,7 +45,7 @@ interface UserWallet {
 interface GetInfoUser {
   status: boolean,
   error: string | null,
-  user: User | null,
+  user: IUser | null,
   userBalance: UserBalance | null,
   userWallet: UserWallet | null
 }
@@ -53,7 +53,7 @@ interface GetInfoUser {
 class UserManagement {
   static async getInfoUser(userId: string | number): Promise<GetInfoUser> {
     try {
-      const user = await User.findOne({ id: userId });
+      const user: IUser = await User.findOne({ id: userId });
 
       if (!user) {
         return {

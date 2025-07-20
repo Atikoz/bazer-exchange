@@ -119,5 +119,11 @@
   "enterPassword": "Введите пароль:",
   "loginIsComplete": "Регистрация завершена ✅",
   "emailAlreadyTaken": "Эта электронная почта уже используется другим пользователем",
-  "telegramIdAlreadyTaken": "Этот аккаунт Telegram уже используется другим пользователем"
+  "telegramIdAlreadyTaken": "Этот аккаунт Telegram уже используется другим пользователем",
+  "referral_email_required": "Чтобы использовать реферальную систему, пожалуйста, укажите свою электронную почту.",
+  "errorUpdate_failed": "Ошибка обновления данных. Обратитесь в администрацию.",
+  "referrals_count_first_level": "Количество рефералов 1 уровня:",
+  "referrals_count_second_level": "Количество рефералов 2 уровня:",
+  "referrals_count_third_level": "Количество рефералов 3 уровня:",
+  "your_referrals_link": "Ваша реферальная ссылка:"
 }
