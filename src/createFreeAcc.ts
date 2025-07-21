@@ -12,7 +12,7 @@ const mongoUri = process.env.MONGO_URI as string;
 
     const countAcc = 20;
 
-    for (let i = 1; i < countAcc; i++) {
+    for (let i = 1; i <= countAcc; i++) {
       const result = await FreeAccountService.createNew()
       console.log(`✅ Created acc status: ${result}`);
       await sleep(5000)

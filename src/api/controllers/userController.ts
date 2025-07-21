@@ -65,14 +65,10 @@ class UserController {
       const result = await UserRegistrationService.registerUser(userId, email, bazerId);
       const message = result.message;
   
-      const mnemonicUser = EncryptionService.decryptSeed(result.mnemonic);
-  
       if (result.status === 'error') {
         throw new Error(result.message)
       }
-  
-      const p2pKey = EncryptionService.encryptSeed(mnemonicUser, Buffer.from(ENCRYPTION_KEY_MICROSERVICE, 'utf-8'));
-  
+    
       res.status(200).json({
         status: 'ok',
         error: '',
@@ -80,7 +76,7 @@ class UserController {
         data: {
           userId: userId,
           email: email,
-          mnemonic: p2pKey
+          mnemonic: result.mnemonic
         }
       });
     } catch (error) {
