@@ -16,26 +16,26 @@ interface ResultRegisterUser {
 
 export class UserRegistrationService {
   static async registerUser(userId: number, email: string | null = null, bazerId: string): Promise<ResultRegisterUser> {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
-      const [existingUser, freeAccount] = await Promise.all([
-        User.findOne({ id: userId }).session(session),
-        FreeAccount.findOneAndUpdate(
-          { busy: false },
-          { busy: true },
-          { session, new: true })
-      ]);
+      const existingUser = await User.findOne({ id: userId });
 
       if (existingUser) {
-        const walletUser = await WalletUser.findOne({ id: userId }).session(session);
+        const walletUser = await WalletUser.findOne({ id: userId });
         return {
           status: 'ok',
           message: 'user registered',
           mnemonic: walletUser?.mnemonic || ''
         };
       }
+
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      const freeAccount = await FreeAccount.findOneAndUpdate(
+        { busy: false },
+        { busy: true },
+        { session, new: true }
+      );
 
       if (!freeAccount) {
         console.log('karau')
