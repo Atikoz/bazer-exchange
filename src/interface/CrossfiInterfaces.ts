@@ -2,7 +2,8 @@ import { DeliverTxResponse } from "@cosmjs/stargate";
 
 export interface CreateCrossfiWallet {
   status: boolean,
-  address: string
+  address?: string,
+  evmAddress?: string
 }
 
 export interface CrossfiBalance {

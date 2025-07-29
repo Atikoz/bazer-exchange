@@ -47,7 +47,7 @@ class UserProvisioningService {
         mnemonic: encryptedMnemonic,
         del: { address: createDelWallet.address },
         usdt: { address: createUsdt.address, privateKey: createUsdt.privateKey },
-        crossfi: { address: createCrossfi.address },
+        crossfi: { address: createCrossfi.address, evmAddress: createCrossfi.evmAddress },
         artery: { address: createartery },
         minter: { address: createMinter.address, privateKey: createMinter.privateKey }
       }], { session });

@@ -35,6 +35,11 @@ const FreeAccountSchema = new Schema({
       required: true,
       unique: true
     },
+    evmAddress: {
+      type: String,
+      required: true,
+      unique: true
+    }
   },
   artery: {
     address: {

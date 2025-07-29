@@ -4,6 +4,8 @@ import { stringToPath } from '@cosmjs/crypto';
 import { toBaseUnit } from '../../../utils/unitConversion';
 import { ICrossfiTx, CrossfiTxData, CrossfiBalance, CrossfiAnswerApiGetBalance, CreateCrossfiWallet, ISendCrossfiCoin, CrossfiTxDecoded, CrossfiTxLog, ICrossfiEvmTx } from '../../../interface/CrossfiInterfaces';
 import CrossfiUserReplenishment from '../../../models/crossfi/CrossfiUserReplenishment';
+import EncryptionService from '../../security/EncryptionService';
+import { Wallet } from 'ethers';
 
 const CROSSFI_RPC_URL = process.env.CROSSFI_RPC_URL;
 const CROSSFI_MAINNET_RPC = process.env.CROSSFI_MAINNET_RPC;
@@ -53,7 +55,7 @@ class CrossfiService {
       if (evm) {
         const response = await fetch(`https://xfiscan.com/api/1.0/txs?limit=100&existsEVM=true&address=${address}&page=1`, this.getRequestOptions);
         const data = await response.json();
-        return data.docs as ICrossfiEvmTx[]; 
+        return data.docs as ICrossfiEvmTx[];
       }
 
       const sentTransactions = await this.client.searchTx([
@@ -178,15 +180,17 @@ class CrossfiService {
       console.log('new address:', newAddressAccountData.address);
       console.log('------------------');
 
+      const evmAddress = await this.getEvmAddressFromCosmosAddress(mnemonic);
+
       return {
         status: true,
-        address: newAddressAccountData.address
+        address: newAddressAccountData.address,
+        evmAddress
       }
     } catch (error) {
       console.error('error create crossfi wallet:', error);
       return {
-        status: false,
-        address: ''
+        status: false
       }
     }
   }
@@ -362,11 +366,10 @@ class CrossfiService {
     }
   }
 
-  async getEvmAddressFromCosmosAddress(address: string): Promise<string> {
-    const response = await fetch("https://xfiscan.com/api/1.0/addresses/mx162mqnv8g8kmlz5x3gef4ll7mtqlfjdnauvhwke", this.getRequestOptions);
-    const data = await response.json();
+  async getEvmAddressFromCosmosAddress(mnemonic: string): Promise<string> {
+    const wallet = Wallet.fromMnemonic(mnemonic);
 
-    return data.evm;
+    return wallet.address;
   }
 }
 
