@@ -61,7 +61,7 @@ class RewardMinterServise extends MinterService {
       const [rewardsTx, arrayUserBalance, users] = await Promise.all([
         this.getMinterRewardsTx(),
         BalanceUser.find(),
-        BalanceService.getBalanceAllUsersCoins('bazerhub')
+        BalanceService.getUsersTotalBalanceByCoin('bazerhub')
       ]);
 
       const balanceBazerHub = arrayUserBalance.reduce((total, item) => 

@@ -26,6 +26,21 @@ export interface ICrossfiTx {
   rawLog: string
 }
 
+export interface ICrossfiEvmTx {
+  txhash: string,
+  code: number,
+  evm_txhashes: string[],
+  body: {
+    messages: [{
+      data: {
+        to: string,
+        value: string,
+        from: string
+      }
+    }]
+  }
+}
+
 export interface CrossfiTxData {
   hash: string,
   index: number,

@@ -35,6 +35,11 @@ const WalletUserSchema = new Schema({
       type: String,
       required: true,
       unique: true
+    },
+    evmAddress: {
+      type: String,
+      required: true,
+      unique: true
     }
   },
   artery: {

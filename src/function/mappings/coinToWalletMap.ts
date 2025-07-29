@@ -1,6 +1,6 @@
 import { UserWallet } from "../../interface/UserWallet";
 
-export const coinToWalletMap: Record<string, keyof UserWallet> = {
+export const coinToWalletMap: Record<string, string> = {
   usdt: 'usdt',
   artery: 'artery',
   mpx: 'crossfi',
@@ -15,6 +15,7 @@ export const coinToWalletMap: Record<string, keyof UserWallet> = {
   minterBazercoin: 'minter',
   bazerhub: 'minter',
   ruble: 'minter',
+  bzr: 'crossfi.evmAddress'
 };
 
 export const defaultWalletKey: keyof UserWallet = 'del';

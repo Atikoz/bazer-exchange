@@ -10,6 +10,7 @@ import rewardMinter from "./minter/RewardBazerHUB";
 import { chechAdminUsdtTransaction, checkUserUsdtTransaction } from "./usdt/ReplenishmentUsdtCheck";
 import { markInactiveUsersJob } from "./users/markInactiveUsersJob";
 import { startReferralUpdateJob } from "./users/ReferralJob";
+import { startRewardDistributionJob } from "./crossfi/RewardCrossfiJob";
 
 const MONGO_URI = process.env.MONGO_URI as string;
 
@@ -30,6 +31,7 @@ chechAdminUsdtTransaction.start();
 //CROSSFI
 checkUserCrossfiTransaction.start();
 checkAdminCrossfiTransaction.start();
+startRewardDistributionJob()
 
 //ARTERY
 checkArtrBalance.start();

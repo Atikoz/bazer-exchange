@@ -2,10 +2,12 @@ import { StargateClient, SigningStargateClient, GasPrice, calculateFee, DeliverT
 import { DirectSecp256k1HdWallet, coin, decodeTxRaw } from '@cosmjs/proto-signing';
 import { stringToPath } from '@cosmjs/crypto';
 import { toBaseUnit } from '../../../utils/unitConversion';
-import { ICrossfiTx, CrossfiTxData, CrossfiBalance, CrossfiAnswerApiGetBalance, CreateCrossfiWallet, ISendCrossfiCoin, CrossfiTxDecoded, CrossfiTxLog } from '../../../interface/CrossfiInterfaces';
+import { ICrossfiTx, CrossfiTxData, CrossfiBalance, CrossfiAnswerApiGetBalance, CreateCrossfiWallet, ISendCrossfiCoin, CrossfiTxDecoded, CrossfiTxLog, ICrossfiEvmTx } from '../../../interface/CrossfiInterfaces';
 import CrossfiUserReplenishment from '../../../models/crossfi/CrossfiUserReplenishment';
 
 const CROSSFI_RPC_URL = process.env.CROSSFI_RPC_URL;
+const CROSSFI_MAINNET_RPC = process.env.CROSSFI_MAINNET_RPC;
+const BZR_CONTRACT_ADDRESS = process.env.BZR_CONTRACT_ADDRESS;
 
 const minimalSum = {
   xfi: 3,
@@ -20,6 +22,10 @@ const GAS_PRICE = {
 class CrossfiService {
   private readonly rpcUrl: string;
   private client: StargateClient
+  private getRequestOptions: RequestInit = {
+    method: "GET",
+    redirect: "follow" as RequestRedirect
+  }
 
   constructor() {
     this.rpcUrl = CROSSFI_RPC_URL;
@@ -40,9 +46,15 @@ class CrossfiService {
     }
   }
 
-  protected async getUserTx(address: string): Promise<ICrossfiTx[]> {
+  protected async getUserTx(address: string, evm: boolean = false): Promise<ICrossfiTx[] | ICrossfiEvmTx[]> {
     try {
       await this.ensureInitialized();
+
+      if (evm) {
+        const response = await fetch(`https://xfiscan.com/api/1.0/txs?limit=100&existsEVM=true&address=${address}&page=1`, this.getRequestOptions);
+        const data = await response.json();
+        return data.docs as ICrossfiEvmTx[]; 
+      }
 
       const sentTransactions = await this.client.searchTx([
         { key: "message.sender", value: address }
@@ -54,21 +66,52 @@ class CrossfiService {
 
       const allTransactions = [...sentTransactions, ...receivedTransactions];
 
-      return allTransactions;
+      return allTransactions as ICrossfiTx[];
     } catch (error) {
       console.error('error getUserTx crossfi', error);
       return []
     }
   }
 
-  protected async checkTxHash(hash: string): Promise<CrossfiTxData | null> {
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
+  // async getBalanceEvmAddress(address: string) {
+  //   try {
+  //     // Підключаємося до EVM
+  //     const provider = new ethers.JsonRpcProvider(EVM_RPC_URL);
 
+  //     // ✅ 1. Отримуємо нативний баланс (XFI)
+  //     const nativeRaw = await provider.getBalance(address);
+  //     const nativeFormatted = ethers.formatEther(nativeRaw); // у XFI
+
+  //     // ✅ 2. Підключаємо контракт токена BZR
+  //     const tokenContract = new ethers.Contract(BZR_CONTRACT_ADDRESS, ERC20_ABI, provider);
+
+  //     const [tokenRaw, decimals, symbol] = await Promise.all([
+  //       tokenContract.balanceOf(address),
+  //       tokenContract.decimals(),
+  //       tokenContract.symbol(),
+  //     ]);
+  //     const tokenFormatted = ethers.formatUnits(tokenRaw, decimals);
+
+  //     return {
+  //       address,
+  //       native: {
+  //         balance: nativeFormatted,
+  //         symbol: "XFI",
+  //       },
+  //       token: {
+  //         balance: tokenFormatted,
+  //         symbol,
+  //       },
+  //     };
+  //   } catch (error) {
+  //     console.error(`getBalanceEvmAddress error for ${address}:`, error);
+  //     return null;
+  //   }
+  // }
+
+  protected async checkTxHash(hash: string): Promise<CrossfiTxData | null> {
     try {
-      const response = await fetch(`${this.rpcUrl}/tx?hash=0x${hash}&prove=true`, requestOptions)
+      const response = await fetch(`${this.rpcUrl}/tx?hash=0x${hash}&prove=true`, this.getRequestOptions)
 
       if (!response.ok) {
         throw new Error(`HTTP checkTxHash crossfi error! Status: ${response.status}`);
@@ -86,13 +129,8 @@ class CrossfiService {
   }
 
   protected async getBalance(address: string): Promise<CrossfiBalance> {
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-
     try {
-      const response = await fetch(`https://cosmos-api.mainnet.ms/cosmos/bank/v1beta1/balances/${address}`, requestOptions);
+      const response = await fetch(`https://cosmos-api.mainnet.ms/cosmos/bank/v1beta1/balances/${address}`, this.getRequestOptions);
 
       const resultApi: CrossfiAnswerApiGetBalance = await response.json();
 
@@ -322,6 +360,13 @@ class CrossfiService {
       console.error('error withdraw coins crossfi:', error);
       return null
     }
+  }
+
+  async getEvmAddressFromCosmosAddress(address: string): Promise<string> {
+    const response = await fetch("https://xfiscan.com/api/1.0/addresses/mx162mqnv8g8kmlz5x3gef4ll7mtqlfjdnauvhwke", this.getRequestOptions);
+    const data = await response.json();
+
+    return data.evm;
   }
 }
 

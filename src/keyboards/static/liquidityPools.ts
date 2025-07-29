@@ -3,7 +3,8 @@ import { bot } from "../../bot";
 import getTranslation from "../../translations";
 
 export const poolMenuIK = (lang: 'ru' | 'eng' = 'ru') => bot.inlineKeyboard([
-  [bot.inlineButton(getTranslation(lang, 'singleLiquidityPoolsIK'), { callback: 'singleLiquidityPools' }), bot.inlineButton(getTranslation(lang, 'dualLiquidityPoolsIK'), { callback: 'dualLiquidityPool' })],
+  // [bot.inlineButton(getTranslation(lang, 'singleLiquidityPoolsIK'), { callback: 'singleLiquidityPools' }), bot.inlineButton(getTranslation(lang, 'dualLiquidityPoolsIK'), { callback: 'dualLiquidityPool' })],
+  [bot.inlineButton(getTranslation(lang, 'dualLiquidityPoolsIK'), { callback: 'dualLiquidityPool' })],
   [bot.inlineButton('Снять прибыль с пулов', { callback: 'profitLiquidityPools' })]
 ]);
 

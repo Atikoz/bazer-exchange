@@ -1,5 +1,5 @@
 import sleep from "../../../function/sleepFunction";
-import { CrossfiSendAdminTx } from "../../../interface/CrossfiInterfaces";
+import { CrossfiSendAdminTx, ICrossfiTx } from "../../../interface/CrossfiInterfaces";
 import CrossfiSendAdmin from "../../../models/crossfi/CrossfiSendAdmin";
 import CrossfiUserReplenishment from "../../../models/crossfi/CrossfiUserReplenishment";
 import BalanceService from "../../balance/BalanceService";
@@ -20,7 +20,7 @@ class ReplenishmentCrossfi extends CrossfiService {
       const userWallet = getInfoUser.userWallet.crossfi.address;
       const encryptedUserMnemonic = getInfoUser.userWallet.mnemonic;
       const userMnemonic = EncryptionService.decryptSeed(encryptedUserMnemonic);
-      const transactions = await this.getUserTx(userWallet);
+      const transactions = await this.getUserTx(userWallet) as ICrossfiTx[];
 
       if (!transactions.length) {
         return

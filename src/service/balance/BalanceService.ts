@@ -1,3 +1,4 @@
+import DoubleLiquidityPool from "../../models/liquidityPools/modelDoubleLiqPools";
 import BalanceUser from "../../models/user/BalanceModel";
 
 class BalanceService {
@@ -41,13 +42,31 @@ class BalanceService {
     );
   }
 
-  static async getBalanceAllUsersCoins(coin: string): Promise<{ id: number, amount: number }[]> {
+  static async getUsersTotalBalanceByCoin(coin: string): Promise<{ id: number, amount: number }[]> {
     const users = await BalanceUser.find();
 
-    const arrayUserAllBalance = users.map(item => {
+    const pools = await DoubleLiquidityPool.find({
+      $or: [{ firstCoin: coin }, { secondCoin: coin }]
+    });
+
+    const arrayUserAllBalance = users.map(user => {
+      const userId = user.id;
+      let totalAmount = user.main[coin] + user.hold[coin];
+
+      for (const pool of pools) {
+        const userInPool = pool.poolUser.find(p => p.id === userId);
+        if (userInPool) {
+          if (pool.firstCoin === coin) {
+            totalAmount += userInPool.amountFirstCoin;
+          } else if (pool.secondCoin === coin) {
+            totalAmount += userInPool.amountSecondCoin;
+          }
+        }
+      }
+
       return {
-        id: item.id,
-        amount: item.main[coin] + item.hold[coin]
+        id: userId,
+        amount: totalAmount
       };
     });
 
