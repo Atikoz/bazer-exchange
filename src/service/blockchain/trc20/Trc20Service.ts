@@ -239,7 +239,7 @@ class Trc20Service {
       };
 
       try {
-      const responce = await fetch(`https://apilist.tronscanapi.com/api/token_trc20/transfers?toAddress=${address}`, requestOptions);
+      const responce = await fetch(`https://apilist.tronscanapi.com/api/filter/trc20/transfers?relatedAddress=${address}`, requestOptions);
       const resultApi = await responce.json();
 
       const transactions = resultApi?.token_transfers || [];

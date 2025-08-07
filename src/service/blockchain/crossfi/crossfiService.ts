@@ -4,7 +4,6 @@ import { stringToPath } from '@cosmjs/crypto';
 import { toBaseUnit } from '../../../utils/unitConversion';
 import { ICrossfiTx, CrossfiTxData, CrossfiBalance, CrossfiAnswerApiGetBalance, CreateCrossfiWallet, ISendCrossfiCoin, CrossfiTxDecoded, CrossfiTxLog, ICrossfiEvmTx } from '../../../interface/CrossfiInterfaces';
 import CrossfiUserReplenishment from '../../../models/crossfi/CrossfiUserReplenishment';
-import EncryptionService from '../../security/EncryptionService';
 import { Wallet } from 'ethers';
 
 const CROSSFI_RPC_URL = process.env.CROSSFI_RPC_URL;
