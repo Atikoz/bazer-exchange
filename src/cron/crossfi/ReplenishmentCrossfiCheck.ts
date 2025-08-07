@@ -7,9 +7,14 @@ export const checkUserCrossfiTransaction = new CronJob('0 */1 * * * *', async ()
   try {
     const activeWallets = await WalletUser.aggregate([
       {
+        $addFields: {
+          idStr: { $toString: '$id' } // конвертуємо id в рядок
+        }
+      },
+      {
         $lookup: {
           from: 'users',
-          localField: 'id',
+          localField: 'idStr',        // тепер порівнюємо як рядки
           foreignField: 'id',
           as: 'user'
         }
@@ -17,6 +22,7 @@ export const checkUserCrossfiTransaction = new CronJob('0 */1 * * * *', async ()
       { $unwind: '$user' },
       { $match: { 'user.isActive': true } }
     ]);
+
 
     if (!activeWallets.length) {
       console.log('ℹ️ Нет активных пользователей для проверки CROSSFI транзакций.');
