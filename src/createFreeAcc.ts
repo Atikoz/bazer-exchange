@@ -10,7 +10,7 @@ const mongoUri = process.env.MONGO_URI as string;
   try {
     await connectToMongo(mongoUri);
 
-    const countAcc = 20;
+    const countAcc = 1;
 
     for (let i = 1; i <= countAcc; i++) {
       const result = await FreeAccountService.createNew()

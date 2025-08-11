@@ -8,6 +8,7 @@
     "api": "npx tsx src/api/server.ts",
     "cron": "npx tsx src/cron/index.ts",
     "updateData": "npx tsx src/updateData.ts",
+    "createFreeAcc": "npx tsx src/createFreeAcc.ts",
     "test": "npx tsx src/test/test.ts",
     "test:e2e": "jest --config jest.config.js",
     "postinstall": "patch-package"

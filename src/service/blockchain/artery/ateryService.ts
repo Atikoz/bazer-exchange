@@ -158,14 +158,14 @@ class ArteryService {
   };
 
   public async sendArtery(seed: string, recipient: string, amount: number, isWithdraw = false): Promise<ISendCoinsArtery> {
+    amount = amount * 1e6;
+
+    const getRequestOptions: RequestInit = {
+      method: "GET",
+      redirect: "follow" as RequestRedirect
+    };
+    
     try {
-      console.log(`seed: ${seed}`)
-      console.log(`recipient: ${recipient}`)
-      console.log(`amount: ${amount}`)
-      console.log('isWithdraw flag:', isWithdraw);
-
-      amount = amount * 1e6;
-
       const wallet = await this.authWallet(seed, isWithdraw);
       // Резолвим адрес из ника / адреса Arteru / bech32 (sdk) адреса
       recipient = recipient.toLowerCase();
@@ -175,12 +175,7 @@ class ArteryService {
         if (recipient.indexOf('artr-') === 0) {
           let cardNumber = recipient.replace(/\D/g, '');
 
-          const requestOptions: RequestInit = {
-            method: "GET",
-            redirect: "follow" as RequestRedirect
-          };
-
-          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_card/${cardNumber}`, requestOptions);
+          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_card/${cardNumber}`, getRequestOptions);
           const resultJson = await result.json();
 
           if (result && resultJson && resultJson.address) {
@@ -189,12 +184,7 @@ class ArteryService {
             throw Error('Account with address ' + recipient + ' not found in blockchain');
           }
         } else { //Ник
-          const requestOptions: RequestInit = {
-            method: "GET",
-            redirect: "follow" as RequestRedirect
-          };
-
-          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_nick/${recipient}`, requestOptions);
+          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_nick/${recipient}`, getRequestOptions);
           const resultJson = await result.json();
 
           if (result && resultJson && resultJson.address) {

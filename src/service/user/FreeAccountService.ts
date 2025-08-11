@@ -55,7 +55,7 @@ export class FreeAccountService {
           address: createUsdt.address,
           privateKey: createUsdt.privateKey
         },
-        crossfi: { address: createCrossfi.address, evmAddres: createCrossfi.evmAddress },
+        crossfi: { address: createCrossfi.address, evmAddress: createCrossfi.evmAddress },
         artery: { address: createArtery },
         minter: {
           address: createMinter.address,

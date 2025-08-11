@@ -172,12 +172,8 @@ class CrossfiService {
         hdPaths: HD_PATHS,
       });
 
-      const [oldAddressAccountData, newAddressAccountData] = await wallet.getAccounts();
-
-      console.log('------------------');
-      console.log('old address:', oldAddressAccountData.address);
-      console.log('new address:', newAddressAccountData.address);
-      console.log('------------------');
+      const accounts = await wallet.getAccounts();
+      const newAddressAccountData = accounts[1];
 
       const evmAddress = await this.getEvmAddressFromCosmosAddress(mnemonic);
 
