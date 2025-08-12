@@ -1,20 +1,46 @@
 diff --git a/node_modules/dem-api/src/Wallet.js b/node_modules/dem-api/src/Wallet.js
-index 782c3a3..0654513 100644
+index 782c3a3..21cce40 100644
 --- a/node_modules/dem-api/src/Wallet.js
 +++ b/node_modules/dem-api/src/Wallet.js
-@@ -184,6 +184,12 @@ class Wallet {
-         return signer.send(this._getSigner(), this.address, to, _.toString('amount'), gas, memo, toh);
-     }
+@@ -73,9 +73,9 @@ class Wallet {
+         this.publicKeyHex = Buffer.from(this.publicKey.toBuffer()).toString('hex');
  
-+    createAccount(address,
-+                  referrer,
-+                  nickname, gas = '21000000', memo = '', toh = '0') {
-+        return signer.createAccount(this._getSigner(), this.address, address, referrer, nickname, gas, memo, toh);
+         this.address = (new bitcore.Address(
+-                this.publicKey,
+-                'artery',
+-                bitcore.Address.PayToWitnessPublicKeyHash)
++            this.publicKey,
++            'artery',
++            bitcore.Address.PayToWitnessPublicKeyHash)
+         ).toString();
+ 
+         this.accNo = 0;
+@@ -180,8 +180,14 @@ class Wallet {
+      * @param {string?} [toh='0'] - timeout height;
+      * @returns {Uint8Array} - signed TX, ready to be sent.
+      */
+-    send(to, amount, memo = '', gas = '5000000', toh = '0') {
+-        return signer.send(this._getSigner(), this.address, to, _.toString('amount'), gas, memo, toh);
++    send(to, amount, memo = '', gas = '120000000', toh = '0') {
++        return signer.send(this._getSigner(), this.address, to, _.toString(amount), gas, memo, toh);
 +    }
 +
++    createAccount(address,
++        referrer,
++        nickname, gas = '40000000', memo = '', toh = '0') {
++        return signer.createAccount(this._getSigner(), this.address, address, referrer, nickname, gas, memo, toh);
+     }
+ 
      /**
-      * Generates and signs delegating/MsgDelegate transaction
-      *
+@@ -193,7 +199,7 @@ class Wallet {
+      * @param {string?} [toh='0'] - timeout height;
+      * @returns {Uint8Array} - signed TX, ready to be sent.
+      */
+-    delegate(amount, memo = '', gas = '31000000', toh = '0') {
++    delegate(amount, memo = '', gas = '120000000', toh = '0') {
+         return signer.delegate(this._getSigner(), this.address, _.toString(amount), gas, memo, toh);
+     }
+ 
 diff --git a/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto b/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto
 index f2e523a..e5f14f2 100644
 --- a/node_modules/dem-api/src/proto/artery/profile/v1beta1/tx.proto

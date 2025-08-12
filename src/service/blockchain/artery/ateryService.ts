@@ -18,9 +18,14 @@ class ArteryService {
   private readonly nodeUrl = ARTERY_NODE_URL;
   private readonly adminArteryWallet = ADMIN_WALLET_ARTERY;
   private readonly adminArteryMnemonic = ADMIN_MNEMONIK_ARTERY;
+  private readonly getRequestOptions: RequestInit = {
+      method: "GET",
+      redirect: "follow" as RequestRedirect
+    };
 
   private async createAccount(wallet: Wallet, address: string, nickname: string, nodeUrl: string): Promise<string> {
     const txData = Wallet.wrap(wallet.createAccount(address, referAcc, nickname));
+    txData.mode = "BROADCAST_MODE_BLOCK"
 
     const requestOptions: RequestInit = {
       method: "POST",
@@ -55,12 +60,7 @@ class ArteryService {
 
     console.log('Получаем данные для подписи запроса')
 
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-
-    const accData = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, requestOptions);
+    const accData = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, this.getRequestOptions);
     const accDataJson = await accData.json();
 
     // Текущая версия сети Artery Blockchain
@@ -92,13 +92,8 @@ class ArteryService {
     const seed = this.adminArteryMnemonic;
     const wallet = new Wallet(seed);
 
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-
     try {
-      const response = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, requestOptions);
+      const response = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, this.getRequestOptions);
       const accData = await response.json();
       console.log(accData);
 
@@ -131,13 +126,8 @@ class ArteryService {
     const wallet = new Wallet(seed);
 
     try {
-      const requestOptions: RequestInit = {
-        method: "GET",
-        redirect: "follow" as RequestRedirect
-      };
-
       // Получаем адрес кошелька
-      const accData = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, requestOptions);
+      const accData = await fetch(`${this.nodeUrl}/cosmos/auth/v1beta1/accounts/${wallet.address}`, this.getRequestOptions);
       const accDataJson = await accData.json();
 
       console.log(accDataJson)
@@ -160,11 +150,6 @@ class ArteryService {
   public async sendArtery(seed: string, recipient: string, amount: number, isWithdraw = false): Promise<ISendCoinsArtery> {
     amount = amount * 1e6;
 
-    const getRequestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-    
     try {
       const wallet = await this.authWallet(seed, isWithdraw);
       // Резолвим адрес из ника / адреса Arteru / bech32 (sdk) адреса
@@ -175,7 +160,7 @@ class ArteryService {
         if (recipient.indexOf('artr-') === 0) {
           let cardNumber = recipient.replace(/\D/g, '');
 
-          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_card/${cardNumber}`, getRequestOptions);
+          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_card/${cardNumber}`, this.getRequestOptions);
           const resultJson = await result.json();
 
           if (result && resultJson && resultJson.address) {
@@ -184,7 +169,7 @@ class ArteryService {
             throw Error('Account with address ' + recipient + ' not found in blockchain');
           }
         } else { //Ник
-          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_nick/${recipient}`, getRequestOptions);
+          const result = await fetch(`${this.nodeUrl}/artery/profile/v1beta1/get_by_nick/${recipient}`, this.getRequestOptions);
           const resultJson = await result.json();
 
           if (result && resultJson && resultJson.address) {
@@ -196,6 +181,7 @@ class ArteryService {
       };
 
       const txData = Wallet.wrap(wallet.send(recipient, amount, '', "80000000"));
+      txData.mode = "BROADCAST_MODE_BLOCK";
 
       const requestOptions: RequestInit = {
         method: "POST",
@@ -251,13 +237,8 @@ class ArteryService {
   // }
 
   private getBalance = async (address: string): Promise<number> => {
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-
     try {
-      const response = await fetch(`${this.nodeUrl}/artery/bank/v1beta1/balance/${address}`, requestOptions);
+      const response = await fetch(`${this.nodeUrl}/artery/bank/v1beta1/balance/${address}`, this.getRequestOptions);
       const result = await response.json();
 
       if (result.balance && result.balance.length > 0) {
@@ -313,13 +294,8 @@ class ArteryService {
   };
 
   private checkHash = async (hash: string): Promise<boolean> => {
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
-
     try {
-      const response = await fetch(`${this.nodeUrl}/cosmos/tx/v1beta1/txs/${hash}`, requestOptions);
+      const response = await fetch(`${this.nodeUrl}/cosmos/tx/v1beta1/txs/${hash}`, this.getRequestOptions);
       const result = await response.json();
 
       return result.tx_response?.code === 0;
