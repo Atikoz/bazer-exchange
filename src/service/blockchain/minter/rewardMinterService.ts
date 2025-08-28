@@ -10,6 +10,23 @@ import MinterService from "./minterService";
 const ADMIN_WALLET_MINTER = process.env.ADMIN_WALLET_MINTER;
 
 class RewardMinterServise extends MinterService {
+
+  private readonly TARGET_100CASHBAC = "Реварды расписок 100%CASHBACK";
+
+  private decodeBase64Utf8Safe(b64: string): string | null {
+    if (!b64) return null;
+
+    let s = b64.replace(/-/g, "+").replace(/_/g, "/");
+    const pad = s.length % 4;
+    if (pad) s += "=".repeat(4 - pad);
+    try {
+      return Buffer.from(s, "base64").toString("utf-8");
+    } catch {
+      return null;
+    }
+  }
+
+
   async getMinterRewardsTx(): Promise<MinterTransaction[]> {
     const allTx = await this.getTransaction(ADMIN_WALLET_MINTER);
     const rewardsTx = allTx.filter(tx => tx.type === 13);
@@ -22,6 +39,25 @@ class RewardMinterServise extends MinterService {
 
     return minterReward
   }
+
+  async getTxRewards100CASHBAC(): Promise<MinterTransaction[]> {
+    
+    // const txs = await this.getTransaction(ADMIN_WALLET_MINTER);
+    const txs = await this.getTransaction('Mxc25dc727e18ccc4895120a29ec93f11472f9cb8c');
+    const result: MinterTransaction[] = [];
+
+    for (const tx of txs) {
+      if (tx.type !== 13 || !tx.payload) continue;
+
+      const decoded = this.decodeBase64Utf8Safe(tx.payload); // заміни MyClass на назву твого класу
+      if (decoded && decoded.includes(this.TARGET_100CASHBAC)) {
+        result.push(tx);
+      }
+    }
+
+    return result;
+  }
+
 
   async checkTxBuyBazerHub(): Promise<void> {
     try {
@@ -64,9 +100,9 @@ class RewardMinterServise extends MinterService {
         BalanceService.getUsersTotalBalanceByCoin('bazerhub')
       ]);
 
-      const balanceBazerHub = arrayUserBalance.reduce((total, item) => 
+      const balanceBazerHub = arrayUserBalance.reduce((total, item) =>
         total + item.main.bazerhub + item.hold.bazerhub
-      , 0);
+        , 0);
 
       for (const tx of rewardsTx) {
         const isAlreadyHandled = await RewardMinter.exists({ hash: tx.hash });
@@ -92,14 +128,14 @@ class RewardMinterServise extends MinterService {
         const rewardPromises = users.map(user => {
           const userPercent = LiquidityCalculator.percentInvestor(balanceBazerHub, user.amount);
           const userReward = onePercentReward * userPercent;
-  
+
           if (userReward <= 0) return null;
-  
+
           logMsg.push(`Пользователю ${user.id} начислено ревард в размере ${userReward} USDTBSC за хранение BazerHub`);
-  
+
           return BalanceService.updateBalance(user.id, 'usdtbsc', userReward)
             .then(() => BotService.sendMessage(user.id, `Вам начислено ревард в размере ${userReward} USDTBSC за хранение BazerHub. Спасибо что вы с нами!`))
-          }).filter(Boolean);
+        }).filter(Boolean);
 
         await Promise.all([
           ...rewardPromises,

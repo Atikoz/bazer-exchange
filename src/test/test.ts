@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { connectToMongo } from '../db/connectToMongo';
-import FreeAccount from '../models/user/FreeAccountModel';
-import WalletUser from '../models/user/WalletUser';
+import RewardMinterServise from '../service/blockchain/minter/rewardMinterService';
 
 
 const mongoUri = process.env.MONGO_URI as string;
@@ -9,34 +8,17 @@ const mongoUri = process.env.MONGO_URI as string;
 (async () => {
   try {
     await connectToMongo(mongoUri)
+    console.log('TEST START')
 
-    const requestOptions: RequestInit = {
-      method: "GET",
-      redirect: "follow" as RequestRedirect
-    };
+    const result = await RewardMinterServise.getTxRewards100CASHBAC();
 
-    const walletArray = [];
+    console.dir(result, { depth: null });
+    console.log(result.length)
 
-    // const freeAcc = await FreeAccount.find();
-    const freeAcc = await WalletUser.find();
-
-    for (const acc of freeAcc) {
-      const responce = await fetch(`http://45.88.104.44:1317/artery/profile/v1beta1/get_by_addr/${acc.artery.address}`, requestOptions)
-      const data = await responce.json();
-
-      if (data.hasOwnProperty('code')) {
-        console.log(`acc = ${acc.artery.address} - not found, code: ${data.code}`);
-        walletArray.push(acc.artery.address)
-      }
-    }
-
-    console.log(walletArray)
-
-
-    console.log('done')
-    process.exit(1);
+    console.log('TEST DONE')
   } catch (error) {
     console.error('MongoDB connection error :', error);
+  } finally {
     process.exit(1);
   }
 

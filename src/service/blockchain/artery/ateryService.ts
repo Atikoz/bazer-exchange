@@ -209,6 +209,8 @@ class ArteryService {
     try {
       const result = await this.sendArtery(this.adminArteryMnemonic, address, amount, true);
 
+      console.log(result)
+
       if (result.code != 0) {
         throw new Error(`Error withdraw artery coins`);
       }
