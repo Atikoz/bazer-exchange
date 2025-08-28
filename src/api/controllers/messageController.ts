@@ -14,8 +14,8 @@ const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID;
 
 
 const CHANNEL_MAP: Record<Target, string> = {
-  users: LIQUIDITY_LOG_CHANNEL_ID,
-  admins: LOG_CHANNEL_ID
+  users: LOG_CHANNEL_ID,
+  admins: LIQUIDITY_LOG_CHANNEL_ID
 };
 
 export class MessageController {
