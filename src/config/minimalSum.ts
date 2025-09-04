@@ -82,5 +82,6 @@ export const minimalSum: Record<string, number> = {
     minterBazercoin: 50,
     ruble: 5,
     bazerhub: 0.5,
-    bzr: 1
+    bzr: 1,
+    '100cashbac': 10
   };

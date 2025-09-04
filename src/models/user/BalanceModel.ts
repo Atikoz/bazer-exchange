@@ -67,6 +67,10 @@ const BalanceUserSchema = new Schema({
       type: Number,
       default: 0
     },
+    '100cashbac': {
+      type: Number,
+      default: 0
+    },
     cashback: {
       type: Number,
       default: 0
@@ -386,6 +390,10 @@ const BalanceUserSchema = new Schema({
       default: 0
     },
     bazerhub: {
+      type: Number,
+      default: 0
+    },
+    '100cashbac': {
       type: Number,
       default: 0
     },

@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import RewardMinterServise from '../../service/blockchain/minter/rewardMinterService'
 
-const rewardMinter = new CronJob('0 0 14 * * 1', async () => {
+const rewardMinter = new CronJob('0 0 14 * * *', async () => {
   try {
     await RewardMinterServise.accrualRewards();
   } catch (error) {

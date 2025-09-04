@@ -15,7 +15,8 @@ export const coinToWalletMap: Record<string, string> = {
   minterBazercoin: 'minter',
   bazerhub: 'minter',
   ruble: 'minter',
-  bzr: 'crossfi.evmAddress'
+  bzr: 'crossfi.evmAddress',
+  '100cashbac': 'minter'
 };
 
 export const defaultWalletKey: keyof UserWallet = 'del';

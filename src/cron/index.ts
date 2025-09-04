@@ -6,7 +6,7 @@ import checkMatchingOrders from "./checkOrders";
 import { checkAdminCrossfiTransaction, checkUserCrossfiTransaction } from "./crossfi/ReplenishmentCrossfiCheck";
 import accrualPurchasesBuyBazerhub from "./minter/checkTxBuyBazerhub";
 import checkMinterTransaction from "./minter/ReplenishmentMinterCheck";
-import rewardMinter from "./minter/RewardBazerHUB";
+import rewardMinter from "./minter/MinterRewards";
 import { chechAdminUsdtTransaction, checkUserUsdtTransaction } from "./usdt/ReplenishmentUsdtCheck";
 import { markInactiveUsersJob } from "./users/markInactiveUsersJob";
 import { startReferralUpdateJob } from "./users/ReferralJob";

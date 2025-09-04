@@ -28,6 +28,7 @@ class ReplenishmentMinter extends minterService {
     BAZERCOIN: 50,
     RUBLE: 5,
     BAZERHUB: 0.5,
+    "100CASHBAC": 10,
   };
 
   checkUserTransaction = async (id: number): Promise<void> => {
@@ -40,27 +41,29 @@ class ReplenishmentMinter extends minterService {
       const userTransactionArr: MinterTransaction[] = await sleep(5000).then(async () => await this.getTransaction(userAddress));
 
       for (const transaction of userTransactionArr) {
-        if (transaction.type !== 1) {
+        const { type, data, hash } = transaction;
+
+        if (type === 13) {
           continue
         }
 
-        const coin = transaction.data.coin.symbol;
+        const coin = data.coin.symbol;
         const minimumAmount = this.minimumAmounts[coin];
 
-        const alreadyExists = await MinterReplenishment.exists({ id, hash: transaction.hash });
-        const isToUser = transaction.data.to === userAddress;
-        const isAboveMinimum = +transaction.data.value >= minimumAmount;
+        const alreadyExists = await MinterReplenishment.exists({ id, hash: hash });
+        const isToUser = data.to === userAddress;
+        const isAboveMinimum = +data.value >= minimumAmount;
         const isAllowedCoin = Object.keys(this.minimumAmounts).includes(coin);
 
         if (!alreadyExists && isToUser && isAboveMinimum && isAllowedCoin) {
-          console.log('found transaction:', transaction.hash);
+          console.log('found transaction:', hash);
 
           const coinId = await this.getCoinId(coin);
-          const commissionTransfer = await sleep(5000).then(() => this.getCommissionTx(this.adminWallet, +transaction.data.value, coinId));
+          const commissionTransfer = await sleep(5000).then(() => this.getCommissionTx(this.adminWallet, +data.value, coinId));
 
-          console.log('transfer commission:', commissionTransfer);
+          console.log('transfer commission:', commissionTransfer, 'bip');
           if (coin === 'BIP') {
-            const amountTransferAdminWallet = +transaction.data.value - 100
+            const amountTransferAdminWallet = +data.value - commissionTransfer;
             const sendBipAdminWallet = await sleep(5000).then(() => this.sendMinter(this.adminWallet, amountTransferAdminWallet, userSeed, coin));
 
             if (!sendBipAdminWallet.status) {
@@ -72,7 +75,7 @@ class ReplenishmentMinter extends minterService {
               id,
               hash: sendBipAdminWallet.hash,
               status: 'Send Admin',
-              amount: transaction.data.value,
+              amount: data.value,
               coin
             });
           } else {
@@ -85,20 +88,21 @@ class ReplenishmentMinter extends minterService {
               await sleep(5000);
             }
 
-            const sendCoinAdminWallet = await this.sendMinter(this.adminWallet, +transaction.data.value, userSeed, coin);
+            const sendCoinAdminWallet = await this.sendMinter(this.adminWallet, +data.value, userSeed, coin);
 
             await TransactionMinterStatus.create({
               id,
               hash: sendCoinAdminWallet.hash,
               status: 'Send Admin',
-              amount: transaction.data.value,
+              amount: data.value,
               coin
             });
           }
+
           await MinterReplenishment.create({
             id,
-            hash: transaction.hash,
-            amount: transaction.data.value,
+            hash: hash,
+            amount: data.value,
             coin
           });
 
@@ -113,7 +117,7 @@ class ReplenishmentMinter extends minterService {
 
   checkAdminWallet = async (): Promise<void> => {
     try {
-      const adminTransactions = await TransactionMinterStatus.find({ status: { $ne: 'Done' } })
+      const adminTransactions = await TransactionMinterStatus.find({ status: { $ne: 'Done' } });
 
       if (!adminTransactions.length) {
         return
