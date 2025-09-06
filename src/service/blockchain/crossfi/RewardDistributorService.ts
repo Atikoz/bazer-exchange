@@ -48,7 +48,7 @@ export class RewardDistributorService extends CrossfiService {
         const logMsg = [`Начисления за холд токена BZR\n📊 Количество участников: ${filteredUsers.length}\n`];
 
         for (const r of rewards) {
-          await this.creditReward(r.id, r.reward, logMsg);
+          await this.creditReward(r.id, +r.reward.toFixed(6), logMsg);
         }
 
         await BotService.sendLog(logMsg.join('\n'))
@@ -82,6 +82,6 @@ export class RewardDistributorService extends CrossfiService {
     logMsg.push(`Пользователь: ${userId}, сумма: ${amount} XFI`);
 
     await BalanceService.updateBalance(userId, 'xfi', +amount);
-    await BotService.sendMessage(userId, `Начислено вознаграждение за холдинг токена BZR\nСумма: ${amount} XFI`)
+    await BotService.sendMessage(userId, `🎉💰 Начислено вознаграждение за холдинг токена BZR\nСумма: ${amount} XFI`)
   }
 }

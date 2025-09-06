@@ -153,11 +153,13 @@ class RewardMinterServise extends MinterService {
 
             const rewardStr = userReward.toFixed(6);
 
-            logMsg.push(`Пользователю ${user.id} начислено ревард в размере ${rewardStr} ${cfg.payoutCoin.toUpperCase()} за хранение ${cfg.name}`);
+            logMsg.push(`Пользователь <i>${user.id}</i>, сумма - ${rewardStr} ${cfg.payoutCoin.toUpperCase()}`);
 
             return BalanceService.updateBalance(user.id, cfg.payoutCoin, +rewardStr)
-              .then(() => BotService.sendMessage(user.id, `Вам начислено ревард в размере ${userReward} ${cfg.payoutCoin.toUpperCase()} за хранение ${cfg.name}. Спасибо что вы с нами!`))
+              .then(() => BotService.sendMessage(user.id, `🎉💰 Начислено вознаграждение за холдинг токена ${cfg.name}\nСумма: ${userReward} ${cfg.payoutCoin.toUpperCase()}`))
           }).filter(Boolean);
+
+          logMsg.unshift(`Начисления за холд токена ${cfg.name}\n📊 Количество участников: ${logMsg.length}\n\n`)
 
           await Promise.all([
             ...rewardPromises,
