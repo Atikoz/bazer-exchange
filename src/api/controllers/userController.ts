@@ -1,7 +1,8 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import EncryptionService from '../../service/security/EncryptionService';
 import { UserRegistrationService } from '../../service/user/UserRegistrationService';
 import UserManagement from '../../service/user/UserManagement';
+import { TypedRequest } from '../../types/expressTypes';
 
 const ENCRYPTION_KEY_MICROSERVICE = process.env.ENCRYPTION_KEY_MICROSERVICE;
 
@@ -58,7 +59,7 @@ class UserController {
   //   }
   // };
 
-  async register(req: Request<{}, {}, RegisterRequestBody>, res: Response): Promise<void> {
+  async register(req: TypedRequest<{}, {}, RegisterRequestBody>, res: Response): Promise<void> {
     try {
       const { userId, email, bazerId, refferId } = req.body;
 
@@ -89,7 +90,7 @@ class UserController {
     }
   };
 
-  async getBalanceUser(req: Request<{ userId: number }>, res: Response): Promise<void> {
+  async getBalanceUser(req: TypedRequest<{ userId?: number }>, res: Response): Promise<void> {
     try {
       const { userId } = req.params;
       const fetchUserInfo = await UserManagement.getInfoUser(userId);

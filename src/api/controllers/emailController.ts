@@ -1,5 +1,6 @@
 import MailService from '../../service/mail/serviceMail'
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { TypedRequest } from '../../types/expressTypes';
 
 
 interface SendCodeResponse {
@@ -24,7 +25,7 @@ class VerificationService {
     this.sendVerificationCode = this.sendVerificationCode.bind(this);
   }
 
-  async sendVerificationCode(req: Request<{}, {}, SendCodeRequestBody>, res: Response): Promise<void> {
+  async sendVerificationCode(req: TypedRequest<{}, {}, SendCodeRequestBody>, res: Response): Promise<void> {
     try {
       const { email } = req.body;
 
@@ -54,7 +55,7 @@ class VerificationService {
     }
   };
 
-  async verifyCode(req: Request<{}, {}, VerifyCodeRequestBody>, res: Response): Promise<void> {
+  async verifyCode(req: TypedRequest<{}, {}, VerifyCodeRequestBody>, res: Response): Promise<void> {
     try {
       const { email, code } = req.body;
       

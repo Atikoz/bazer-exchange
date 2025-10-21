@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import P2PLoansOrder from '../../models/p2p/modelP2PLoansOrder';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { TypedRequest } from '../../types/expressTypes';
 
 
 interface CreateOrderRequestBody {
@@ -18,11 +19,11 @@ interface CreateOrderRequestBody {
 }
 
 interface GetUserOrdersQuery {
-  userId: number;
+  userId?: number;
 }
 
 class OrdersController {
-  async createOrder(req: Request<{}, {}, CreateOrderRequestBody>, res: Response): Promise<void> {
+  async createOrder(req: TypedRequest<{}, {}, CreateOrderRequestBody>, res: Response): Promise<void> {
     try {
       const {
         buyerId,
@@ -75,7 +76,7 @@ class OrdersController {
     }
   };
 
-  async getUserOrders(req: Request<{}, {}, {}, GetUserOrdersQuery>, res: Response): Promise<void> {
+  async getUserOrders(req: TypedRequest<{}, {}, {}, GetUserOrdersQuery>, res: Response): Promise<void> {
     try {
       const { userId } = req.query;
 
@@ -104,7 +105,7 @@ class OrdersController {
     }
   };
 
-  async getAllOrders(req: Request, res: Response): Promise<void> {
+  async getAllOrders(req: TypedRequest, res: Response): Promise<void> {
     try {
       const result = await P2PLoansOrder.find();
   
