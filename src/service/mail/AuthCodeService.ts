@@ -7,7 +7,7 @@ class AuthCodeService {
   async sendEmailVerifyCode(email: string): Promise<{ status: boolean, message: string }> {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Authorization", email);
+    myHeaders.append("Authorization", `Bearer ${email}`);
 
     const data = JSON.stringify({ email });
 
@@ -45,7 +45,7 @@ class AuthCodeService {
   async verifyCode(email: string, code: number): Promise<{ status: boolean, message: string }> {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Authorization", email);
+    myHeaders.append("Authorization", `Bearer ${email}`);
 
     const raw = JSON.stringify({
       email,
