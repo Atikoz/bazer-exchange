@@ -5,6 +5,10 @@ class AuthCodeService {
   private readonly p2pApi = P2P_API;
 
   async sendEmailVerifyCode(email: string): Promise<{ status: boolean, message: string }> {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", email);
+
     const data = JSON.stringify({ email });
 
     try {
@@ -36,25 +40,26 @@ class AuthCodeService {
         message: 'unexpected error'
       }
     }
-  }
+  };
 
   async verifyCode(email: string, code: number): Promise<{ status: boolean, message: string }> {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("Authorization", email);
+
+    const raw = JSON.stringify({
+      email,
+      code: code
+    });
+
+    const requestOptions: RequestInit = {
+      method: "POST",
+      headers: myHeaders,
+      body: raw,
+      redirect: "follow" as RequestRedirect
+    };
+    
     try {
-      const myHeaders = new Headers();
-      myHeaders.append("Content-Type", "application/json");
-
-      const raw = JSON.stringify({
-        email,
-        code: code
-      });
-
-      const requestOptions: RequestInit = {
-        method: "POST",
-        headers: myHeaders,
-        body: raw,
-        redirect: "follow" as RequestRedirect
-      };
-
       const response = await fetch(`${this.p2pApi}/api/user/verify-code`, requestOptions);
       const result = await response.json();
 
@@ -67,7 +72,7 @@ class AuthCodeService {
         message: ''
       }
     }
-  }
+  };
 }
 
 export default new AuthCodeService
