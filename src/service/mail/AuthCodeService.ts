@@ -14,9 +14,7 @@ class AuthCodeService {
     try {
       const response = await fetch(`${this.p2pApi}/api/user/send-mail-code`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: myHeaders,
         body: data
       });
 
